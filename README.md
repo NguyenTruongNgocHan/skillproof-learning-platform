@@ -11,9 +11,9 @@ and blockchain-based digital certificate verification.
 - Vite
 
 ### Backend
-- Java 21
-- Spring Boot 3
-- Maven
+- Java 21.0.11
+- Spring Boot 4.1.1
+- Maven 3.9.16
 
 ### Infrastructure
 - PostgreSQL
