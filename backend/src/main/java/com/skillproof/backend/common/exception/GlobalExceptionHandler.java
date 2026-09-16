@@ -2,6 +2,8 @@ package com.skillproof.backend.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,13 +16,22 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidation(
+    private static final Logger log =
+            LoggerFactory.getLogger(
+                    GlobalExceptionHandler.class
+            );
+
+    @ExceptionHandler(
+            MethodArgumentNotValidException.class
+    )
+    public ResponseEntity<ApiError>
+    handleValidation(
             MethodArgumentNotValidException exception,
             HttpServletRequest request
     ) {
 
-        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        Map<String, String> fieldErrors =
+                new LinkedHashMap<>();
 
         exception.getBindingResult()
                 .getFieldErrors()
@@ -31,66 +42,112 @@ public class GlobalExceptionHandler {
                         )
                 );
 
-        ApiError response = ApiError.validation(
-                HttpStatus.BAD_REQUEST.value(),
-                "VALIDATION_ERROR",
-                "Request validation failed.",
-                request.getRequestURI(),
-                fieldErrors
-        );
+        ApiError error =
+                ApiError.validation(
+                        HttpStatus.BAD_REQUEST,
+                        "VALIDATION_ERROR",
+                        "The request contains invalid fields.",
+                        request.getRequestURI(),
+                        fieldErrors
+                );
 
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity
+                .badRequest()
+                .body(error);
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiError> handleConstraintViolation(
+    @ExceptionHandler(
+            ConstraintViolationException.class
+    )
+    public ResponseEntity<ApiError>
+    handleConstraintViolation(
             ConstraintViolationException exception,
             HttpServletRequest request
     ) {
 
-        ApiError response = ApiError.of(
-                HttpStatus.BAD_REQUEST.value(),
-                "CONSTRAINT_VIOLATION",
-                exception.getMessage(),
-                request.getRequestURI()
-        );
+        ApiError error =
+                ApiError.of(
+                        HttpStatus.BAD_REQUEST,
+                        "CONSTRAINT_VIOLATION",
+                        "The request violates a constraint.",
+                        request.getRequestURI()
+                );
 
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity
+                .badRequest()
+                .body(error);
     }
 
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ApiError> handleConflict(
+    @ExceptionHandler(
+            BadRequestException.class
+    )
+    public ResponseEntity<ApiError>
+    handleBadRequest(
+            BadRequestException exception,
+            HttpServletRequest request
+    ) {
+
+        ApiError error =
+                ApiError.of(
+                        HttpStatus.BAD_REQUEST,
+                        exception.getCode(),
+                        exception.getMessage(),
+                        request.getRequestURI()
+                );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
+
+    @ExceptionHandler(
+            ConflictException.class
+    )
+    public ResponseEntity<ApiError>
+    handleConflict(
             ConflictException exception,
             HttpServletRequest request
     ) {
 
-        ApiError response = ApiError.of(
-                HttpStatus.CONFLICT.value(),
-                exception.getCode(),
-                exception.getMessage(),
-                request.getRequestURI()
-        );
+        ApiError error =
+                ApiError.of(
+                        HttpStatus.CONFLICT,
+                        exception.getCode(),
+                        exception.getMessage(),
+                        request.getRequestURI()
+                );
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(response);
+                .body(error);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleUnexpected(
+    public ResponseEntity<ApiError>
+    handleUnexpected(
             Exception exception,
             HttpServletRequest request
     ) {
 
-        ApiError response = ApiError.of(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "INTERNAL_SERVER_ERROR",
-                "An unexpected error occurred.",
-                request.getRequestURI()
+        log.error(
+                "Unhandled exception for {} {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                exception
         );
 
+        ApiError error =
+                ApiError.of(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "INTERNAL_ERROR",
+                        "An unexpected error occurred.",
+                        request.getRequestURI()
+                );
+
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(response);
+                .status(
+                        HttpStatus.INTERNAL_SERVER_ERROR
+                )
+                .body(error);
     }
 }

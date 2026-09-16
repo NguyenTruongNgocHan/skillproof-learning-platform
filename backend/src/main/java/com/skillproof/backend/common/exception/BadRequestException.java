@@ -1,11 +1,10 @@
 package com.skillproof.backend.common.exception;
 
-public class ConflictException
-        extends RuntimeException {
+public class BadRequestException extends RuntimeException {
 
     private final String code;
 
-    public ConflictException(
+    public BadRequestException(
             String code,
             String message
     ) {

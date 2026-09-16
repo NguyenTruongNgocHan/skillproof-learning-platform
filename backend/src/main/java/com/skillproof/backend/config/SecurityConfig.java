@@ -13,32 +13,38 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
 
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(auth -> auth
-
-                        // Health
-                        .requestMatchers("/health").permitAll()
-
-                        // Swagger
-                        .requestMatchers(
-                                "/swagger-ui.html",
-                                "/swagger-ui/**",
-                                "/v3/api-docs",
-                                "/v3/api-docs/**"
-                        ).permitAll()
-
-                        // Identity public routes
-                        .requestMatchers(
-                                "/api/v1/identity/register"
-                        ).permitAll()
-
-                        // Remaining APIs will require authentication
-                        // when JWT is implemented.
-                        .anyRequest().authenticated()
+                .csrf(
+                        AbstractHttpConfigurer::disable
+                )
+                .cors(
+                        Customizer.withDefaults()
+                )
+                .formLogin(
+                        AbstractHttpConfigurer::disable
+                )
+                .httpBasic(
+                        AbstractHttpConfigurer::disable
+                )
+                .authorizeHttpRequests(
+                        authorization ->
+                                authorization
+                                        .requestMatchers(
+                                                "/health",
+                                                "/swagger-ui.html",
+                                                "/swagger-ui/**",
+                                                "/v3/api-docs/**",
+                                                "/api/v1/auth/register",
+                                                "/api/v1/auth/verify-email",
+                                                "/api/v1/auth/resend-verification"
+                                        )
+                                        .permitAll()
+                                        .anyRequest()
+                                        .authenticated()
                 );
 
         return http.build();
@@ -46,6 +52,7 @@ public class SecurityConfig {
 
     @Bean
     PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder(12);
     }
 }

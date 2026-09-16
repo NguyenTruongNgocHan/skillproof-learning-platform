@@ -18,7 +18,6 @@ import java.util.UUID;
 public class UserAccount {
 
     @Id
-    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
     @Column(
@@ -36,6 +35,13 @@ public class UserAccount {
     )
     private String passwordHash;
 
+    @Column(
+            name = "display_name",
+            nullable = false,
+            length = 100
+    )
+    private String displayName;
+
     @Enumerated(EnumType.STRING)
     @Column(
             name = "role",
@@ -51,6 +57,9 @@ public class UserAccount {
             length = 32
     )
     private AccountStatus status;
+
+    @Column(name = "email_verified_at")
+    private Instant emailVerifiedAt;
 
     @Column(
             name = "created_at",
@@ -72,31 +81,58 @@ public class UserAccount {
             UUID id,
             String email,
             String passwordHash,
+            String displayName,
             UserRole role,
             AccountStatus status
     ) {
         this.id = Objects.requireNonNull(id);
         this.email = Objects.requireNonNull(email);
         this.passwordHash = Objects.requireNonNull(passwordHash);
+        this.displayName = Objects.requireNonNull(displayName);
         this.role = Objects.requireNonNull(role);
         this.status = Objects.requireNonNull(status);
     }
 
     public static UserAccount newLearner(
             String email,
-            String passwordHash
+            String passwordHash,
+            String displayName
     ) {
         return new UserAccount(
                 UUID.randomUUID(),
                 email,
                 passwordHash,
+                displayName,
                 UserRole.LEARNER,
                 AccountStatus.PENDING_VERIFICATION
         );
     }
 
+    public void verifyEmail(Instant verifiedAt) {
+
+        Objects.requireNonNull(verifiedAt);
+
+        if (status != AccountStatus.PENDING_VERIFICATION) {
+            throw new IllegalStateException(
+                    "Only a pending account can be email verified."
+            );
+        }
+
+        this.status = AccountStatus.ACTIVE;
+        this.emailVerifiedAt = verifiedAt;
+    }
+
+    public boolean isActive() {
+        return status == AccountStatus.ACTIVE;
+    }
+
+    public boolean isPendingVerification() {
+        return status == AccountStatus.PENDING_VERIFICATION;
+    }
+
     @PrePersist
     void prePersist() {
+
         Instant now = Instant.now();
 
         if (createdAt == null) {
@@ -123,6 +159,10 @@ public class UserAccount {
         return passwordHash;
     }
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
     public UserRole getRole() {
         return role;
     }
@@ -131,15 +171,15 @@ public class UserAccount {
         return status;
     }
 
+    public Instant getEmailVerifiedAt() {
+        return emailVerifiedAt;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
 
     public Instant getUpdatedAt() {
         return updatedAt;
-    }
-
-    public boolean isActive() {
-        return status == AccountStatus.ACTIVE;
     }
 }

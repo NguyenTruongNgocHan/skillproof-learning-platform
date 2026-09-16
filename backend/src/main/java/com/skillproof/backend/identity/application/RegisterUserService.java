@@ -5,74 +5,121 @@ import com.skillproof.backend.identity.api.RegisterRequest;
 import com.skillproof.backend.identity.api.RegisterResponse;
 import com.skillproof.backend.identity.domain.UserAccount;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Locale;
 
 @Service
 public class RegisterUserService {
 
-    private static final String EMAIL_ALREADY_EXISTS_CODE =
-            "IDENTITY_EMAIL_ALREADY_EXISTS";
+    private static final String ALREADY_EXISTS_CODE =
+            "IDENTITY_ALREADY_EXISTS";
 
-    private static final String EMAIL_ALREADY_EXISTS_MESSAGE =
+    private static final String ALREADY_EXISTS_MESSAGE =
             "An account with this email already exists.";
 
-    private final UserAccountRepository userAccountRepository;
+    private final UserAccountRepository
+            userAccountRepository;
+
     private final PasswordEncoder passwordEncoder;
+
+    private final EmailVerificationTokenIssuer
+            verificationTokenIssuer;
+
+    private final ApplicationEventPublisher
+            eventPublisher;
 
     public RegisterUserService(
             UserAccountRepository userAccountRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            EmailVerificationTokenIssuer verificationTokenIssuer,
+            ApplicationEventPublisher eventPublisher
     ) {
-        this.userAccountRepository = userAccountRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.userAccountRepository =
+                userAccountRepository;
+
+        this.passwordEncoder =
+                passwordEncoder;
+
+        this.verificationTokenIssuer =
+                verificationTokenIssuer;
+
+        this.eventPublisher =
+                eventPublisher;
     }
 
     @Transactional
-    public RegisterResponse register(RegisterRequest request) {
+    public RegisterResponse register(
+            RegisterRequest request
+    ) {
 
         String normalizedEmail =
                 normalizeEmail(request.email());
 
+        String displayName =
+                normalizeDisplayName(
+                        request.displayName()
+                );
+
         ensureEmailAvailable(normalizedEmail);
 
         String passwordHash =
-                passwordEncoder.encode(request.password());
+                passwordEncoder.encode(
+                        request.password()
+                );
 
         UserAccount account =
                 UserAccount.newLearner(
                         normalizedEmail,
-                        passwordHash
+                        passwordHash,
+                        displayName
                 );
 
         UserAccount savedAccount;
 
         try {
-            /*
-             * flush is intentional.
-             *
-             * The database UNIQUE(email) constraint is the final
-             * protection against concurrent registrations using
-             * the same normalized email.
-             */
+
             savedAccount =
-                    userAccountRepository.saveAndFlush(account);
+                    userAccountRepository
+                            .saveAndFlush(account);
 
         } catch (DataIntegrityViolationException exception) {
 
             throw emailAlreadyExists();
         }
 
+        Instant now = Instant.now();
+
+        IssuedEmailVerification verification =
+                verificationTokenIssuer.issue(
+                        savedAccount.getId(),
+                        now
+                );
+
+        eventPublisher.publishEvent(
+                new VerificationEmailRequestedEvent(
+                        savedAccount.getEmail(),
+                        savedAccount.getDisplayName(),
+                        verification.rawToken(),
+                        verification.expiresAt()
+                )
+        );
+
         return toResponse(savedAccount);
     }
 
-    private void ensureEmailAvailable(String normalizedEmail) {
+    private void ensureEmailAvailable(
+            String normalizedEmail
+    ) {
 
-        if (userAccountRepository.existsByEmail(normalizedEmail)) {
+        if (userAccountRepository
+                .existsByEmail(normalizedEmail)) {
+
             throw emailAlreadyExists();
         }
     }
@@ -80,26 +127,38 @@ public class RegisterUserService {
     private ConflictException emailAlreadyExists() {
 
         return new ConflictException(
-                EMAIL_ALREADY_EXISTS_CODE,
-                EMAIL_ALREADY_EXISTS_MESSAGE
+                ALREADY_EXISTS_CODE,
+                ALREADY_EXISTS_MESSAGE
         );
     }
 
-    private RegisterResponse toResponse(UserAccount account) {
+    private RegisterResponse toResponse(
+            UserAccount account
+    ) {
 
         return new RegisterResponse(
                 account.getId(),
                 account.getEmail(),
+                account.getDisplayName(),
                 account.getRole(),
                 account.getStatus(),
                 account.getCreatedAt()
         );
     }
 
-    private String normalizeEmail(String email) {
+    private String normalizeEmail(
+            String email
+    ) {
 
         return email
                 .trim()
                 .toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeDisplayName(
+            String displayName
+    ) {
+
+        return displayName.trim();
     }
 }
