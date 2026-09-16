@@ -11,17 +11,17 @@ import java.time.Duration;
 )
 public class EmailVerificationProperties {
 
-    private Duration ttl =
-            Duration.ofMinutes(30);
+    private Duration ttl
+            = Duration.ofMinutes(30);
 
-    private Duration resendCooldown =
-            Duration.ofSeconds(60);
+    private Duration resendCooldown
+            = Duration.ofSeconds(60);
 
-    private String frontendVerificationUrl =
-            "http://localhost:5173/verify-email";
+    private String frontendVerificationUrl
+            = "http://localhost:5173/verify-email";
 
-    private String fromAddress =
-            "no-reply@skillproof.local";
+    private String fromAddress
+            = "no-reply@skillproof.local";
 
     public Duration getTtl() {
         return ttl;
@@ -48,8 +48,8 @@ public class EmailVerificationProperties {
     public void setFrontendVerificationUrl(
             String frontendVerificationUrl
     ) {
-        this.frontendVerificationUrl =
-                frontendVerificationUrl;
+        this.frontendVerificationUrl
+                = frontendVerificationUrl;
     }
 
     public String getFromAddress() {

@@ -10,8 +10,7 @@ import java.util.UUID;
 @Service
 public class EmailVerificationTokenIssuer {
 
-    private final EmailVerificationTokenRepository
-            tokenRepository;
+    private final EmailVerificationTokenRepository tokenRepository;
 
     private final EmailVerificationTokenCodec tokenCodec;
 
@@ -37,17 +36,17 @@ public class EmailVerificationTokenIssuer {
                 now
         );
 
-        String rawToken =
-                tokenCodec.generateRawToken();
+        String rawToken
+                = tokenCodec.generateRawToken();
 
-        String tokenHash =
-                tokenCodec.hash(rawToken);
+        String tokenHash
+                = tokenCodec.hash(rawToken);
 
-        Instant expiresAt =
-                now.plus(properties.getTtl());
+        Instant expiresAt
+                = now.plus(properties.getTtl());
 
-        EmailVerificationToken token =
-                EmailVerificationToken.issue(
+        EmailVerificationToken token
+                = EmailVerificationToken.issue(
                         userAccountId,
                         tokenHash,
                         now,
@@ -71,14 +70,14 @@ public class EmailVerificationTokenIssuer {
                 .findTopByUserAccountIdOrderByCreatedAtDesc(
                         userAccountId
                 )
-                .map(token ->
-                        !now.isBefore(
-                                token.getCreatedAt()
-                                        .plus(
-                                                properties
-                                                        .getResendCooldown()
-                                        )
-                        )
+                .map(token
+                        -> !now.isBefore(
+                        token.getCreatedAt()
+                                .plus(
+                                        properties
+                                                .getResendCooldown()
+                                )
+                )
                 )
                 .orElse(true);
     }

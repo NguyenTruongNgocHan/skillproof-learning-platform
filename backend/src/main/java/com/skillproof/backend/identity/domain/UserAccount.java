@@ -61,6 +61,15 @@ public class UserAccount {
     @Column(name = "email_verified_at")
     private Instant emailVerifiedAt;
 
+    @Column(name = "failed_login_count", nullable = false)
+    private int failedLoginCount;
+
+    @Column(name = "locked_until")
+    private Instant lockedUntil;
+
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
+
     @Column(
             name = "created_at",
             nullable = false,
@@ -130,6 +139,61 @@ public class UserAccount {
         return status == AccountStatus.PENDING_VERIFICATION;
     }
 
+    public static UserAccount newOAuthLearner(String email, String passwordHash, String displayName, Instant now) {
+        UserAccount account = new UserAccount(UUID.randomUUID(), email, passwordHash, displayName,
+                UserRole.LEARNER, AccountStatus.ACTIVE);
+        account.emailVerifiedAt = now;
+        return account;
+    }
+
+    public static UserAccount newAdmin(String email, String passwordHash, String displayName, Instant now) {
+        UserAccount account = new UserAccount(UUID.randomUUID(), email, passwordHash, displayName,
+                UserRole.ADMIN, AccountStatus.ACTIVE);
+        account.emailVerifiedAt = now;
+        return account;
+    }
+
+    public boolean isLocked(Instant now) {
+        return lockedUntil != null && lockedUntil.isAfter(now);
+    }
+
+    public void recordFailedLogin(Instant now) {
+        failedLoginCount++;
+        if (failedLoginCount >= 5) {
+            lockedUntil = now.plusSeconds(900);
+        }
+    }
+
+    public void recordSuccessfulLogin(Instant now) {
+        failedLoginCount = 0;
+        lockedUntil = null;
+        lastLoginAt = now;
+    }
+
+    public void updateDisplayName(String value) {
+        displayName = Objects.requireNonNull(value).trim();
+    }
+
+    public void disable() {
+        status = AccountStatus.DISABLED;
+        lockedUntil = null;
+    }
+
+    public void activate() {
+        if (emailVerifiedAt == null) {
+            throw new IllegalStateException(
+                    "An unverified account cannot be activated."
+            );
+        }
+        status = AccountStatus.ACTIVE;
+        failedLoginCount = 0;
+        lockedUntil = null;
+    }
+
+    public void changeRole(UserRole nextRole) {
+        role = Objects.requireNonNull(nextRole);
+    }
+
     @PrePersist
     void prePersist() {
 
@@ -181,5 +245,9 @@ public class UserAccount {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Instant getLastLoginAt() {
+        return lastLoginAt;
     }
 }

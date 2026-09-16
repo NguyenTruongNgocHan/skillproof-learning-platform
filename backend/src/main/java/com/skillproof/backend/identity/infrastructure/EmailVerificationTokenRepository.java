@@ -18,9 +18,9 @@ public interface EmailVerificationTokenRepository
     );
 
     Optional<EmailVerificationToken>
-    findTopByUserAccountIdOrderByCreatedAtDesc(
-            UUID userAccountId
-    );
+            findTopByUserAccountIdOrderByCreatedAtDesc(
+                    UUID userAccountId
+            );
 
     @Modifying(
             flushAutomatically = true,

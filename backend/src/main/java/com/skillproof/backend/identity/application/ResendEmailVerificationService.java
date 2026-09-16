@@ -15,28 +15,25 @@ import java.util.Optional;
 @Service
 public class ResendEmailVerificationService {
 
-    private final UserAccountRepository
-            userAccountRepository;
+    private final UserAccountRepository userAccountRepository;
 
-    private final EmailVerificationTokenIssuer
-            verificationTokenIssuer;
+    private final EmailVerificationTokenIssuer verificationTokenIssuer;
 
-    private final ApplicationEventPublisher
-            eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ResendEmailVerificationService(
             UserAccountRepository userAccountRepository,
             EmailVerificationTokenIssuer verificationTokenIssuer,
             ApplicationEventPublisher eventPublisher
     ) {
-        this.userAccountRepository =
-                userAccountRepository;
+        this.userAccountRepository
+                = userAccountRepository;
 
-        this.verificationTokenIssuer =
-                verificationTokenIssuer;
+        this.verificationTokenIssuer
+                = verificationTokenIssuer;
 
-        this.eventPublisher =
-                eventPublisher;
+        this.eventPublisher
+                = eventPublisher;
     }
 
     @Transactional
@@ -44,13 +41,13 @@ public class ResendEmailVerificationService {
             ResendVerificationRequest request
     ) {
 
-        String normalizedEmail =
-                request.email()
+        String normalizedEmail
+                = request.email()
                         .trim()
                         .toLowerCase(Locale.ROOT);
 
-        Optional<UserAccount> accountOptional =
-                userAccountRepository
+        Optional<UserAccount> accountOptional
+                = userAccountRepository
                         .findByEmailForUpdate(
                                 normalizedEmail
                         );
@@ -65,8 +62,8 @@ public class ResendEmailVerificationService {
             return;
         }
 
-        UserAccount account =
-                accountOptional.get();
+        UserAccount account
+                = accountOptional.get();
 
         if (account.getStatus()
                 != AccountStatus.PENDING_VERIFICATION) {
@@ -82,8 +79,8 @@ public class ResendEmailVerificationService {
             return;
         }
 
-        IssuedEmailVerification verification =
-                verificationTokenIssuer.issue(
+        IssuedEmailVerification verification
+                = verificationTokenIssuer.issue(
                         account.getId(),
                         now
                 );

@@ -11,8 +11,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 public class VerificationEmailEventListener {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(
+    private static final Logger log
+            = LoggerFactory.getLogger(
                     VerificationEmailEventListener.class
             );
 

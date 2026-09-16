@@ -7,5 +7,6 @@ public record VerificationEmailRequestedEvent(
         String displayName,
         String rawToken,
         Instant expiresAt
-) {
+        ) {
+
 }

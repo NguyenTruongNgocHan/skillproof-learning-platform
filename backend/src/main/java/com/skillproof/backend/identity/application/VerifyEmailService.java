@@ -17,28 +17,25 @@ import java.time.Instant;
 @Service
 public class VerifyEmailService {
 
-    private final EmailVerificationTokenRepository
-            tokenRepository;
+    private final EmailVerificationTokenRepository tokenRepository;
 
-    private final UserAccountRepository
-            userAccountRepository;
+    private final UserAccountRepository userAccountRepository;
 
-    private final EmailVerificationTokenCodec
-            tokenCodec;
+    private final EmailVerificationTokenCodec tokenCodec;
 
     public VerifyEmailService(
             EmailVerificationTokenRepository tokenRepository,
             UserAccountRepository userAccountRepository,
             EmailVerificationTokenCodec tokenCodec
     ) {
-        this.tokenRepository =
-                tokenRepository;
+        this.tokenRepository
+                = tokenRepository;
 
-        this.userAccountRepository =
-                userAccountRepository;
+        this.userAccountRepository
+                = userAccountRepository;
 
-        this.tokenCodec =
-                tokenCodec;
+        this.tokenCodec
+                = tokenCodec;
     }
 
     @Transactional
@@ -48,20 +45,20 @@ public class VerifyEmailService {
 
         Instant now = Instant.now();
 
-        String tokenHash =
-                tokenCodec.hash(
+        String tokenHash
+                = tokenCodec.hash(
                         request.token()
                 );
 
-        EmailVerificationToken token =
-                tokenRepository
+        EmailVerificationToken token
+                = tokenRepository
                         .findByTokenHash(tokenHash)
                         .orElseThrow(
                                 this::invalidToken
                         );
 
-        UserAccount account =
-                userAccountRepository
+        UserAccount account
+                = userAccountRepository
                         .findByIdForUpdate(
                                 token.getUserAccountId()
                         )
@@ -101,8 +98,8 @@ public class VerifyEmailService {
             );
         }
 
-        int consumed =
-                tokenRepository.consumeIfUsable(
+        int consumed
+                = tokenRepository.consumeIfUsable(
                         token.getId(),
                         now
                 );

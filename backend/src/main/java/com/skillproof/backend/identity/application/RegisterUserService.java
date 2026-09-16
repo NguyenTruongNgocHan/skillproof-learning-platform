@@ -17,22 +17,19 @@ import java.util.Locale;
 @Service
 public class RegisterUserService {
 
-    private static final String ALREADY_EXISTS_CODE =
-            "IDENTITY_ALREADY_EXISTS";
+    private static final String ALREADY_EXISTS_CODE
+            = "IDENTITY_ALREADY_EXISTS";
 
-    private static final String ALREADY_EXISTS_MESSAGE =
-            "An account with this email already exists.";
+    private static final String ALREADY_EXISTS_MESSAGE
+            = "An account with this email already exists.";
 
-    private final UserAccountRepository
-            userAccountRepository;
+    private final UserAccountRepository userAccountRepository;
 
     private final PasswordEncoder passwordEncoder;
 
-    private final EmailVerificationTokenIssuer
-            verificationTokenIssuer;
+    private final EmailVerificationTokenIssuer verificationTokenIssuer;
 
-    private final ApplicationEventPublisher
-            eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     public RegisterUserService(
             UserAccountRepository userAccountRepository,
@@ -40,17 +37,17 @@ public class RegisterUserService {
             EmailVerificationTokenIssuer verificationTokenIssuer,
             ApplicationEventPublisher eventPublisher
     ) {
-        this.userAccountRepository =
-                userAccountRepository;
+        this.userAccountRepository
+                = userAccountRepository;
 
-        this.passwordEncoder =
-                passwordEncoder;
+        this.passwordEncoder
+                = passwordEncoder;
 
-        this.verificationTokenIssuer =
-                verificationTokenIssuer;
+        this.verificationTokenIssuer
+                = verificationTokenIssuer;
 
-        this.eventPublisher =
-                eventPublisher;
+        this.eventPublisher
+                = eventPublisher;
     }
 
     @Transactional
@@ -58,23 +55,23 @@ public class RegisterUserService {
             RegisterRequest request
     ) {
 
-        String normalizedEmail =
-                normalizeEmail(request.email());
+        String normalizedEmail
+                = normalizeEmail(request.email());
 
-        String displayName =
-                normalizeDisplayName(
+        String displayName
+                = normalizeDisplayName(
                         request.displayName()
                 );
 
         ensureEmailAvailable(normalizedEmail);
 
-        String passwordHash =
-                passwordEncoder.encode(
+        String passwordHash
+                = passwordEncoder.encode(
                         request.password()
                 );
 
-        UserAccount account =
-                UserAccount.newLearner(
+        UserAccount account
+                = UserAccount.newLearner(
                         normalizedEmail,
                         passwordHash,
                         displayName
@@ -84,8 +81,8 @@ public class RegisterUserService {
 
         try {
 
-            savedAccount =
-                    userAccountRepository
+            savedAccount
+                    = userAccountRepository
                             .saveAndFlush(account);
 
         } catch (DataIntegrityViolationException exception) {
@@ -95,8 +92,8 @@ public class RegisterUserService {
 
         Instant now = Instant.now();
 
-        IssuedEmailVerification verification =
-                verificationTokenIssuer.issue(
+        IssuedEmailVerification verification
+                = verificationTokenIssuer.issue(
                         savedAccount.getId(),
                         now
                 );

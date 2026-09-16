@@ -14,8 +14,8 @@ public class EmailVerificationTokenCodec {
 
     private static final int TOKEN_BYTES = 32;
 
-    private final SecureRandom secureRandom =
-            new SecureRandom();
+    private final SecureRandom secureRandom
+            = new SecureRandom();
 
     public String generateRawToken() {
 
@@ -32,8 +32,8 @@ public class EmailVerificationTokenCodec {
     public String hash(String rawToken) {
 
         try {
-            MessageDigest digest =
-                    MessageDigest.getInstance("SHA-256");
+            MessageDigest digest
+                    = MessageDigest.getInstance("SHA-256");
 
             byte[] hash = digest.digest(
                     rawToken.getBytes(StandardCharsets.UTF_8)

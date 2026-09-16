@@ -122,6 +122,27 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiError> handleUnauthorized(
+            UnauthorizedException exception,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                ApiError.of(HttpStatus.UNAUTHORIZED, exception.getCode(), exception.getMessage(), request.getRequestURI())
+        );
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(
+            NotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ApiError.of(HttpStatus.NOT_FOUND, exception.getCode(),
+                        exception.getMessage(), request.getRequestURI())
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError>
     handleUnexpected(

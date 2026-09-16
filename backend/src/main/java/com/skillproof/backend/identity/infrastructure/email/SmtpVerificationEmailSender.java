@@ -32,19 +32,19 @@ public class SmtpVerificationEmailSender
             Instant expiresAt
     ) {
 
-        String encodedToken =
-                URLEncoder.encode(
+        String encodedToken
+                = URLEncoder.encode(
                         rawToken,
                         StandardCharsets.UTF_8
                 );
 
-        String verificationUrl =
-                properties.getFrontendVerificationUrl()
-                        + "?token="
-                        + encodedToken;
+        String verificationUrl
+                = properties.getFrontendVerificationUrl()
+                + "?token="
+                + encodedToken;
 
-        SimpleMailMessage message =
-                new SimpleMailMessage();
+        SimpleMailMessage message
+                = new SimpleMailMessage();
 
         message.setFrom(
                 properties.getFromAddress()
