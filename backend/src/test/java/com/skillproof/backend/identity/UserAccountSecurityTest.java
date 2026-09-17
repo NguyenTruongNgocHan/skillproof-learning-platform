@@ -1,11 +1,11 @@
 package com.skillproof.backend.identity;
 
-import com.skillproof.backend.identity.domain.UserAccount;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+
+import com.skillproof.backend.identity.domain.UserAccount;
 
 class UserAccountSecurityTest {
     @Test

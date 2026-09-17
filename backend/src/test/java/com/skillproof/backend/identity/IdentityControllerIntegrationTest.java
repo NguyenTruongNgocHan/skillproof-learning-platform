@@ -1,10 +1,10 @@
 package com.skillproof.backend.identity;
 
-import com.skillproof.backend.identity.application.EmailVerificationTokenCodec;
-import com.skillproof.backend.identity.domain.AccountStatus;
-import com.skillproof.backend.identity.domain.EmailVerificationToken;
-import com.skillproof.backend.identity.infrastructure.EmailVerificationTokenRepository;
-import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,15 +14,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.skillproof.backend.identity.application.EmailVerificationTokenCodec;
+import com.skillproof.backend.identity.domain.AccountStatus;
+import com.skillproof.backend.identity.domain.EmailVerificationToken;
+import com.skillproof.backend.identity.infrastructure.EmailVerificationTokenRepository;
+import com.skillproof.backend.identity.infrastructure.PasswordResetTokenRepository;
+import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -40,6 +41,9 @@ class IdentityControllerIntegrationTest {
     EmailVerificationTokenRepository tokenRepository;
 
     @Autowired
+    PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
     CapturingVerificationEmailSender emailSender;
 
     @Autowired
@@ -49,6 +53,8 @@ class IdentityControllerIntegrationTest {
     void setUp() {
 
         tokenRepository.deleteAll();
+
+        passwordResetTokenRepository.deleteAll();
 
         userAccountRepository.deleteAll();
 

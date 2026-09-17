@@ -14,4 +14,10 @@ class IdentityTestMailConfig {
 
         return new CapturingVerificationEmailSender();
     }
+
+    @Bean
+    @Primary
+    CapturingPasswordResetEmailSender capturingPasswordResetEmailSender() {
+        return new CapturingPasswordResetEmailSender();
+    }
 }

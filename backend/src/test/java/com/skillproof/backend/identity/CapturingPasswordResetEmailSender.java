@@ -1,11 +1,11 @@
 package com.skillproof.backend.identity;
 
-import com.skillproof.backend.identity.infrastructure.email.PasswordResetEmailSender;
-
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.skillproof.backend.identity.infrastructure.email.PasswordResetEmailSender;
 
 class CapturingPasswordResetEmailSender implements PasswordResetEmailSender {
 

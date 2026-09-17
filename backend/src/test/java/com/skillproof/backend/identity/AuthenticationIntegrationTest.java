@@ -1,11 +1,6 @@
 package com.skillproof.backend.identity;
 
-import com.skillproof.backend.identity.infrastructure.AuthSessionRepository;
-import com.skillproof.backend.identity.infrastructure.EmailVerificationTokenRepository;
-import com.skillproof.backend.identity.infrastructure.RefreshTokenRepository;
-import com.skillproof.backend.identity.infrastructure.SecurityAuditEventRepository;
-import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
-import jakarta.servlet.http.Cookie;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +11,20 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import tools.jackson.databind.ObjectMapper;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.skillproof.backend.identity.infrastructure.AuthSessionRepository;
+import com.skillproof.backend.identity.infrastructure.EmailVerificationTokenRepository;
+import com.skillproof.backend.identity.infrastructure.PasswordResetTokenRepository;
+import com.skillproof.backend.identity.infrastructure.RefreshTokenRepository;
+import com.skillproof.backend.identity.infrastructure.SecurityAuditEventRepository;
+import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
+
+import jakarta.servlet.http.Cookie;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,6 +41,7 @@ class AuthenticationIntegrationTest {
     @Autowired EmailVerificationTokenRepository verificationTokens;
     @Autowired AuthSessionRepository sessions;
     @Autowired RefreshTokenRepository refreshTokens;
+    @Autowired PasswordResetTokenRepository passwordResetTokens;
     @Autowired SecurityAuditEventRepository auditEvents;
     @Autowired CapturingVerificationEmailSender emailSender;
 
@@ -46,6 +49,7 @@ class AuthenticationIntegrationTest {
     void cleanDatabase() {
         refreshTokens.deleteAll();
         sessions.deleteAll();
+        passwordResetTokens.deleteAll();
         verificationTokens.deleteAll();
         auditEvents.deleteAll();
         users.deleteAll();

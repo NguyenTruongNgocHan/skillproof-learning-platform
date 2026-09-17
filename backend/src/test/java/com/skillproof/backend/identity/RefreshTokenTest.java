@@ -1,12 +1,12 @@
 package com.skillproof.backend.identity;
 
-import com.skillproof.backend.identity.domain.RefreshToken;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+
+import com.skillproof.backend.identity.domain.RefreshToken;
 
 class RefreshTokenTest {
     @Test
