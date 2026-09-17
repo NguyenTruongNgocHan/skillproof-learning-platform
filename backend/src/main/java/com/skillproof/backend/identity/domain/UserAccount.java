@@ -1,5 +1,9 @@
 package com.skillproof.backend.identity.domain;
 
+import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,10 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-
-import java.time.Instant;
-import java.util.Objects;
-import java.util.UUID;
 
 @Entity
 @Table(name = "user_account")
@@ -192,6 +192,12 @@ public class UserAccount {
 
     public void changeRole(UserRole nextRole) {
         role = Objects.requireNonNull(nextRole);
+    }
+
+    public void changePassword(String nextPasswordHash) {
+        passwordHash = Objects.requireNonNull(nextPasswordHash);
+        failedLoginCount = 0;
+        lockedUntil = null;
     }
 
     @PrePersist

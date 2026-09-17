@@ -1,21 +1,25 @@
 package com.skillproof.backend.identity.api;
 
-import com.skillproof.backend.identity.application.RegisterUserService;
-import com.skillproof.backend.identity.application.ResendEmailVerificationService;
-import com.skillproof.backend.identity.application.VerifyEmailService;
-import com.skillproof.backend.identity.application.AuthenticationService;
-import com.skillproof.backend.identity.application.RequestMetadata;
-import com.skillproof.backend.identity.application.TokenProperties;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.skillproof.backend.identity.application.AuthenticationService;
+import com.skillproof.backend.identity.application.ForgotPasswordService;
+import com.skillproof.backend.identity.application.RegisterUserService;
+import com.skillproof.backend.identity.application.RequestMetadata;
+import com.skillproof.backend.identity.application.ResendEmailVerificationService;
+import com.skillproof.backend.identity.application.ResetPasswordService;
+import com.skillproof.backend.identity.application.TokenProperties;
+import com.skillproof.backend.identity.application.VerifyEmailService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -31,13 +35,17 @@ public class IdentityController {
             resendEmailVerificationService;
     private final AuthenticationService authenticationService;
     private final TokenProperties tokenProperties;
+    private final ForgotPasswordService forgotPasswordService;
+    private final ResetPasswordService resetPasswordService;
 
     public IdentityController(
             RegisterUserService registerUserService,
             VerifyEmailService verifyEmailService,
             ResendEmailVerificationService resendEmailVerificationService,
             AuthenticationService authenticationService,
-            TokenProperties tokenProperties
+            TokenProperties tokenProperties,
+            ForgotPasswordService forgotPasswordService,
+            ResetPasswordService resetPasswordService
     ) {
         this.registerUserService =
                 registerUserService;
@@ -49,6 +57,8 @@ public class IdentityController {
                 resendEmailVerificationService;
         this.authenticationService = authenticationService;
         this.tokenProperties = tokenProperties;
+        this.forgotPasswordService = forgotPasswordService;
+        this.resetPasswordService = resetPasswordService;
     }
 
     @PostMapping("/register")
@@ -120,6 +130,26 @@ public class IdentityController {
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         authenticationService.logout(refreshCookie(request));
         clearRefreshCookie(response);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request,
+            HttpServletRequest servletRequest
+    ) {
+        forgotPasswordService.request(request, metadata(servletRequest));
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request,
+            HttpServletRequest servletRequest,
+            HttpServletResponse servletResponse
+    ) {
+        resetPasswordService.reset(request, metadata(servletRequest));
+        clearRefreshCookie(servletResponse);
         return ResponseEntity.noContent().build();
     }
 

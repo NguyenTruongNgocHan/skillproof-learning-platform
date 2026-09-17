@@ -1,21 +1,21 @@
 package com.skillproof.backend.config;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -43,27 +43,29 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(
-                        authorization
-                        -> authorization
-                                .requestMatchers(
-                                        "/health",
-                                        "/swagger-ui.html",
-                                        "/swagger-ui/**",
-                                        "/v3/api-docs/**",
-                                        "/api/v1/auth/register",
-                                        "/api/v1/auth/verify-email",
-                                        "/api/v1/auth/resend-verification", 
-                                        "/api/v1/auth/login", 
-                                        "/api/v1/auth/refresh", 
-                                        "/api/v1/auth/logout", 
-                                        "/oauth2/**", 
-                                        "/login/oauth2/**"
-                                )
-                                .permitAll()
-                                .requestMatchers("/api/v1/admin/**")
-                                .hasRole("ADMIN")
-                                .anyRequest()
-                                .authenticated()
+                        authorization ->
+                                authorization
+                                        .requestMatchers(
+                                                "/health",
+                                                "/swagger-ui.html",
+                                                "/swagger-ui/**",
+                                                "/v3/api-docs/**",
+                                                "/api/v1/auth/register",
+                                                "/api/v1/auth/verify-email",
+                                                "/api/v1/auth/resend-verification",
+                                                "/api/v1/auth/login",
+                                                "/api/v1/auth/refresh",
+                                                "/api/v1/auth/logout",
+                                                "/api/v1/auth/forgot-password",
+                                                "/api/v1/auth/reset-password",
+                                                "/oauth2/**",
+                                                "/login/oauth2/**"
+                                        )
+                                        .permitAll()
+                                        .requestMatchers("/api/v1/admin/**")
+                                        .hasRole("ADMIN")
+                                        .anyRequest()
+                                        .authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
