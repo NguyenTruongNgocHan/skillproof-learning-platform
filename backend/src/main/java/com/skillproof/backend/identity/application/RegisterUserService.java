@@ -4,6 +4,7 @@ import com.skillproof.backend.common.exception.ConflictException;
 import com.skillproof.backend.identity.api.RegisterRequest;
 import com.skillproof.backend.identity.api.RegisterResponse;
 import com.skillproof.backend.identity.domain.UserAccount;
+import com.skillproof.backend.identity.domain.UserRole;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -70,11 +71,18 @@ public class RegisterUserService {
                         request.password()
                 );
 
+        UserRole requestedRole = request.role() == null ? UserRole.LEARNER : request.role();
+        if (requestedRole == UserRole.ADMIN) {
+            throw new com.skillproof.backend.common.exception.BadRequestException(
+                    "IDENTITY_ROLE_NOT_ALLOWED", "Administrator accounts cannot be self-registered.");
+        }
+
         UserAccount account
-                = UserAccount.newLearner(
+                = UserAccount.newAccount(
                         normalizedEmail,
                         passwordHash,
-                        displayName
+                        displayName,
+                        requestedRole
                 );
 
         UserAccount savedAccount;

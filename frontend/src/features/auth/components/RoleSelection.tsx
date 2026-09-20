@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { GraduationCap, Building2, ArrowRight } from "lucide-react";
 import Button from "@/components/ui/Button";
+import BrandLogo from '@/components/ui/BrandLogo';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 
 type Role = "LEARNER" | "ORGANIZER";
 
@@ -17,6 +19,7 @@ export default function RoleSelection({ selected, onSelect, onContinue }: RoleSe
       style={{ background: "var(--bg)" }}
     >
       <div className="w-full max-w-lg flex flex-col gap-8">
+        <div className="flex items-center justify-between"><BrandLogo /><ThemeSwitcher /></div>
         <div className="text-center">
           <h1 className="text-2xl font-bold" style={{ color: "var(--fg)" }}>
             Create your account

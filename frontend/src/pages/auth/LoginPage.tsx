@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { BookOpen, Target, Award } from "lucide-react";
+import { BookOpen, Target, Award, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { getNextRouteAfterLogin } from "@/utils/authFlow";
 import Input from "@/components/ui/Input";
@@ -10,6 +10,7 @@ import Checkbox from "@/components/ui/Checkbox";
 import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
 import LoadingSpinner from "@/components/feedback/LoadingSpinner";
 import { useToast } from "@/components/ui/Toast";
+import BrandLogo from '@/components/ui/BrandLogo';
 
 const credentials = [
   {
@@ -48,6 +49,9 @@ export default function LoginPage() {
     if (searchParams.get("passwordReset") === "true") {
       toast("success", "Password updated successfully. Please sign in.");
     }
+    if (searchParams.get("oauth") === "failed") {
+      toast("error", "Google sign-in could not be completed. Please try again.");
+    }
   }, [searchParams, toast]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -76,7 +80,7 @@ export default function LoginPage() {
       >
         {/* Wordmark */}
         <div>
-          <span className="font-bold text-2xl text-white">SkillProof</span>
+          <BrandLogo />
         </div>
 
         {/* Hero heading + credential items */}
@@ -122,6 +126,10 @@ export default function LoginPage() {
         style={{ background: "var(--bg)" }}
       >
         <div className="w-full max-w-md flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="auth-back"><ArrowLeft size={16} /> Back to home</Link>
+            <ThemeSwitcher compact />
+          </div>
           {/* Heading */}
           <div>
             <h2 className="text-2xl font-bold" style={{ color: "var(--fg)" }}>

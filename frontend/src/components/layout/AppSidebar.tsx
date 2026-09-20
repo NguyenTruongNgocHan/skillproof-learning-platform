@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import type { NavItem } from "@/config/navigation";
+import BrandLogo from '@/components/ui/BrandLogo';
 
 interface AppSidebarProps {
   items: NavItem[];
@@ -22,16 +23,7 @@ export default function AppSidebar({ items }: AppSidebarProps) {
     >
       {/* Logo */}
       <div style={{ padding: "20px 16px", borderBottom: "1px solid var(--border)" }}>
-        <span
-          style={{
-            color: "var(--brand)",
-            fontWeight: "700",
-            fontSize: "1.25rem",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          SkillProof
-        </span>
+        <BrandLogo />
       </div>
 
       {/* Nav items */}

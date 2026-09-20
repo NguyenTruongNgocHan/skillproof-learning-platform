@@ -36,12 +36,10 @@ export interface RegisterLearnerData {
   fullName: string;
   email: string;
   password: string;
+  role?: 'LEARNER' | 'ORGANIZER';
 }
 
-export interface RegisterOrganizerData {
-  fullName: string;
-  email: string;
-  password: string;
+export interface RegisterOrganizerData extends RegisterLearnerData {
   jobTitle: string;
   organizationName: string;
   organizationWebsite: string;

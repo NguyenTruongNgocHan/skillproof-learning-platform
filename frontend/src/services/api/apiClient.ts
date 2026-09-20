@@ -31,13 +31,24 @@ async function request<T>(path: string, init: RequestInit = {}, retry = true): P
     throw new ApiError(response.status, await response.json().catch(() => fallback));
   }
   if (response.status === 204) return undefined as T;
+
+  const contentType = response.headers.get("content-type");
+  const contentLength = response.headers.get("content-length");
+
+  if (
+    contentLength === "0" ||
+    !contentType?.includes("application/json")
+  ) {
+    return undefined as T;
+  }
+
   return response.json() as Promise<T>;
 }
 
 export interface SessionResponse {
   accessToken: string;
   expiresIn: number;
-  user: { id: string; email: string; displayName: string; role: "LEARNER" | "ORGANIZER" | "ADMIN" };
+  user: { id: string; email: string; displayName: string; role: "LEARNER" | "ORGANIZER" | "ADMIN"; status: "PENDING_VERIFICATION" | "ACTIVE" | "DISABLED" };
 }
 
 export async function refreshAccessToken(): Promise<SessionResponse> {

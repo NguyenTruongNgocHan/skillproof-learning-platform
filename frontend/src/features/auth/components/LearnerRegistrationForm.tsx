@@ -13,6 +13,8 @@ import Button from "@/components/ui/Button";
 import Checkbox from "@/components/ui/Checkbox";
 import LoadingSpinner from "@/components/feedback/LoadingSpinner";
 import type { RegisterLearnerData } from "@/features/auth/types/auth.types";
+import BrandLogo from '@/components/ui/BrandLogo';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 
 interface LearnerRegistrationFormProps {
   onSubmit: (data: RegisterLearnerData) => Promise<void>;
@@ -65,6 +67,7 @@ export default function LearnerRegistrationForm({
       style={{ background: "var(--bg)" }}
     >
       <div className="w-full max-w-md flex flex-col gap-6">
+        <div className="flex items-center justify-between"><BrandLogo /><ThemeSwitcher /></div>
         <button
           type="button"
           onClick={onBack}

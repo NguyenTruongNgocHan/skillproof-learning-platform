@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { primaryLight } from '@/assets/brand';
 import Button from '@/components/ui/Button';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
+import BrandLogo from '@/components/ui/BrandLogo';
 
 const navLinks = [
-  { label: 'Explore', to: '/explore' },
-  { label: 'Learning Paths', to: '/learning-paths' },
-  { label: 'Practice', to: '/practice' },
-  { label: 'Certifications', to: '/certifications' },
-  { label: 'Community', to: '/community' },
+  { label: 'How it works', to: '/#how-it-works' },
+  { label: 'Learning', to: '/#learning' },
+  { label: 'Credentials', to: '/#credentials' },
+  { label: 'For organizations', to: '/#organizations' },
 ];
 
 export default function PublicHeader() {
@@ -24,20 +24,12 @@ export default function PublicHeader() {
 
   return (
     <header
-      className={`sticky top-0 z-50 bg-white border-b border-[#E5E7EB] transition-shadow ${scrolled ? 'shadow-sm' : ''}`}
+      className={`public-header ${scrolled ? 'public-header--scrolled' : ''}`}
       style={{ height: 72 }}
     >
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-6">
         {/* Logo */}
-        <Link to="/" className="flex-shrink-0">
-          <img
-            src={primaryLight}
-            width={160}
-            height="auto"
-            alt="SkillProof"
-            style={{ objectFit: 'contain', display: 'block' }}
-          />
-        </Link>
+        <BrandLogo />
 
         {/* Center nav — desktop */}
         <nav className="hidden md:flex items-center gap-6">
@@ -45,7 +37,7 @@ export default function PublicHeader() {
             <Link
               key={link.to}
               to={link.to}
-              className="text-sm font-medium text-[#17181C] hover:text-[#FF4F8B] transition-colors"
+              className="public-nav-link"
             >
               {link.label}
             </Link>
@@ -54,6 +46,7 @@ export default function PublicHeader() {
 
         {/* Right actions — desktop */}
         <div className="hidden md:flex items-center gap-2">
+          <ThemeSwitcher />
           <Button variant="ghost" size="sm" asChild>
             <Link to="/verify">Verify Certificate</Link>
           </Button>
@@ -67,7 +60,7 @@ export default function PublicHeader() {
 
         {/* Hamburger — mobile */}
         <button
-          className="md:hidden p-2 rounded-lg text-[#17181C] hover:bg-[#F7F8FA] transition-colors"
+          className="md:hidden theme-toggle"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label="Toggle menu"
         >
@@ -77,7 +70,7 @@ export default function PublicHeader() {
 
       {/* Mobile dropdown */}
       {mobileOpen && (
-        <div className="md:hidden bg-white border-t border-[#E5E7EB] px-4 py-4 flex flex-col gap-1">
+        <div className="mobile-public-menu">
           {navLinks.map((link) => (
             <Link
               key={link.to}

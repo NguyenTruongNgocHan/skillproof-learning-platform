@@ -117,6 +117,25 @@ public class UserAccount {
         );
     }
 
+    public static UserAccount newAccount(
+            String email,
+            String passwordHash,
+            String displayName,
+            UserRole role
+    ) {
+        if (role == UserRole.ADMIN) {
+            throw new IllegalArgumentException("Administrator accounts cannot be self-registered.");
+        }
+        return new UserAccount(
+                UUID.randomUUID(),
+                email,
+                passwordHash,
+                displayName,
+                role,
+                AccountStatus.PENDING_VERIFICATION
+        );
+    }
+
     public void verifyEmail(Instant verifiedAt) {
 
         Objects.requireNonNull(verifiedAt);

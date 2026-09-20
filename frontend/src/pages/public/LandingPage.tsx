@@ -14,19 +14,19 @@ import FinalCTASection from '@/features/marketing/components/FinalCTASection';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-full flex flex-col">
+    <div className="landing-page min-h-full flex flex-col">
       <PublicHeader />
       <main className="flex-1">
         <HeroSection />
         <TrustSection />
-        <JourneySection />
-        <LearningPathsSection />
+        <div id="how-it-works"><JourneySection /></div>
+        <div id="learning"><LearningPathsSection /></div>
         <RealtimeSection />
-        <CertificationSection />
+        <div id="credentials"><CertificationSection /></div>
         <VerificationSection />
         <RecommendationSection />
         <CommunitySection />
-        <OrganizerSection />
+        <div id="organizations"><OrganizerSection /></div>
         <FinalCTASection />
       </main>
       <PublicFooter />

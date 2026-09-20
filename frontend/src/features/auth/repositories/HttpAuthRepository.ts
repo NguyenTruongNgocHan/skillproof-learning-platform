@@ -4,7 +4,7 @@ import { apiClient, refreshAccessToken, setAccessToken, type SessionResponse } f
 
 function toUser(session: SessionResponse): User {
   return { id: session.user.id, email: session.user.email, fullName: session.user.displayName,
-    role: session.user.role, emailVerificationStatus: "VERIFIED", onboardingStatus: "COMPLETED" };
+    role: session.user.role, emailVerificationStatus: session.user.status === "PENDING_VERIFICATION" ? "UNVERIFIED" : "VERIFIED", onboardingStatus: "COMPLETED" };
 }
 
 export const httpAuthRepository: AuthRepository = {
@@ -15,7 +15,7 @@ export const httpAuthRepository: AuthRepository = {
   },
   async registerLearner(data: RegisterLearnerData): Promise<AuthResult> {
     const account = await apiClient.post<{ id: string; email: string; displayName: string; role: User["role"] }>(
-      "/auth/register", { email: data.email, displayName: data.fullName, password: data.password });
+      "/auth/register", { email: data.email, displayName: data.fullName, password: data.password, role: data.role ?? "LEARNER" });
     return { user: { id: account.id, email: account.email, fullName: account.displayName,
       role: account.role, emailVerificationStatus: "UNVERIFIED", onboardingStatus: "COMPLETED" } };
   },

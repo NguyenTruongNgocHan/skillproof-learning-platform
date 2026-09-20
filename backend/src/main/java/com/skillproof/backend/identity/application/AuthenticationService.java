@@ -1,5 +1,13 @@
 package com.skillproof.backend.identity.application;
 
+import java.time.Instant;
+import java.util.Locale;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.skillproof.backend.common.exception.UnauthorizedException;
 import com.skillproof.backend.identity.api.AuthResponse;
 import com.skillproof.backend.identity.api.LoginRequest;
@@ -9,13 +17,6 @@ import com.skillproof.backend.identity.domain.UserAccount;
 import com.skillproof.backend.identity.infrastructure.AuthSessionRepository;
 import com.skillproof.backend.identity.infrastructure.RefreshTokenRepository;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.Locale;
-import java.util.UUID;
 
 @Service
 public class AuthenticationService {
@@ -125,7 +126,7 @@ public class AuthenticationService {
 
     private AuthResponse response(UserAccount user, Instant now) {
         return new AuthResponse(tokens.accessToken(user, now), properties.getAccessTtl().toSeconds(),
-                new AuthResponse.UserSummary(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole()));
+                new AuthResponse.UserSummary(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole(), user.getStatus()));
     }
 
     private UnauthorizedException invalidCredentials() {

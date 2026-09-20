@@ -16,7 +16,7 @@ interface AuthContextValue {
   loginWithGoogle: () => Promise<User>;
   completeLearnerOnboarding: () => Promise<void>;
   completeOrganizerOnboarding: () => Promise<void>;
-  refreshSession: () => Promise<void>;
+  refreshSession: () => Promise<User | null>;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -28,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshSession = useCallback(async () => {
     const stored = await httpAuthRepository.getSession();
     setUser(stored);
+    return stored;
   }, []);
 
   useEffect(() => {

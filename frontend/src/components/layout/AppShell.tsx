@@ -23,7 +23,7 @@ export default function AppShell({ children }: AppShellProps) {
   if (!user) return null;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg)" }}>
+    <div className="app-shell">
       {/* Desktop sidebar */}
       <aside
         style={{
@@ -54,7 +54,7 @@ export default function AppShell({ children }: AppShellProps) {
           pageTitle={pageTitle}
           user={user}
         />
-        <main style={{ padding: "24px 20px" }}>{children}</main>
+        <main className="app-main">{children}</main>
       </div>
     </div>
   );
