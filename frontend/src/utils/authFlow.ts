@@ -3,7 +3,7 @@ import type { User, UserRole } from '@/features/auth/types/auth.types';
 export function getDefaultRouteForRole(role: UserRole): string {
   switch (role) {
     case 'ADMIN': return '/admin';
-    case 'ORGANIZER': return '/organizer';
+    case 'ORGANIZER': return '/organizer/verification-pending';
     case 'LEARNER': return '/app';
   }
 }
@@ -20,7 +20,7 @@ export function getNextRouteAfterVerification(user: User): string {
   }
   if (user.role === 'ORGANIZER') {
     if (user.onboardingStatus !== 'COMPLETED') return '/onboarding/organizer';
-    return '/organizer';
+    return '/organizer/verification-pending';
   }
   return '/admin';
 }

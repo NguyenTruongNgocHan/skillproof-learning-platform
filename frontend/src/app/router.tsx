@@ -3,6 +3,7 @@ import { ROUTES } from '@/config/appRoutes';
 import { AuthGuard } from '@/app/guards/AuthGuard';
 import { GuestGuard } from '@/app/guards/GuestGuard';
 import { RoleGuard } from '@/app/guards/RoleGuard';
+import { OrganizerVerificationGuard } from '@/app/guards/OrganizerVerificationGuard';
 import { OnboardingGuard } from '@/app/guards/OnboardingGuard';
 
 import LandingPage from '@/pages/public/LandingPage';
@@ -61,8 +62,8 @@ export function AppRouter() {
 
       {/* Organizer */}
       <Route path={ROUTES.ORGANIZER_PENDING} element={<AuthGuard><RoleGuard allowedRole="ORGANIZER"><OrganizerVerificationPendingPage /></RoleGuard></AuthGuard>} />
-      <Route path={ROUTES.ORGANIZER_APP} element={<AuthGuard><OnboardingGuard><RoleGuard allowedRole="ORGANIZER"><OrganizerPage /></RoleGuard></OnboardingGuard></AuthGuard>} />
-      <Route path={`${ROUTES.ORGANIZER_APP}/*`} element={<AuthGuard><OnboardingGuard><RoleGuard allowedRole="ORGANIZER"><OrganizerPage /></RoleGuard></OnboardingGuard></AuthGuard>} />
+      <Route path={ROUTES.ORGANIZER_APP} element={<AuthGuard><RoleGuard allowedRole="ORGANIZER"><OrganizerVerificationGuard><OrganizerPage /></OrganizerVerificationGuard></RoleGuard></AuthGuard>} />
+      <Route path={`${ROUTES.ORGANIZER_APP}/*`} element={<AuthGuard><RoleGuard allowedRole="ORGANIZER"><OrganizerVerificationGuard><OrganizerPage /></OrganizerVerificationGuard></RoleGuard></AuthGuard>} />
 
       {/* Admin */}
       <Route path={ROUTES.ADMIN} element={<AuthGuard><RoleGuard allowedRole="ADMIN"><AdminPage /></RoleGuard></AuthGuard>} />
