@@ -1,7 +1,8 @@
 package com.skillproof.backend.common.exception;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -10,14 +11,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(
+    private static final Logger log
+            = LoggerFactory.getLogger(
                     GlobalExceptionHandler.class
             );
 
@@ -25,25 +26,25 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException.class
     )
     public ResponseEntity<ApiError>
-    handleValidation(
-            MethodArgumentNotValidException exception,
-            HttpServletRequest request
-    ) {
+            handleValidation(
+                    MethodArgumentNotValidException exception,
+                    HttpServletRequest request
+            ) {
 
-        Map<String, String> fieldErrors =
-                new LinkedHashMap<>();
+        Map<String, String> fieldErrors
+                = new LinkedHashMap<>();
 
         exception.getBindingResult()
                 .getFieldErrors()
-                .forEach(error ->
-                        fieldErrors.putIfAbsent(
-                                error.getField(),
-                                error.getDefaultMessage()
-                        )
+                .forEach(error
+                        -> fieldErrors.putIfAbsent(
+                        error.getField(),
+                        error.getDefaultMessage()
+                )
                 );
 
-        ApiError error =
-                ApiError.validation(
+        ApiError error
+                = ApiError.validation(
                         HttpStatus.BAD_REQUEST,
                         "VALIDATION_ERROR",
                         "The request contains invalid fields.",
@@ -60,13 +61,13 @@ public class GlobalExceptionHandler {
             ConstraintViolationException.class
     )
     public ResponseEntity<ApiError>
-    handleConstraintViolation(
-            ConstraintViolationException exception,
-            HttpServletRequest request
-    ) {
+            handleConstraintViolation(
+                    ConstraintViolationException exception,
+                    HttpServletRequest request
+            ) {
 
-        ApiError error =
-                ApiError.of(
+        ApiError error
+                = ApiError.of(
                         HttpStatus.BAD_REQUEST,
                         "CONSTRAINT_VIOLATION",
                         "The request violates a constraint.",
@@ -82,13 +83,13 @@ public class GlobalExceptionHandler {
             BadRequestException.class
     )
     public ResponseEntity<ApiError>
-    handleBadRequest(
-            BadRequestException exception,
-            HttpServletRequest request
-    ) {
+            handleBadRequest(
+                    BadRequestException exception,
+                    HttpServletRequest request
+            ) {
 
-        ApiError error =
-                ApiError.of(
+        ApiError error
+                = ApiError.of(
                         HttpStatus.BAD_REQUEST,
                         exception.getCode(),
                         exception.getMessage(),
@@ -104,13 +105,13 @@ public class GlobalExceptionHandler {
             ConflictException.class
     )
     public ResponseEntity<ApiError>
-    handleConflict(
-            ConflictException exception,
-            HttpServletRequest request
-    ) {
+            handleConflict(
+                    ConflictException exception,
+                    HttpServletRequest request
+            ) {
 
-        ApiError error =
-                ApiError.of(
+        ApiError error
+                = ApiError.of(
                         HttpStatus.CONFLICT,
                         exception.getCode(),
                         exception.getMessage(),
@@ -143,12 +144,23 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError>
-    handleUnexpected(
-            Exception exception,
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleForbidden(
+            org.springframework.security.access.AccessDeniedException exception,
             HttpServletRequest request
     ) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                ApiError.of(HttpStatus.FORBIDDEN, "ACCESS_DENIED",
+                        "You do not have permission to perform this action.", request.getRequestURI())
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError>
+            handleUnexpected(
+                    Exception exception,
+                    HttpServletRequest request
+            ) {
 
         log.error(
                 "Unhandled exception for {} {}",
@@ -157,8 +169,8 @@ public class GlobalExceptionHandler {
                 exception
         );
 
-        ApiError error =
-                ApiError.of(
+        ApiError error
+                = ApiError.of(
                         HttpStatus.INTERNAL_SERVER_ERROR,
                         "INTERNAL_ERROR",
                         "An unexpected error occurred.",
