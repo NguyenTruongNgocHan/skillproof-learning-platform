@@ -23,8 +23,8 @@ describe('getDefaultRouteForRole', () => {
   it('returns /app for LEARNER', () => {
     expect(getDefaultRouteForRole('LEARNER')).toBe('/app');
   });
-  it('returns /organizer for ORGANIZER', () => {
-    expect(getDefaultRouteForRole('ORGANIZER')).toBe('/organizer');
+  it('routes ORGANIZER through server review status', () => {
+    expect(getDefaultRouteForRole('ORGANIZER')).toBe('/organizer/verification-pending');
   });
   it('returns /admin for ADMIN', () => {
     expect(getDefaultRouteForRole('ADMIN')).toBe('/admin');
@@ -52,9 +52,9 @@ describe('getNextRouteAfterLogin', () => {
     expect(getNextRouteAfterLogin(user)).toBe('/onboarding/organizer');
   });
 
-  it('redirects completed organizer to /organizer', () => {
+  it('routes completed organizer to server status check', () => {
     const user = makeUser({ role: 'ORGANIZER' });
-    expect(getNextRouteAfterLogin(user)).toBe('/organizer');
+    expect(getNextRouteAfterLogin(user)).toBe('/organizer/verification-pending');
   });
 
   it('redirects admin to /admin', () => {
