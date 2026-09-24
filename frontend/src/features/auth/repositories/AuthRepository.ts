@@ -1,4 +1,9 @@
-import type { User, LoginCredentials, RegisterLearnerData, AuthResult } from '../types/auth.types';
+import type {
+  User,
+  LoginCredentials,
+  RegisterLearnerData,
+  AuthResult,
+} from "../types/auth.types";
 
 export interface AuthRepository {
   login(credentials: LoginCredentials): Promise<AuthResult>;

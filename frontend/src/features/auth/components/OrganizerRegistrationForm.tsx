@@ -13,17 +13,8 @@ import Button from "@/components/ui/Button";
 import Checkbox from "@/components/ui/Checkbox";
 import LoadingSpinner from "@/components/feedback/LoadingSpinner";
 import type { RegisterOrganizerData } from "@/features/auth/types/auth.types";
-import BrandLogo from '@/components/ui/BrandLogo';
-import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
-
-const COUNTRIES = [
-  "Vietnam",
-  "United States",
-  "United Kingdom",
-  "Singapore",
-  "India",
-  "Other",
-];
+import BrandLogo from "@/components/ui/BrandLogo";
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
 
 interface OrganizerRegistrationFormProps {
   onSubmit: (data: RegisterOrganizerData) => Promise<void>;
@@ -40,28 +31,24 @@ export default function OrganizerRegistrationForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [jobTitle, setJobTitle] = useState("");
-  const [organizationName, setOrganizationName] = useState("");
-  const [organizationWebsite, setOrganizationWebsite] = useState("");
-  const [country, setCountry] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const passwordChecks = checkPassword(password);
   const passwordValid = isPasswordValid(passwordChecks);
   const passwordStrength = getPasswordStrength(password);
-  const passwordsMatch = password !== "" && confirmPassword !== "" && password === confirmPassword;
+  const passwordsMatch =
+    password !== "" && confirmPassword !== "" && password === confirmPassword;
   const confirmError =
-    confirmPassword !== "" && !passwordsMatch ? "Passwords do not match." : null;
+    confirmPassword !== "" && !passwordsMatch
+      ? "Passwords do not match."
+      : null;
 
   const formValid =
     fullName.trim() !== "" &&
     email.trim() !== "" &&
     passwordValid &&
     passwordsMatch &&
-    jobTitle.trim() !== "" &&
-    organizationName.trim() !== "" &&
-    country !== "" &&
     agreedToTerms;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -73,13 +60,13 @@ export default function OrganizerRegistrationForm({
         fullName,
         email,
         password,
-        jobTitle,
-        organizationName,
-        organizationWebsite,
-        country,
       });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Registration failed. Please try again.",
+      );
     }
   }
 
@@ -89,7 +76,10 @@ export default function OrganizerRegistrationForm({
       style={{ background: "var(--bg)" }}
     >
       <div className="w-full max-w-md flex flex-col gap-6">
-        <div className="flex items-center justify-between"><BrandLogo /><ThemeSwitcher /></div>
+        <div className="flex items-center justify-between">
+          <BrandLogo />
+          <ThemeSwitcher />
+        </div>
         <button
           type="button"
           onClick={onBack}
@@ -154,58 +144,10 @@ export default function OrganizerRegistrationForm({
             error={confirmError ?? undefined}
           />
 
-          <Input
-            label="Job Title"
-            type="text"
-            autoComplete="organization-title"
-            value={jobTitle}
-            onChange={(e) => setJobTitle(e.target.value)}
-            required
-          />
-
-          <Input
-            label="Organization Name"
-            type="text"
-            autoComplete="organization"
-            value={organizationName}
-            onChange={(e) => setOrganizationName(e.target.value)}
-            required
-          />
-
-          <Input
-            label="Organization Website"
-            type="url"
-            autoComplete="url"
-            placeholder="https://example.com"
-            value={organizationWebsite}
-            onChange={(e) => setOrganizationWebsite(e.target.value)}
-          />
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium" style={{ color: "var(--fg)" }}>
-              Country
-            </label>
-            <select
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              required
-              className="w-full rounded-lg px-3 py-2.5 text-sm border outline-none transition-all"
-              style={{
-                borderColor: "var(--border)",
-                background: "var(--surface)",
-                color: country === "" ? "var(--fg-muted)" : "var(--fg)",
-              }}
-            >
-              <option value="" disabled>
-                Select your country
-              </option>
-              {COUNTRIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
+          <p className="text-sm" style={{ color: "var(--fg-muted)" }}>
+            After email verification, you will submit your organization details
+            for review.
+          </p>
 
           <Checkbox
             checked={agreedToTerms}
@@ -270,7 +212,11 @@ export default function OrganizerRegistrationForm({
 
         <p className="text-center text-sm" style={{ color: "var(--fg-muted)" }}>
           Already have an account?{" "}
-          <Link to="/login" className="font-medium" style={{ color: "var(--brand)" }}>
+          <Link
+            to="/login"
+            className="font-medium"
+            style={{ color: "var(--brand)" }}
+          >
             Sign in
           </Link>
         </p>

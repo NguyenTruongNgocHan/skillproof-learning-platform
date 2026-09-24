@@ -1,7 +1,8 @@
-export type UserRole = 'LEARNER' | 'ORGANIZER' | 'ADMIN';
-export type EmailVerificationStatus = 'UNVERIFIED' | 'VERIFIED';
-export type OnboardingStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
-export type OrganizerVerificationStatus = 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
+export type UserRole = "LEARNER" | "ORGANIZER" | "ADMIN";
+export type EmailVerificationStatus = "UNVERIFIED" | "VERIFIED";
+export type OnboardingStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
+export type OrganizerVerificationStatus =
+  "NOT_SUBMITTED" | "PENDING" | "VERIFIED" | "REJECTED";
 
 export interface User {
   id: string;
@@ -22,7 +23,7 @@ export interface OrganizerProfile {
 export interface LearnerProfile {
   careerGoal?: string;
   targetRole?: string;
-  skillLevel?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  skillLevel?: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
   weeklyGoal?: number;
   learningPreferences?: string[];
 }
@@ -36,16 +37,10 @@ export interface RegisterLearnerData {
   fullName: string;
   email: string;
   password: string;
-  role?: 'LEARNER' | 'ORGANIZER';
+  role?: "LEARNER" | "ORGANIZER";
 }
 
-export interface RegisterOrganizerData extends RegisterLearnerData {
-  jobTitle: string;
-  organizationName: string;
-  organizationWebsite: string;
-  country: string;
-}
-
+export interface RegisterOrganizerData extends RegisterLearnerData {}
 export interface AuthResult {
   user: User;
 }

@@ -1,4 +1,12 @@
-const COMMON_PASSWORDS = ['password', 'password123', '12345678', 'qwerty', 'admin123', 'welcome123', '123456789012'];
+const COMMON_PASSWORDS = [
+  "password",
+  "password123",
+  "12345678",
+  "qwerty",
+  "admin123",
+  "welcome123",
+  "123456789012",
+];
 
 export interface PasswordCheckResult {
   minLength: boolean;
@@ -11,9 +19,13 @@ export interface PasswordCheckResult {
   notCommon: boolean;
 }
 
-export type PasswordStrength = 'weak' | 'fair' | 'strong' | 'very-strong';
+export type PasswordStrength = "weak" | "fair" | "strong" | "very-strong";
 
-export function checkPassword(password: string, email?: string, fullName?: string): PasswordCheckResult {
+export function checkPassword(
+  password: string,
+  email?: string,
+  fullName?: string,
+): PasswordCheckResult {
   const lower = password.toLowerCase();
   return {
     minLength: password.length >= 12,
@@ -23,9 +35,15 @@ export function checkPassword(password: string, email?: string, fullName?: strin
     number: /[0-9]/.test(password),
     special: /[!@#$%^&*()\-_=+\[\]{};:,.<>?/]/.test(password),
     noLeadingTrailingSpace: password === password.trim() && password.length > 0,
-    notCommon: !COMMON_PASSWORDS.includes(lower) &&
+    notCommon:
+      !COMMON_PASSWORDS.includes(lower) &&
       !(email && lower.includes(email.toLowerCase())) &&
-      !(fullName && fullName.split(' ').some((part) => part.length > 3 && lower.includes(part.toLowerCase()))),
+      !(
+        fullName &&
+        fullName
+          .split(" ")
+          .some((part) => part.length > 3 && lower.includes(part.toLowerCase()))
+      ),
   };
 }
 
@@ -34,7 +52,7 @@ export function isPasswordValid(result: PasswordCheckResult): boolean {
 }
 
 export function getPasswordStrength(password: string): PasswordStrength {
-  if (password.length === 0) return 'weak';
+  if (password.length === 0) return "weak";
   let score = 0;
   if (password.length >= 12) score++;
   if (password.length >= 16) score++;
@@ -42,8 +60,8 @@ export function getPasswordStrength(password: string): PasswordStrength {
   if (/[a-z]/.test(password)) score++;
   if (/[0-9]/.test(password)) score++;
   if (/[!@#$%^&*()\-_=+\[\]{};:,.<>?/]/.test(password)) score++;
-  if (score <= 2) return 'weak';
-  if (score <= 3) return 'fair';
-  if (score <= 5) return 'strong';
-  return 'very-strong';
+  if (score <= 2) return "weak";
+  if (score <= 3) return "fair";
+  if (score <= 5) return "strong";
+  return "very-strong";
 }

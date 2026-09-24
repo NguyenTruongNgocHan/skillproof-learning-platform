@@ -1,46 +1,46 @@
-import { useEffect, useRef, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { AlertCircle, CheckCircle2, MailCheck } from 'lucide-react';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { useToast } from '@/components/ui/Toast';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import LoadingSpinner from '@/components/feedback/LoadingSpinner';
+import { useEffect, useRef, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { AlertCircle, CheckCircle2, MailCheck } from "lucide-react";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useToast } from "@/components/ui/Toast";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import LoadingSpinner from "@/components/feedback/LoadingSpinner";
 
-type VerificationState = 'waiting' | 'verifying' | 'success' | 'error';
+type VerificationState = "waiting" | "verifying" | "success" | "error";
 
 export default function VerifyEmailPage() {
   const { user, verifyEmail, resendVerification } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const token = searchParams.get("token");
   const handledToken = useRef<string | null>(null);
 
   const [state, setState] = useState<VerificationState>(
-    token ? 'verifying' : 'waiting',
+    token ? "verifying" : "waiting",
   );
-  const [email, setEmail] = useState(user?.email ?? '');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [error, setError] = useState("");
   const [resending, setResending] = useState(false);
 
   useEffect(() => {
     if (!token || handledToken.current === token) return;
     handledToken.current = token;
-    setState('verifying');
+    setState("verifying");
 
     verifyEmail(token)
       .then(() => {
-        setState('success');
-        toast('success', 'Your email has been verified. You can now sign in.');
+        setState("success");
+        toast("success", "Your email has been verified. You can now sign in.");
       })
       .catch((reason: unknown) => {
-        setState('error');
+        setState("error");
         setError(
           reason instanceof Error
             ? reason.message
-            : 'This verification link is invalid or has expired.',
+            : "This verification link is invalid or has expired.",
         );
       });
   }, [token, toast, verifyEmail]);
@@ -53,15 +53,15 @@ export default function VerifyEmailPage() {
     try {
       await resendVerification(email.trim());
       toast(
-        'success',
-        'If the account is eligible, a new verification email has been sent.',
+        "success",
+        "If the account is eligible, a new verification email has been sent.",
       );
     } catch (reason: unknown) {
       toast(
-        'error',
+        "error",
         reason instanceof Error
           ? reason.message
-          : 'The verification email could not be sent.',
+          : "The verification email could not be sent.",
       );
     } finally {
       setResending(false);
@@ -71,17 +71,17 @@ export default function VerifyEmailPage() {
   return (
     <main
       className="flex min-h-screen items-center justify-center px-4 py-12"
-      style={{ background: 'var(--bg)' }}
+      style={{ background: "var(--bg)" }}
     >
       <section
         className="w-full max-w-lg rounded-2xl border p-8 text-center"
         style={{
-          background: 'var(--surface)',
-          borderColor: 'var(--border)',
-          boxShadow: 'var(--shadow-lg)',
+          background: "var(--surface)",
+          borderColor: "var(--border)",
+          boxShadow: "var(--shadow-lg)",
         }}
       >
-        {state === 'verifying' && (
+        {state === "verifying" && (
           <StatePanel
             icon={<LoadingSpinner size={42} />}
             title="Verifying your email"
@@ -89,7 +89,7 @@ export default function VerifyEmailPage() {
           />
         )}
 
-        {state === 'success' && (
+        {state === "success" && (
           <>
             <StatePanel
               icon={<CheckCircle2 size={48} color="var(--success)" />}
@@ -99,14 +99,16 @@ export default function VerifyEmailPage() {
             <Button
               className="mt-7 w-full"
               size="lg"
-              onClick={() => navigate('/login?verified=true', { replace: true })}
+              onClick={() =>
+                navigate("/login?verified=true", { replace: true })
+              }
             >
               Continue to sign in
             </Button>
           </>
         )}
 
-        {state === 'error' && (
+        {state === "error" && (
           <>
             <StatePanel
               icon={<AlertCircle size={48} color="var(--error)" />}
@@ -122,14 +124,14 @@ export default function VerifyEmailPage() {
           </>
         )}
 
-        {state === 'waiting' && (
+        {state === "waiting" && (
           <>
             <StatePanel
               icon={<MailCheck size={48} color="var(--brand)" />}
               title="Check your email"
               description="Open the secure link we sent to activate your SkillProof account."
             />
-            <p className="mt-3 text-sm" style={{ color: 'var(--fg-muted)' }}>
+            <p className="mt-3 text-sm" style={{ color: "var(--fg-muted)" }}>
               The link expires after 30 minutes and can only be used once.
             </p>
             <ResendForm
@@ -141,11 +143,11 @@ export default function VerifyEmailPage() {
           </>
         )}
 
-        {state !== 'verifying' && state !== 'success' && (
+        {state !== "verifying" && state !== "success" && (
           <Link
             to="/login"
             className="mt-5 inline-block text-sm font-medium"
-            style={{ color: 'var(--brand)' }}
+            style={{ color: "var(--brand)" }}
           >
             Back to sign in
           </Link>
@@ -167,10 +169,10 @@ function StatePanel({
   return (
     <div className="flex flex-col items-center gap-3">
       {icon}
-      <h1 className="text-2xl font-bold" style={{ color: 'var(--fg)' }}>
+      <h1 className="text-2xl font-bold" style={{ color: "var(--fg)" }}>
         {title}
       </h1>
-      <p className="text-sm leading-6" style={{ color: 'var(--fg-muted)' }}>
+      <p className="text-sm leading-6" style={{ color: "var(--fg-muted)" }}>
         {description}
       </p>
     </div>
@@ -198,8 +200,13 @@ function ResendForm({
         autoComplete="email"
         required
       />
-      <Button type="submit" variant="outline" className="w-full" disabled={loading}>
-        {loading ? 'Sending…' : 'Resend verification email'}
+      <Button
+        type="submit"
+        variant="outline"
+        className="w-full"
+        disabled={loading}
+      >
+        {loading ? "Sending…" : "Resend verification email"}
       </Button>
     </form>
   );

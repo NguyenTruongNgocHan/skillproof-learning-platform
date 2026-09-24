@@ -13,8 +13,8 @@ import Button from "@/components/ui/Button";
 import Checkbox from "@/components/ui/Checkbox";
 import LoadingSpinner from "@/components/feedback/LoadingSpinner";
 import type { RegisterLearnerData } from "@/features/auth/types/auth.types";
-import BrandLogo from '@/components/ui/BrandLogo';
-import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
+import BrandLogo from "@/components/ui/BrandLogo";
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
 
 interface LearnerRegistrationFormProps {
   onSubmit: (data: RegisterLearnerData) => Promise<void>;
@@ -39,9 +39,12 @@ export default function LearnerRegistrationForm({
   const passwordChecks = checkPassword(password);
   const passwordValid = isPasswordValid(passwordChecks);
   const passwordStrength = getPasswordStrength(password);
-  const passwordsMatch = password !== "" && confirmPassword !== "" && password === confirmPassword;
+  const passwordsMatch =
+    password !== "" && confirmPassword !== "" && password === confirmPassword;
   const confirmError =
-    confirmPassword !== "" && !passwordsMatch ? "Passwords do not match." : null;
+    confirmPassword !== "" && !passwordsMatch
+      ? "Passwords do not match."
+      : null;
 
   const formValid =
     fullName.trim() !== "" &&
@@ -57,7 +60,11 @@ export default function LearnerRegistrationForm({
     try {
       await onSubmit({ fullName, email, password });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Registration failed. Please try again.",
+      );
     }
   }
 
@@ -67,7 +74,10 @@ export default function LearnerRegistrationForm({
       style={{ background: "var(--bg)" }}
     >
       <div className="w-full max-w-md flex flex-col gap-6">
-        <div className="flex items-center justify-between"><BrandLogo /><ThemeSwitcher /></div>
+        <div className="flex items-center justify-between">
+          <BrandLogo />
+          <ThemeSwitcher />
+        </div>
         <button
           type="button"
           onClick={onBack}
@@ -191,11 +201,17 @@ export default function LearnerRegistrationForm({
         </form>
 
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+          <div
+            className="flex-1 h-px"
+            style={{ background: "var(--border)" }}
+          />
           <span className="text-xs" style={{ color: "var(--fg-muted)" }}>
             or
           </span>
-          <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+          <div
+            className="flex-1 h-px"
+            style={{ background: "var(--border)" }}
+          />
         </div>
 
         <Button
@@ -234,7 +250,11 @@ export default function LearnerRegistrationForm({
 
         <p className="text-center text-sm" style={{ color: "var(--fg-muted)" }}>
           Already have an account?{" "}
-          <Link to="/login" className="font-medium" style={{ color: "var(--brand)" }}>
+          <Link
+            to="/login"
+            className="font-medium"
+            style={{ color: "var(--brand)" }}
+          >
             Sign in
           </Link>
         </p>

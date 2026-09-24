@@ -10,23 +10,26 @@ import Checkbox from "@/components/ui/Checkbox";
 import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
 import LoadingSpinner from "@/components/feedback/LoadingSpinner";
 import { useToast } from "@/components/ui/Toast";
-import BrandLogo from '@/components/ui/BrandLogo';
+import BrandLogo from "@/components/ui/BrandLogo";
 
 const credentials = [
   {
     icon: BookOpen,
     title: "Structured Learning Paths",
-    description: "Follow curated tracks that build real, demonstrable expertise step by step.",
+    description:
+      "Follow curated tracks that build real, demonstrable expertise step by step.",
   },
   {
     icon: Target,
     title: "Practice With Purpose",
-    description: "Hands-on challenges that mirror real-world scenarios — not just theory.",
+    description:
+      "Hands-on challenges that mirror real-world scenarios — not just theory.",
   },
   {
     icon: Award,
     title: "Verifiable Credentials",
-    description: "Earn certificates backed by proof that employers and institutions trust.",
+    description:
+      "Earn certificates backed by proof that employers and institutions trust.",
   },
 ];
 
@@ -50,7 +53,10 @@ export default function LoginPage() {
       toast("success", "Password updated successfully. Please sign in.");
     }
     if (searchParams.get("oauth") === "failed") {
-      toast("error", "Google sign-in could not be completed. Please try again.");
+      toast(
+        "error",
+        "Google sign-in could not be completed. Please try again.",
+      );
     }
   }, [searchParams, toast]);
 
@@ -64,7 +70,9 @@ export default function LoginPage() {
       navigate(getNextRouteAfterLogin(user));
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "Invalid email or password. Please try again."
+        err instanceof Error
+          ? err.message
+          : "Invalid email or password. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -72,7 +80,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full" style={{ background: "var(--bg)" }}>
+    <div
+      className="flex min-h-screen w-full"
+      style={{ background: "var(--bg)" }}
+    >
       {/* Left column — desktop only */}
       <div
         className="hidden md:flex flex-col justify-between w-1/2 p-10"
@@ -102,7 +113,10 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-white text-sm">{title}</p>
-                  <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  <p
+                    className="text-sm mt-0.5"
+                    style={{ color: "rgba(255,255,255,0.6)" }}
+                  >
                     {description}
                   </p>
                 </div>
@@ -127,7 +141,9 @@ export default function LoginPage() {
       >
         <div className="w-full max-w-md flex flex-col gap-6">
           <div className="flex items-center justify-between">
-            <Link to="/" className="auth-back"><ArrowLeft size={16} /> Back to home</Link>
+            <Link to="/" className="auth-back">
+              <ArrowLeft size={16} /> Back to home
+            </Link>
             <ThemeSwitcher compact />
           </div>
           {/* Heading */}
@@ -181,7 +197,8 @@ export default function LoginPage() {
                 className="text-sm rounded-lg px-3 py-2"
                 style={{
                   color: "var(--error)",
-                  background: "color-mix(in srgb, var(--error) 10%, transparent)",
+                  background:
+                    "color-mix(in srgb, var(--error) 10%, transparent)",
                 }}
               >
                 {error}
@@ -189,7 +206,12 @@ export default function LoginPage() {
             )}
 
             {/* Submit button */}
-            <Button type="submit" variant="primary" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full"
+              disabled={loading}
+            >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <LoadingSpinner size={16} />
@@ -203,11 +225,17 @@ export default function LoginPage() {
 
           {/* OR divider */}
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+            <div
+              className="flex-1 h-px"
+              style={{ background: "var(--border)" }}
+            />
             <span className="text-xs" style={{ color: "var(--fg-muted)" }}>
               or
             </span>
-            <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+            <div
+              className="flex-1 h-px"
+              style={{ background: "var(--border)" }}
+            />
           </div>
 
           {/* Google OAuth button */}
@@ -254,13 +282,19 @@ export default function LoginPage() {
           </Button>
 
           {/* Register link */}
-          <p className="text-center text-sm" style={{ color: "var(--fg-muted)" }}>
+          <p
+            className="text-center text-sm"
+            style={{ color: "var(--fg-muted)" }}
+          >
             {"Don't have an account?"}{" "}
-            <Link to="/register" className="font-medium" style={{ color: "var(--brand)" }}>
+            <Link
+              to="/register"
+              className="font-medium"
+              style={{ color: "var(--brand)" }}
+            >
               Create account
             </Link>
           </p>
-
         </div>
       </div>
     </div>
