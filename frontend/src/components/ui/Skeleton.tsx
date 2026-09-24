@@ -5,11 +5,16 @@ interface SkeletonProps {
   rounded?: string;
 }
 
-export default function Skeleton({ className = '', width, height, rounded = 'rounded-md' }: SkeletonProps) {
+export default function Skeleton({
+  className = "",
+  width,
+  height,
+  rounded = "rounded-md",
+}: SkeletonProps) {
   return (
     <div
       className={`animate-pulse ${rounded} ${className}`}
-      style={{ width, height, background: 'var(--bg-subtle)' }}
+      style={{ width, height, background: "var(--bg-subtle)" }}
     />
   );
 }

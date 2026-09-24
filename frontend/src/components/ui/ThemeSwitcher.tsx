@@ -1,17 +1,22 @@
-import { Sun, Moon } from 'lucide-react';
-import { useTheme } from '@/app/providers/ThemeProvider';
-
-export default function ThemeSwitcher({ compact: _compact = false }: { compact?: boolean }) {
-  const { resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
-  const Icon = isDark ? Sun : Moon;
+import { Monitor, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/app/providers/ThemeProvider";
+export default function ThemeSwitcher({
+  compact: _compact = false,
+}: {
+  compact?: boolean;
+}) {
+  const { theme, resolvedTheme, setTheme } = useTheme();
+  const next =
+    theme === "system" ? "light" : theme === "light" ? "dark" : "system";
+  const Icon =
+    theme === "system" ? Monitor : resolvedTheme === "dark" ? Moon : Sun;
   return (
     <button
       type="button"
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-      title={isDark ? 'Light mode' : 'Dark mode'}
       className="theme-toggle"
+      onClick={() => setTheme(next)}
+      title={`Current: ${theme}. Switch to ${next}.`}
+      aria-label={`Theme: ${theme}. Switch to ${next}.`}
     >
       <Icon aria-hidden="true" size={18} />
     </button>

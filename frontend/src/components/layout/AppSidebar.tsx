@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import type { NavItem } from "@/config/navigation";
-import BrandLogo from '@/components/ui/BrandLogo';
+import BrandLogo from "@/components/ui/BrandLogo";
 
 interface AppSidebarProps {
   items: NavItem[];
@@ -22,7 +22,12 @@ export default function AppSidebar({ items }: AppSidebarProps) {
       }}
     >
       {/* Logo */}
-      <div style={{ padding: "20px 16px", borderBottom: "1px solid var(--border)" }}>
+      <div
+        style={{
+          padding: "20px 16px",
+          borderBottom: "1px solid var(--border)",
+        }}
+      >
         <BrandLogo />
       </div>
 
@@ -51,14 +56,18 @@ export default function AppSidebar({ items }: AppSidebarProps) {
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLAnchorElement).style.background = "var(--bg-subtle)";
-                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--fg)";
+                  (e.currentTarget as HTMLAnchorElement).style.background =
+                    "var(--bg-subtle)";
+                  (e.currentTarget as HTMLAnchorElement).style.color =
+                    "var(--fg)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
-                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--fg-muted)";
+                  (e.currentTarget as HTMLAnchorElement).style.background =
+                    "transparent";
+                  (e.currentTarget as HTMLAnchorElement).style.color =
+                    "var(--fg-muted)";
                 }
               }}
             >

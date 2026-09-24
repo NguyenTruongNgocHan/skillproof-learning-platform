@@ -1,6 +1,6 @@
-import PublicHeader from '@/components/layout/PublicHeader';
-import PublicFooter from '@/components/layout/PublicFooter';
-import VerificationSection from '@/features/marketing/components/VerificationSection';
+import PublicHeader from "@/components/layout/PublicHeader";
+import PublicFooter from "@/components/layout/PublicFooter";
+import VerificationSection from "@/features/marketing/components/VerificationSection";
 
 export default function VerifyPage() {
   return (

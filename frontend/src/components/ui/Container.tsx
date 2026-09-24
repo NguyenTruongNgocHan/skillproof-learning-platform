@@ -1,4 +1,4 @@
-import { ReactNode, ElementType } from 'react';
+import { ReactNode, ElementType } from "react";
 
 interface ContainerProps {
   children: ReactNode;
@@ -6,7 +6,11 @@ interface ContainerProps {
   as?: ElementType;
 }
 
-export default function Container({ children, className = '', as: Tag = 'div' }: ContainerProps) {
+export default function Container({
+  children,
+  className = "",
+  as: Tag = "div",
+}: ContainerProps) {
   return (
     <Tag className={`max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 ${className}`}>
       {children}
