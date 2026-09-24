@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Settings, HelpCircle, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import Avatar from "@/components/ui/Avatar";
 import type { User as UserType } from "@/features/auth/types/auth.types";
@@ -20,16 +20,24 @@ export default function UserMenu({ user }: UserMenuProps) {
     navigate("/");
   }
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
   const menuItems = [
     { icon: User, label: "Profile", action: () => navigate("/profile") },
-    { icon: Settings, label: "Settings", action: () => navigate("/settings") },
-    { icon: HelpCircle, label: "Help", action: () => {} },
   ];
 
   return (
     <div style={{ position: "relative" }}>
       <button
         onClick={() => setOpen((v) => !v)}
+        aria-label="Open account menu"
+        aria-expanded={open}
         style={{
           background: "none",
           border: "none",
@@ -55,7 +63,8 @@ export default function UserMenu({ user }: UserMenuProps) {
               zIndex: 20,
               background: "var(--surface-elevated)",
               borderRadius: "12px",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
+              boxShadow:
+                "0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
               border: "1px solid var(--border)",
               minWidth: "180px",
               padding: "6px",
@@ -83,17 +92,21 @@ export default function UserMenu({ user }: UserMenuProps) {
                   textAlign: "left",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-subtle)";
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    "var(--bg-subtle)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = "none";
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    "none";
                 }}
               >
                 <Icon width={15} height={15} />
                 {label}
               </button>
             ))}
-            <div style={{ margin: "4px 0", borderTop: "1px solid var(--border)" }} />
+            <div
+              style={{ margin: "4px 0", borderTop: "1px solid var(--border)" }}
+            />
             <button
               onClick={handleSignOut}
               style={{
@@ -111,10 +124,12 @@ export default function UserMenu({ user }: UserMenuProps) {
                 textAlign: "left",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-subtle)";
+                (e.currentTarget as HTMLButtonElement).style.background =
+                  "var(--bg-subtle)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "none";
+                (e.currentTarget as HTMLButtonElement).style.background =
+                  "none";
               }}
             >
               <LogOut width={15} height={15} />

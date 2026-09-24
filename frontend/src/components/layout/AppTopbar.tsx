@@ -1,4 +1,4 @@
-import { Menu, Bell } from "lucide-react";
+import { Menu } from "lucide-react";
 import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
 import UserMenu from "@/components/layout/UserMenu";
 import type { User } from "@/features/auth/types/auth.types";
@@ -9,7 +9,11 @@ interface AppTopbarProps {
   user: User;
 }
 
-export default function AppTopbar({ onMenuToggle, pageTitle, user }: AppTopbarProps) {
+export default function AppTopbar({
+  onMenuToggle,
+  pageTitle,
+  user,
+}: AppTopbarProps) {
   return (
     <header
       style={{
@@ -28,14 +32,15 @@ export default function AppTopbar({ onMenuToggle, pageTitle, user }: AppTopbarPr
       {/* Left */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         <button
-          className="md:hidden"
+          className="app-menu-trigger"
+          type="button"
+          aria-label="Open navigation"
           onClick={onMenuToggle}
           style={{
             background: "none",
             border: "none",
             cursor: "pointer",
             color: "var(--fg)",
-            display: "flex",
             padding: "4px",
           }}
         >
@@ -62,19 +67,6 @@ export default function AppTopbar({ onMenuToggle, pageTitle, user }: AppTopbarPr
         }}
       >
         <ThemeSwitcher />
-        <button
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: "var(--fg-muted)",
-            display: "flex",
-            padding: "6px",
-            borderRadius: "8px",
-          }}
-        >
-          <Bell width={18} height={18} />
-        </button>
         <UserMenu user={user} />
       </div>
     </header>

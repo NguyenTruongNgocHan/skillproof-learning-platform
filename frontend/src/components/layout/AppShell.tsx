@@ -25,18 +25,7 @@ export default function AppShell({ children }: AppShellProps) {
   return (
     <div className="app-shell">
       {/* Desktop sidebar */}
-      <aside
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          bottom: 0,
-          width: "256px",
-          zIndex: 40,
-          display: "none",
-        }}
-        className="md:block"
-      >
+      <aside className="app-sidebar-desktop">
         <AppSidebar items={navItems} />
       </aside>
 
@@ -48,7 +37,7 @@ export default function AppShell({ children }: AppShellProps) {
       />
 
       {/* Main area */}
-      <div style={{ flex: 1, marginLeft: 0 }} className="md:ml-64">
+      <div className="app-shell-content">
         <AppTopbar
           onMenuToggle={() => setSidebarOpen(true)}
           pageTitle={pageTitle}
