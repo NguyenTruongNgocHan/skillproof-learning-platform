@@ -1,94 +1,135 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
-import BrandLogo from '@/components/ui/BrandLogo';
-
-const navLinks = [
-  { label: 'How it works', to: '/#how-it-works' },
-  { label: 'Learning', to: '/#learning' },
-  { label: 'Credentials', to: '/#credentials' },
-  { label: 'For organizations', to: '/#organizations' },
-];
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X } from "lucide-react";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { getNextRouteForUserState } from "@/utils/authFlow";
+import { LANDING_NAV, sectionUrl } from "@/config/publicNavigation";
+import { ROUTES } from "@/config/appRoutes";
+import Button from "@/components/ui/Button";
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
+import BrandLogo from "@/components/ui/BrandLogo";
 
 export default function PublicHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
+  const [active, setActive] = useState("");
+  const location = useLocation();
+  const { user } = useAuth();
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname, location.hash]);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const close = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [mobileOpen]);
+  useEffect(() => {
+    if (location.pathname !== ROUTES.HOME) {
+      setActive("");
+      return;
+    }
+    const sections = LANDING_NAV.map((item) =>
+      document.getElementById(item.id),
+    ).filter((node): node is HTMLElement => !!node);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries)
+          if (entry.isIntersecting) setActive(entry.target.id);
+      },
+      { rootMargin: "-100px 0px -58% 0px", threshold: 0 },
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [location.pathname]);
+  const links = LANDING_NAV.map((item) => (
+    <Link
+      key={item.id}
+      to={sectionUrl(item.id)}
+      aria-current={active === item.id ? "location" : undefined}
+      className={`public-nav-link ${active === item.id ? "public-nav-link--active" : ""}`}
+      onClick={() => setMobileOpen(false)}
+    >
+      {item.label}
+    </Link>
+  ));
+  const accountRoute = getNextRouteForUserState(user);
   return (
     <header
-      className={`public-header ${scrolled ? 'public-header--scrolled' : ''}`}
-      style={{ height: 72 }}
+      className={`public-header ${scrolled ? "public-header--scrolled" : ""}`}
     >
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-6">
-        {/* Logo */}
+      <div className="public-header-inner">
         <BrandLogo />
-
-        {/* Center nav — desktop */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="public-nav-link"
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav aria-label="Main navigation" className="public-desktop-nav">
+          {links}
         </nav>
-
-        {/* Right actions — desktop */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="public-desktop-actions">
           <ThemeSwitcher />
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/verify">Verify Certificate</Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/login">Log In</Link>
-          </Button>
-          <Button variant="primary" size="sm" asChild>
-            <Link to="/register">Get Started</Link>
-          </Button>
+          <Link className="public-verify-link" to={ROUTES.VERIFY_CERT}>
+            Verify certificate
+          </Link>
+          {user ? (
+            <Button variant="primary" size="sm" asChild>
+              <Link to={accountRoute}>My workspace</Link>
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to={ROUTES.LOGIN}>Log in</Link>
+              </Button>
+              <Button variant="primary" size="sm" asChild>
+                <Link to={ROUTES.REGISTER}>Get started</Link>
+              </Button>
+            </>
+          )}
         </div>
-
-        {/* Hamburger — mobile */}
-        <button
-          className="md:hidden theme-toggle"
-          onClick={() => setMobileOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div className="public-mobile-actions">
+          <ThemeSwitcher />
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-expanded={mobileOpen}
+            aria-controls="public-mobile-nav"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
-
-      {/* Mobile dropdown */}
       {mobileOpen && (
-        <div className="mobile-public-menu">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="py-2 text-sm font-medium text-[#17181C] hover:text-[#FF4F8B] transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
-              {link.label}
+        <nav
+          id="public-mobile-nav"
+          aria-label="Mobile navigation"
+          className="mobile-public-menu"
+        >
+          {links}
+          <Link to={ROUTES.VERIFY_CERT} onClick={() => setMobileOpen(false)}>
+            Verify certificate
+          </Link>
+          {user ? (
+            <Link to={accountRoute} onClick={() => setMobileOpen(false)}>
+              My workspace
             </Link>
-          ))}
-          <div className="pt-3 flex flex-col gap-2 border-t border-[#E5E7EB] mt-2">
-            <Link to="/verify" className="text-sm font-medium text-[#666A73] py-1">Verify Certificate</Link>
-            <Link to="/login" className="text-sm font-medium text-[#17181C] py-1">Log In</Link>
-            <Link to="/register">
-              <Button variant="primary" size="sm" className="w-full justify-center">Get Started</Button>
-            </Link>
-          </div>
-        </div>
+          ) : (
+            <>
+              <Link to={ROUTES.LOGIN} onClick={() => setMobileOpen(false)}>
+                Log in
+              </Link>
+              <Link to={ROUTES.REGISTER} onClick={() => setMobileOpen(false)}>
+                Get started
+              </Link>
+            </>
+          )}
+        </nav>
       )}
     </header>
   );
