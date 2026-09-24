@@ -1,26 +1,36 @@
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Clock } from 'lucide-react';
-import { primaryLight } from '@/assets/brand';
-
+import { Link } from "react-router-dom";
+import { ArrowLeft, Clock3 } from "lucide-react";
+import PublicHeader from "@/components/layout/PublicHeader";
+import PublicFooter from "@/components/layout/PublicFooter";
 interface ComingSoonPageProps {
   title: string;
   description?: string;
 }
-
-export default function ComingSoonPage({ title, description }: ComingSoonPageProps) {
+export default function ComingSoonPage({
+  title,
+  description,
+}: ComingSoonPageProps) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: 'var(--bg)' }}>
-      <img src={primaryLight} alt="SkillProof" style={{ width: 140, height: 'auto', objectFit: 'contain', marginBottom: 32 }} />
-      <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: 'var(--bg-subtle)' }}>
-        <Clock style={{ width: 24, height: 24, color: 'var(--fg-muted)' }} />
-      </div>
-      <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--fg)' }}>{title}</h1>
-      {description && <p className="text-base text-center max-w-sm mb-8" style={{ color: 'var(--fg-muted)' }}>{description}</p>}
-      <p className="text-sm mb-6" style={{ color: 'var(--fg-muted)' }}>This section is being prepared. Check back soon.</p>
-      <Link to="/" className="flex items-center gap-2 text-sm font-medium transition-colors" style={{ color: 'var(--brand)' }}>
-        <ArrowLeft style={{ width: 16, height: 16 }} />
-        Back to home
-      </Link>
+    <div className="public-page">
+      <PublicHeader />
+      <main className="public-message-page">
+        <div className="public-message-card">
+          <div className="public-message-icon">
+            <Clock3 size={27} />
+          </div>
+          <span className="eyebrow">ON THE ROADMAP</span>
+          <h1>{title}</h1>
+          <p>{description}</p>
+          <p>
+            This feature has not launched. Your current account and Organization
+            flows are available now.
+          </p>
+          <Link to="/" className="profile-back">
+            <ArrowLeft size={16} /> Back to home
+          </Link>
+        </div>
+      </main>
+      <PublicFooter />
     </div>
   );
 }

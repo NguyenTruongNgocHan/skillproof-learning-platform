@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/Toast";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import AuthGateModal from "@/components/auth/AuthGateModal";
 import PublicHeader from "@/components/layout/PublicHeader";
@@ -13,7 +13,7 @@ type TypeFilter = "all" | "quiz" | "mock-test";
 
 export default function CommunityPage() {
   const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
@@ -25,7 +25,8 @@ export default function CommunityPage() {
     if (typeFilter === "quiz" && item.type !== "Quiz") return false;
     if (typeFilter === "mock-test" && item.type !== "Mock Test") return false;
     if (topicFilter !== "all" && item.topic !== topicFilter) return false;
-    if (search && !item.title.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !item.title.toLowerCase().includes(search.toLowerCase()))
+      return false;
     return true;
   });
 
@@ -34,12 +35,22 @@ export default function CommunityPage() {
       setSelectedItem(item);
       setAuthGateOpen(true);
     } else {
-      navigate("/practice");
+      toast(
+        "info",
+        "Community practice is in preview. Attempts are not available yet.",
+      );
     }
   }
 
   return (
-    <div style={{ background: "var(--bg)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        background: "var(--bg)",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <div style={{ position: "sticky", top: 0, zIndex: 10 }}>
         <PublicHeader />
       </div>
@@ -50,7 +61,8 @@ export default function CommunityPage() {
           Community Practice Content
         </h1>
         <p style={{ color: "var(--fg-muted)", fontSize: "1rem" }}>
-          Learner-created quizzes and mock tests. Browse freely — sign in to start practicing.
+          Sample community cards show how discovery will work. Practice and
+          ratings are not live yet.
         </p>
       </section>
 
@@ -63,9 +75,23 @@ export default function CommunityPage() {
         onTopicChange={setTopicFilter}
       />
 
-      <main style={{ maxWidth: "72rem", margin: "0 auto", padding: "24px 16px", flex: 1, width: "100%" }}>
-        <p style={{ color: "var(--fg-muted)", fontSize: "0.875rem", marginBottom: "16px" }}>
-          Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+      <main
+        style={{
+          maxWidth: "72rem",
+          margin: "0 auto",
+          padding: "24px 16px",
+          flex: 1,
+          width: "100%",
+        }}
+      >
+        <p
+          style={{
+            color: "var(--fg-muted)",
+            fontSize: "0.875rem",
+            marginBottom: "16px",
+          }}
+        >
+          Previewing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
         </p>
         <CommunityGrid
           items={filtered}
