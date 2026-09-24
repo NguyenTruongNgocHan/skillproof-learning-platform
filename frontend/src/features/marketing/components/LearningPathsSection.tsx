@@ -1,27 +1,25 @@
-import { Link } from 'react-router-dom';
-import { Clock, BookOpen, Award, Users } from 'lucide-react';
-import Container from '@/components/ui/Container';
-import SectionHeading from '@/components/ui/SectionHeading';
-import Badge from '@/components/ui/Badge';
-import { landingLearningPaths } from '@/data/landingLearningPaths';
-import type { LearningPath } from '@/types';
+import { Link } from "react-router-dom";
+import { Clock, BookOpen, Award } from "lucide-react";
+import Container from "@/components/ui/Container";
+import SectionHeading from "@/components/ui/SectionHeading";
+import Badge from "@/components/ui/Badge";
+import { landingLearningPaths } from "@/data/landingLearningPaths";
+import type { LearningPath } from "@/types";
 
 function PathCard({ path }: { path: LearningPath }) {
   return (
-    <div
-      className="bg-white rounded-xl border border-[#E5E7EB] p-6 flex flex-col gap-4 hover:border-[#FF4F8B] transition-colors cursor-pointer"
-    >
+    <div className="bg-skin rounded-xl border border-skin p-6 flex flex-col gap-4 hover:border-[#FF4F8B] transition-colors cursor-pointer">
       <div>
-        <h3 className="font-semibold text-lg text-[#17181C] mb-1">{path.title}</h3>
-        <p className="text-xs text-[#666A73]">{path.organization}</p>
+        <h3 className="font-semibold text-lg text-skin mb-1">{path.title}</h3>
+        <p className="text-xs text-muted-skin">{path.organization}</p>
       </div>
 
       <div className="flex flex-wrap gap-2">
         <Badge variant="default">{path.level}</Badge>
-        <span className="inline-flex items-center gap-1 text-xs text-[#666A73]">
+        <span className="inline-flex items-center gap-1 text-xs text-muted-skin">
           <Clock size={12} /> {path.duration}
         </span>
-        <span className="inline-flex items-center gap-1 text-xs text-[#666A73]">
+        <span className="inline-flex items-center gap-1 text-xs text-muted-skin">
           <BookOpen size={12} /> {path.modules} modules
         </span>
       </div>
@@ -31,23 +29,22 @@ function PathCard({ path }: { path: LearningPath }) {
           <Award size={11} className="mr-1" /> Certificate Available
         </Badge>
       )}
-
-      <p className="text-xs text-[#666A73] flex items-center gap-1 mt-auto">
-        <Users size={12} /> {path.enrolledCount.toLocaleString()} enrolled
-      </p>
     </div>
   );
 }
 
 export default function LearningPathsSection() {
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-skin">
       <Container>
         <SectionHeading
           title="Structured learning that leads somewhere."
-          subtitle="Each learning path connects curated resources, practice assessments, and certification milestones into a coherent progression — not a random collection of videos."
+          subtitle="Illustrative learning paths. Each future path connects curated resources, practice assessments, and certification milestones into a coherent progression — not a random collection of videos."
         />
 
+        <p className="eyebrow mb-5">
+          CONCEPT EXAMPLES · NOT OPEN FOR ENROLLMENT
+        </p>
         <div className="grid md:grid-cols-3 gap-6 mb-10">
           {landingLearningPaths.map((path) => (
             <PathCard key={path.id} path={path} />
@@ -58,7 +55,7 @@ export default function LearningPathsSection() {
           <Link
             to="/learning-paths"
             className="text-sm font-medium hover:underline"
-            style={{ color: '#FF4F8B' }}
+            style={{ color: "var(--brand)" }}
           >
             Browse all learning paths →
           </Link>

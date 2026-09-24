@@ -1,98 +1,71 @@
-import { CheckCircle, Search, Briefcase, GraduationCap, Building2, Users } from 'lucide-react';
-import Container from '@/components/ui/Container';
-import SectionHeading from '@/components/ui/SectionHeading';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-
-function VerificationPanel() {
-  return (
-    <div className="space-y-4">
-      {/* Input */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#666A73]" />
-          <input
-            type="text"
-            defaultValue="SP-2025-00847"
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-[#E5E7EB] rounded-lg bg-white text-[#17181C] placeholder:text-[#666A73] outline-none focus:border-[#FF4F8B]"
-            placeholder="Enter Certificate ID (e.g. SP-2025-00847)"
-          />
-        </div>
-        <Button variant="primary" size="md">Verify</Button>
-      </div>
-
-      {/* Result card */}
-      <div className="border border-green-200 bg-green-50 rounded-xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <Badge variant="success">
-            <CheckCircle size={11} className="mr-1" /> VALID
-          </Badge>
-          <span className="text-xs text-[#666A73]">Verified just now</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { label: 'Issued by', value: 'SkillProof Technology Academy' },
-            { label: 'Holder', value: 'Alex Nguyen' },
-            { label: 'Program', value: 'Backend Engineering Foundations' },
-            { label: 'Issue Date', value: 'January 15, 2025' },
-            { label: 'Status', value: 'Active' },
-            { label: 'Certificate ID', value: 'SP-2025-00847' },
-          ].map((row) => (
-            <div key={row.label}>
-              <p className="text-xs text-[#666A73]">{row.label}</p>
-              <p className="text-sm font-medium text-[#17181C]">{row.value}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const users = [
-  { icon: Briefcase, title: 'Recruiters', description: 'Confirm candidate credentials before interview' },
-  { icon: Building2, title: 'Employers', description: 'Verify skills before extending an offer' },
-  { icon: Users, title: 'Training providers', description: 'Confirm prerequisites are met' },
-  { icon: GraduationCap, title: 'Educational institutions', description: 'Validate prior learning' },
+import {
+  ArrowUpRight,
+  Briefcase,
+  Building2,
+  GraduationCap,
+  ShieldCheck,
+} from "lucide-react";
+import Container from "@/components/ui/Container";
+import SectionHeading from "@/components/ui/SectionHeading";
+const audiences = [
+  {
+    icon: Briefcase,
+    title: "Recruiters",
+    description: "Check a credential before an interview.",
+  },
+  {
+    icon: Building2,
+    title: "Employers",
+    description: "See its issuer and current status.",
+  },
+  {
+    icon: GraduationCap,
+    title: "Institutions",
+    description: "Review evidence from an independent link.",
+  },
 ];
-
 export default function VerificationSection() {
   return (
-    <section className="py-24 bg-white">
+    <section className="marketing-section bg-skin">
       <Container>
         <SectionHeading
-          title="Verify achievement before you trust the resume."
-          subtitle="Recruiters, employers, and institutions can independently verify SkillProof credentials without creating an account."
+          eyebrow="CREDENTIAL TRUST"
+          title="A credential should be easy to check."
+          subtitle="Public verification is planned for issued SkillProof certificates. This identity release does not issue or validate certificates yet."
         />
-
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
-          <div>
-            <h3 className="font-semibold text-[#17181C] mb-4">Credential Verification</h3>
-            <VerificationPanel />
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-[#17181C] mb-6">Who uses this?</h3>
-            <div className="space-y-5">
-              {users.map((u) => (
-                <div key={u.title} className="flex gap-4">
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: '#FFF0F5' }}
-                  >
-                    <u.icon size={16} color="#FF4F8B" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm text-[#17181C]">{u.title}</h4>
-                    <p className="text-sm text-[#666A73]">{u.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-6 text-sm text-[#666A73]">
-              No account required. Simple public URL — anyone can verify.
+        <div className="verification-layout">
+          <div className="verification-preview">
+            <span className="eyebrow">
+              <ShieldCheck size={16} /> FUTURE EXPERIENCE · CONCEPT
+            </span>
+            <h3>One link. A clear answer.</h3>
+            <p>
+              When certification is live, a public certificate page will show
+              the issuing organization, credential status and the evidence
+              needed to trust it.
             </p>
+            <div className="verification-preview-steps">
+              <span>01 · Open certificate link</span>
+              <span>02 · Check issuer and status</span>
+              <span>03 · Share the result</span>
+            </div>
+            <span className="verification-preview-foot">
+              Verification API coming in the Certification phase{" "}
+              <ArrowUpRight size={17} />
+            </span>
+          </div>
+          <div className="verification-audience-list">
+            {audiences.map(({ icon: Icon, title, description }) => (
+              <div key={title}>
+                <span className="verification-audience-icon">
+                  <Icon size={21} />
+                </span>
+                <div>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </Container>
