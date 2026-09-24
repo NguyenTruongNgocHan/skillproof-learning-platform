@@ -7,31 +7,30 @@ export default function RecommendationSection() {
       <Container>
         <SectionHeading
           eyebrow="A SMARTER NEXT STEP"
-          title="A learning path that fits your goal."
-          subtitle="Our recommendation module is planned to combine learner goals, skill metadata and interactions. It is not active in the current identity release."
+          title="Find a more relevant next step."
+          subtitle="Planned recommendations will use your goal, content metadata and available learning signals to suggest Learning Paths and practice content. They are not active in this identity release."
         />
         <div className="recommendation-steps">
           <div>
             <Compass size={25} />
-            <span>01 · Define a goal</span>
+            <span>01 Define a goal</span>
             <p>Tell SkillProof what you want to learn.</p>
           </div>
           <ArrowRight className="recommendation-arrow" size={22} />
           <div>
             <Layers3 size={25} />
-            <span>02 · Find relevant content</span>
-            <p>Match goals and skills to eligible paths.</p>
+            <span>02 Discover content</span>
+            <p>Rank eligible paths and practice content for your skills.</p>
           </div>
           <ArrowRight className="recommendation-arrow" size={22} />
           <div>
             <Sparkles size={25} />
-            <span>03 · Keep improving</span>
-            <p>Use feedback to shape future suggestions.</p>
+            <span>03 Refine suggestions</span>
+            <p>Use relevant activity and feedback when available.</p>
           </div>
         </div>
         <p className="recommendation-disclosure">
-          Recommendation roadmap · concept preview · no ranking or match score
-          is being claimed.
+          This is a concept preview. Recommendations help discovery and do not determine completion or certificate eligibility.
         </p>
       </Container>
     </section>

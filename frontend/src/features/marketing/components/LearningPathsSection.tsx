@@ -8,7 +8,7 @@ import type { LearningPath } from "@/types";
 
 function PathCard({ path }: { path: LearningPath }) {
   return (
-    <div className="bg-skin rounded-xl border border-skin p-6 flex flex-col gap-4 hover:border-[#FF4F8B] transition-colors cursor-pointer">
+    <div className="bg-skin rounded-xl border border-skin p-6 flex flex-col gap-4 hover:border-[var(--brand)] transition-colors">
       <div>
         <h3 className="font-semibold text-lg text-skin mb-1">{path.title}</h3>
         <p className="text-xs text-muted-skin">{path.organization}</p>
@@ -26,7 +26,7 @@ function PathCard({ path }: { path: LearningPath }) {
 
       {path.hasCertification && (
         <Badge variant="brand" className="self-start">
-          <Award size={11} className="mr-1" /> Certificate Available
+          <Award size={11} className="mr-1" /> Certification planned
         </Badge>
       )}
     </div>
@@ -43,7 +43,7 @@ export default function LearningPathsSection() {
         />
 
         <p className="eyebrow mb-5">
-          CONCEPT EXAMPLES · NOT OPEN FOR ENROLLMENT
+          CONCEPT EXAMPLES — NOT OPEN FOR ENROLLMENT
         </p>
         <div className="grid md:grid-cols-3 gap-6 mb-10">
           {landingLearningPaths.map((path) => (
@@ -57,7 +57,7 @@ export default function LearningPathsSection() {
             className="text-sm font-medium hover:underline"
             style={{ color: "var(--brand)" }}
           >
-            Browse all learning paths →
+            Explore the learning path roadmap →
           </Link>
         </div>
       </Container>

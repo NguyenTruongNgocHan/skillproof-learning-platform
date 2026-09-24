@@ -4,15 +4,14 @@ import {
   ClipboardList,
   Settings,
   Award,
-  ShieldCheck,
-  ShieldOff,
-  BarChart2,
   CheckCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Container from "@/components/ui/Container";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Button from "@/components/ui/Button";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { getNextRouteForUserState } from "@/utils/authFlow";
 
 const capabilities = [
   {
@@ -39,46 +38,22 @@ const capabilities = [
   {
     icon: Award,
     title: "Manage Certification Programs",
-    description: "Configure multi-requirement certification pathways",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Issue Verifiable Credentials",
-    description:
-      "Credentials issued via SkillProof's verification infrastructure",
-  },
-  {
-    icon: ShieldOff,
-    title: "Revoke Credentials",
-    description:
-      "Revoke certificates when eligibility conditions are no longer met",
-  },
-  {
-    icon: BarChart2,
-    title: "Track Learner Progress",
-    description:
-      "Analytics dashboard for enrollment, completion, and certificate rates",
+    description: "Evaluate published requirements before authorized issuance",
   },
 ];
 
 const fakePaths = [
   {
     name: "Backend Engineering Foundations",
-    status: "Published",
-    enrolled: 2841,
-    completion: "72%",
+    status: "Concept",
   },
   {
     name: "Software Testing Professional",
-    status: "Published",
-    enrolled: 1203,
-    completion: "61%",
+    status: "Concept",
   },
   {
     name: "Cloud Infrastructure Fundamentals",
-    status: "Draft",
-    enrolled: 0,
-    completion: "—",
+    status: "Concept",
   },
 ];
 
@@ -86,14 +61,17 @@ function DashboardPreview() {
   return (
     <div
       className="rounded-2xl overflow-hidden"
-      style={{ backgroundColor: "#1E2028", border: "1px solid #2A2D38" }}
+      style={{
+        backgroundColor: "var(--surface)",
+        border: "1px solid var(--border)",
+      }}
     >
       {/* Sidebar + main */}
       <div className="flex h-64">
         {/* Sidebar */}
         <div
           className="w-40 border-r flex flex-col gap-1 p-3"
-          style={{ borderColor: "#2A2D38", backgroundColor: "#181A20" }}
+          style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}
         >
           {["Learning Paths", "Question Bank", "Certificates", "Analytics"].map(
             (item, i) => (
@@ -102,8 +80,11 @@ function DashboardPreview() {
                 className="px-3 py-2 rounded-lg text-xs font-medium"
                 style={
                   i === 0
-                    ? { backgroundColor: "#FF4F8B22", color: "var(--brand)" }
-                    : { color: "#9CA3AF" }
+                    ? {
+                        backgroundColor: "var(--brand-soft)",
+                        color: "var(--brand)",
+                      }
+                    : { color: "var(--fg-muted)" }
                 }
               >
                 {item}
@@ -114,34 +95,30 @@ function DashboardPreview() {
 
         {/* Main content */}
         <div className="flex-1 p-4 overflow-hidden">
-          <p className="text-xs font-semibold text-white mb-3">
-            Future workspace · illustrative preview
+          <p className="text-xs font-semibold text-skin mb-3">
+            Planned organizer workspace
           </p>
           <div className="space-y-2">
             {fakePaths.map((path) => (
               <div
                 key={path.name}
                 className="flex items-center gap-2 rounded-lg px-3 py-2"
-                style={{ backgroundColor: "#111318" }}
+                style={{ backgroundColor: "var(--bg-subtle)" }}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-white truncate">
+                  <p className="text-xs font-medium text-skin truncate">
                     {path.name}
                   </p>
-                  <p className="text-xs text-gray-500">Example program</p>
+                  <p className="text-xs text-muted-skin">Illustrative program</p>
                 </div>
                 <span
                   className="text-xs font-medium px-2 py-0.5 rounded flex-shrink-0"
-                  style={
-                    path.status === "Published"
-                      ? { backgroundColor: "#16a34a22", color: "#22c55e" }
-                      : { backgroundColor: "#374151", color: "#9CA3AF" }
-                  }
+                  style={{
+                    backgroundColor: "var(--brand-soft)",
+                    color: "var(--brand)",
+                  }}
                 >
                   {path.status}
-                </span>
-                <span className="text-xs text-gray-400 flex-shrink-0 w-8 text-right">
-                  {path.completion}
                 </span>
               </div>
             ))}
@@ -153,16 +130,16 @@ function DashboardPreview() {
 }
 
 export default function OrganizerSection() {
+  const { user } = useAuth();
   return (
-    <section className="py-24" style={{ backgroundColor: "#111318" }}>
+    <section className="py-24 bg-skin">
       <Container>
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
           <div>
             <SectionHeading
               eyebrow="FOR ORGANIZATIONS"
               title="Infrastructure for organizations that teach and certify."
-              subtitle="Approved organizations can manage their identity and team today. Learning paths, assessment and certificate tooling are on the roadmap."
-              dark
+              subtitle="Approved organizations can manage their identity and team today. Learning Paths, assessment and certification tooling are planned."
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -170,15 +147,15 @@ export default function OrganizerSection() {
                 <div key={cap.title} className="flex gap-3">
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ backgroundColor: "#FF4F8B22" }}
+                    style={{ backgroundColor: "var(--brand-soft)" }}
                   >
                     <cap.icon size={15} color="var(--brand)" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-white mb-0.5">
+                    <h3 className="text-sm font-semibold text-skin mb-0.5">
                       {cap.title}
                     </h3>
-                    <p className="text-xs text-gray-400">{cap.description}</p>
+                    <p className="text-xs text-muted-skin">{cap.description}</p>
                   </div>
                 </div>
               ))}
@@ -186,26 +163,28 @@ export default function OrganizerSection() {
 
             <div className="mt-8">
               <Button asChild variant="primary" size="md">
-                <Link to="/register">Apply as an organizer</Link>
+                <Link to={user ? getNextRouteForUserState(user) : "/register"}>
+                  {user ? "Open my workspace" : "Create an account"}
+                </Link>
               </Button>
             </div>
           </div>
 
           <div className="flex flex-col justify-center">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-4">
-              Organizer concept preview · future modules
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-skin mb-4">
+              Planned organizer tools
             </p>
             <DashboardPreview />
 
             <div className="mt-5 space-y-2">
               {[
                 "Role-based access for instructors and admins",
-                "Audit log for all certificate operations",
-                "Webhook support for LMS integrations",
+                "Official programs remain under the organization’s authority",
+                "Only authorized organizers may issue or revoke certificates",
               ].map((item) => (
                 <div key={item} className="flex items-center gap-2">
                   <CheckCircle size={13} color="var(--brand)" />
-                  <span className="text-xs text-gray-400">{item}</span>
+                  <span className="text-xs text-muted-skin">{item}</span>
                 </div>
               ))}
             </div>

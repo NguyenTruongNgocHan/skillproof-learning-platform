@@ -7,21 +7,24 @@ function ChallengePreview() {
   return (
     <div
       className="rounded-2xl p-6"
-      style={{ backgroundColor: "#1E2028", border: "1px solid #2A2D38" }}
+      style={{
+        backgroundColor: "var(--surface)",
+        border: "1px solid var(--border)",
+      }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <span
             className="text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded"
-            style={{ backgroundColor: "#FF4F8B22", color: "var(--brand)" }}
+            style={{
+              backgroundColor: "var(--brand-soft)",
+              color: "var(--brand)",
+            }}
           >
             Realtime Challenge
           </span>
-          <span className="flex items-center gap-1 text-xs text-green-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />{" "}
-            Live
-          </span>
+          <span className="text-xs text-muted-skin">Illustrative preview</span>
         </div>
         <span
           className="text-xl font-bold tabular-nums"
@@ -39,10 +42,10 @@ function ChallengePreview() {
         ].map((player) => (
           <div key={player.name}>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-sm font-medium text-white">
+              <span className="text-sm font-medium text-skin">
                 {player.name}
               </span>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-muted-skin">
                 {player.correct} correct
               </span>
             </div>
@@ -54,30 +57,30 @@ function ChallengePreview() {
       {/* Question */}
       <div
         className="rounded-lg p-4 mb-4"
-        style={{ backgroundColor: "#111318" }}
+        style={{ backgroundColor: "var(--bg-subtle)" }}
       >
-        <p className="text-xs text-gray-400 mb-1">Question 7 of 10</p>
-        <p className="text-sm text-white font-medium">
-          Which HTTP method is idempotent?
+        <p className="text-xs text-muted-skin mb-1">Question 7 of 10</p>
+        <p className="text-sm text-skin font-medium">
+          Which HTTP method retrieves a resource without changing it?
         </p>
       </div>
 
       {/* Answer options */}
       <div className="grid grid-cols-2 gap-2 mb-4">
         {["GET", "POST", "PATCH", "DELETE"].map((opt, i) => (
-          <button
+          <div
             key={opt}
             className="rounded-lg px-3 py-2 text-sm font-medium text-left transition-colors"
             style={
               i === 0
                 ? {
-                    backgroundColor: "#FF4F8B22",
+                    backgroundColor: "var(--brand-soft)",
                     color: "var(--brand)",
-                    border: "1px solid #FF4F8B",
+                    border: "1px solid var(--brand)",
                   }
                 : {
-                    backgroundColor: "#2A2D38",
-                    color: "#9CA3AF",
+                    backgroundColor: "var(--border)",
+                    color: "var(--fg-muted)",
                     border: "1px solid transparent",
                   }
             }
@@ -86,13 +89,13 @@ function ChallengePreview() {
               {String.fromCharCode(65 + i)}.
             </span>
             {opt}
-          </button>
+          </div>
         ))}
       </div>
 
       {/* Connection */}
-      <p className="text-xs text-gray-500 text-center">
-        Connected • Server-authoritative scoring
+      <p className="text-xs text-muted-skin text-center">
+        Concept preview of server-controlled scoring
       </p>
     </div>
   );
@@ -101,9 +104,9 @@ function ChallengePreview() {
 const features = [
   {
     icon: Shield,
-    title: "Fair competition",
+    title: "Server-controlled scoring",
     description:
-      "Server controls all timing and scoring — no client-side manipulation possible",
+      "The planned server will control timing and scoring",
   },
   {
     icon: Zap,
@@ -113,13 +116,13 @@ const features = [
   {
     icon: BarChart2,
     title: "Skill measurement",
-    description: "Performance tracked per topic to identify knowledge gaps",
+    description: "Planned topic-level feedback to help identify knowledge gaps",
   },
 ];
 
 export default function RealtimeSection() {
   return (
-    <section className="py-24" style={{ backgroundColor: "#111318" }}>
+    <section className="py-24 bg-skin">
       <Container>
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
           <div>
@@ -127,7 +130,6 @@ export default function RealtimeSection() {
               eyebrow="REALTIME CHALLENGES"
               title="Practice under pressure. Learn through competition."
               subtitle="The planned 1v1 experience will synchronize questions, answers and scores through the server. It is not live yet."
-              dark
             />
 
             <div className="space-y-6 mt-8">
@@ -135,22 +137,22 @@ export default function RealtimeSection() {
                 <div key={f.title} className="flex gap-4">
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ backgroundColor: "#FF4F8B22" }}
+                    style={{ backgroundColor: "var(--brand-soft)" }}
                   >
                     <f.icon size={16} color="var(--brand)" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white text-sm mb-0.5">
+                    <h3 className="font-semibold text-skin text-sm mb-0.5">
                       {f.title}
                     </h3>
-                    <p className="text-sm text-gray-400">{f.description}</p>
+                    <p className="text-sm text-muted-skin">{f.description}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <p className="text-xs text-gray-500 mt-8 leading-relaxed">
-              Concept preview · Challenge results are not recorded in this
+            <p className="text-xs text-muted-skin mt-8 leading-relaxed">
+              Concept preview. Challenge results are not recorded in this
               release.
             </p>
           </div>

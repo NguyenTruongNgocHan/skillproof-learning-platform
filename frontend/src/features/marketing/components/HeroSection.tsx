@@ -8,8 +8,11 @@ import {
 import { Link } from "react-router-dom";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { getNextRouteForUserState } from "@/utils/authFlow";
 
 export default function HeroSection() {
+  const { user } = useAuth();
   return (
     <section className="marketing-hero">
       <div className="hero-glow hero-glow--one" />
@@ -27,12 +30,12 @@ export default function HeroSection() {
             </h1>
             <p>
               SkillProof connects structured learning, meaningful assessment,
-              and independently verifiable credentials in one trusted journey.
+              and credentials designed for independent verification in one trusted journey.
             </p>
             <div className="hero-actions">
               <Button asChild variant="primary" size="lg">
-                <Link to="/register">
-                  Create an account <ArrowRight size={17} />
+                <Link to={user ? getNextRouteForUserState(user) : "/register"}>
+                  {user ? "My workspace" : "Create an account"} <ArrowRight size={17} />
                 </Link>
               </Button>
               <a href="#how-it-works" className="hero-text-action">
@@ -61,7 +64,7 @@ export default function HeroSection() {
           >
             <div className="hero-product__top">
               <div>
-                <span>CONCEPT PREVIEW · LEARNING PATH</span>
+                <span>LEARNING PATH PREVIEW</span>
                 <h2>Backend Engineering</h2>
               </div>
               <div className="verified-pill">
@@ -101,15 +104,15 @@ export default function HeroSection() {
             <div className="floating-badge floating-badge--top">
               <Sparkles size={16} />
               <span>
-                <b>AI guidance</b>
-                <small>Personalized next step</small>
+                <b>Future guidance</b>
+                <small>Planned recommendations</small>
               </span>
             </div>
             <div className="floating-badge floating-badge--bottom">
               <ShieldCheck size={16} />
               <span>
-                <b>Future credential</b>
-                <small>Portable credential</small>
+                <b>Certificate roadmap</b>
+                <small>Planned for a future release</small>
               </span>
             </div>
           </div>

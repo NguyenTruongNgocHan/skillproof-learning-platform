@@ -11,11 +11,11 @@ import SectionHeading from "@/components/ui/SectionHeading";
 
 export default function CommunitySection() {
   return (
-    <section className="py-24 bg-skin">
+    <section className="py-24 bg-subtle-skin">
       <Container>
         <SectionHeading
           title="Practice beyond the official curriculum."
-          subtitle="Community members create and share practice content. Official certification paths are always clearly distinguished from community content."
+          subtitle="The planned community will expand practice beyond official Learning Paths. Community activity does not grant official certificate eligibility."
           centered
         />
 
@@ -23,7 +23,7 @@ export default function CommunitySection() {
           {/* Official */}
           <div className="rounded-2xl border-2 border-strong-skin p-8">
             <div className="flex items-center gap-2 mb-4">
-              <div className="flex items-center gap-2 bg-ink-skin text-white px-3 py-1.5 rounded-lg">
+              <div className="flex items-center gap-2 bg-ink-skin px-3 py-1.5 rounded-lg">
                 <Shield size={14} />
                 <span className="text-xs font-semibold uppercase tracking-wide">
                   Official
@@ -50,7 +50,7 @@ export default function CommunitySection() {
                 },
                 {
                   icon: CheckCircle,
-                  text: "Quality guaranteed by the issuing organization",
+                  text: "Completion follows the organization’s published policy",
                 },
               ].map((item) => (
                 <div key={item.text} className="flex items-start gap-2.5">
@@ -86,8 +86,8 @@ export default function CommunitySection() {
             <div className="space-y-3">
               {[
                 { icon: BookOpen, text: "Community quizzes and mock tests" },
-                { icon: Star, text: "Peer-rated content with quality signals" },
-                { icon: CheckCircle, text: "Free and paid options available" },
+                { icon: Star, text: "Community ratings are planned as a discovery signal" },
+                { icon: CheckCircle, text: "Access will follow the content’s published policy" },
               ].map((item) => (
                 <div key={item.text} className="flex items-start gap-2.5">
                   <item.icon
@@ -103,9 +103,7 @@ export default function CommunitySection() {
         </div>
 
         <div className="rounded-lg border border-skin bg-subtle-skin px-5 py-3 text-sm text-muted-skin text-center">
-          Community content does not directly grant official SkillProof
-          certificates. Official certification requires completion of an
-          approved learning path from a verified organization.
+          Concept preview. Community practice does not automatically count toward an official program or certificate.
         </div>
       </Container>
     </section>
