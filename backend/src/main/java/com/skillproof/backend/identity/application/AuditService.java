@@ -1,11 +1,12 @@
 package com.skillproof.backend.identity.application;
 
-import com.skillproof.backend.identity.domain.SecurityAuditEvent;
-import com.skillproof.backend.identity.infrastructure.SecurityAuditEventRepository;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
+import com.skillproof.backend.identity.domain.SecurityAuditEvent;
+import com.skillproof.backend.identity.infrastructure.SecurityAuditEventRepository;
 
 @Service
 public class AuditService {

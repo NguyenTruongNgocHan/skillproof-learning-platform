@@ -1,19 +1,19 @@
-export type ContentType = "Quiz" | "Mock Test";
-export type ContentSource = "OFFICIAL" | "COMMUNITY";
+export type ContentType = "Quiz" | "Mock Test"
+export type ContentSource = "OFFICIAL" | "COMMUNITY"
 
 export interface CommunityContentItem {
-  id: string;
-  title: string;
-  creator: string;
-  type: ContentType;
-  source: ContentSource;
-  topic: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  questions: number;
-  rating: number;
-  reviewCount: number;
-  free: boolean;
-  description: string;
+  id: string
+  title: string
+  creator: string
+  type: ContentType
+  source: ContentSource
+  topic: string
+  difficulty: "Beginner" | "Intermediate" | "Advanced"
+  questions: number
+  rating: number
+  reviewCount: number
+  free: boolean
+  description: string
 }
 
 export const COMMUNITY_CONTENT: CommunityContentItem[] = [
@@ -129,6 +129,13 @@ export const COMMUNITY_CONTENT: CommunityContentItem[] = [
     free: true,
     description: "",
   },
-];
+]
 
-export const TOPICS = ["All", "Programming", "APIs", "Databases", "Cloud", "Testing"];
+export const TOPICS = [
+  "All",
+  "Programming",
+  "APIs",
+  "Databases",
+  "Cloud",
+  "Testing",
+]

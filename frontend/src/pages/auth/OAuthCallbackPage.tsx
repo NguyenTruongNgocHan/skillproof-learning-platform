@@ -1,25 +1,25 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import LoadingSpinner from "@/components/feedback/LoadingSpinner";
-import BrandLogo from "@/components/ui/BrandLogo";
-import { getNextRouteAfterLogin } from "@/utils/authFlow";
-import { useToast } from "@/components/ui/Toast";
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import LoadingSpinner from "@/components/feedback/LoadingSpinner"
+import BrandLogo from "@/components/ui/BrandLogo"
+import { getNextRouteAfterLogin } from "@/utils/authFlow"
+import { useToast } from "@/components/ui/Toast"
 
 export default function OAuthCallbackPage() {
-  const navigate = useNavigate();
-  const { refreshSession } = useAuth();
-  const { toast } = useToast();
+  const navigate = useNavigate()
+  const { refreshSession } = useAuth()
+  const { toast } = useToast()
 
   useEffect(() => {
     refreshSession()
       .then((user) => {
-        if (!user) throw new Error("OAuth session was not created.");
-        toast("success", "Google sign-in completed successfully.");
-        navigate(getNextRouteAfterLogin(user), { replace: true });
+        if (!user) throw new Error("OAuth session was not created.")
+        toast("success", "Google sign-in completed successfully.")
+        navigate(getNextRouteAfterLogin(user), { replace: true })
       })
-      .catch(() => navigate("/login?oauth=failed", { replace: true }));
-  }, [navigate, refreshSession, toast]);
+      .catch(() => navigate("/login?oauth=failed", { replace: true }))
+  }, [navigate, refreshSession, toast])
 
   return (
     <main
@@ -38,5 +38,5 @@ export default function OAuthCallbackPage() {
         </p>
       </div>
     </main>
-  );
+  )
 }

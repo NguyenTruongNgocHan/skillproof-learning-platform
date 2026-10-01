@@ -1,18 +1,19 @@
-import type { AuthRepository } from "./AuthRepository";
+import type { AuthRepository } from "./AuthRepository"
 import type {
   AuthResult,
+  LearnerPreferences,
   LoginCredentials,
   RegisterLearnerData,
   User,
-} from "../types/auth.types";
+} from "../types/auth.types"
 import {
   apiClient,
   refreshAccessToken,
   setAccessToken,
   type SessionResponse,
-} from "@/services/api/apiClient";
+} from "@/services/api/apiClient"
 
-function toUser(session: SessionResponse): User {
+async function toUser(session: SessionResponse): Promise<User> {
   return {
     id: session.user.id,
     email: session.user.email,
@@ -23,30 +24,33 @@ function toUser(session: SessionResponse): User {
         ? "UNVERIFIED"
         : "VERIFIED",
     onboardingStatus: "COMPLETED",
-  };
+  }
 }
 
 export const httpAuthRepository: AuthRepository = {
+  async saveLearnerPreferences(data: LearnerPreferences): Promise<void> {
+    await apiClient.put("/me/learning-preferences", data)
+  },
   async login(credentials: LoginCredentials): Promise<AuthResult> {
     const session = await apiClient.post<SessionResponse>(
       "/auth/login",
       credentials,
-    );
-    setAccessToken(session.accessToken);
-    return { user: toUser(session) };
+    )
+    setAccessToken(session.accessToken)
+    return { user: await toUser(session) }
   },
   async registerLearner(data: RegisterLearnerData): Promise<AuthResult> {
     const account = await apiClient.post<{
-      id: string;
-      email: string;
-      displayName: string;
-      role: User["role"];
+      id: string
+      email: string
+      displayName: string
+      role: User["role"]
     }>("/auth/register", {
       email: data.email,
       displayName: data.fullName,
       password: data.password,
       role: data.role ?? "LEARNER",
-    });
+    })
     return {
       user: {
         id: account.id,
@@ -54,40 +58,43 @@ export const httpAuthRepository: AuthRepository = {
         fullName: account.displayName,
         role: account.role,
         emailVerificationStatus: "UNVERIFIED",
-        onboardingStatus: "COMPLETED",
+        onboardingStatus:
+          account.role === "LEARNER" ? "NOT_STARTED" : "COMPLETED",
       },
-    };
+    }
   },
   async verifyEmail(token: string): Promise<boolean> {
-    await apiClient.post("/auth/verify-email", { token });
-    return true;
+    await apiClient.post("/auth/verify-email", { token })
+    return true
   },
   async resendVerification(email: string): Promise<void> {
-    await apiClient.post("/auth/resend-verification", { email });
+    await apiClient.post("/auth/resend-verification", { email })
   },
   async forgotPassword(email: string): Promise<void> {
-    await apiClient.post("/auth/forgot-password", { email });
+    await apiClient.post("/auth/forgot-password", { email })
   },
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    await apiClient.post("/auth/reset-password", { token, newPassword });
-    setAccessToken(null);
+    await apiClient.post("/auth/reset-password", { token, newPassword })
+    setAccessToken(null)
   },
   async loginWithGoogle(): Promise<AuthResult> {
     window.location.assign(
       `${import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8080"}/oauth2/authorization/google`,
-    );
-    return new Promise(() => undefined);
+    )
+    return new Promise(() => undefined)
   },
   async logout(): Promise<void> {
-    await apiClient.post("/auth/logout");
-    setAccessToken(null);
+    await apiClient.post("/auth/logout")
+    setAccessToken(null)
   },
   async getSession(): Promise<User | null> {
+    let session: SessionResponse
     try {
-      return toUser(await refreshAccessToken());
+      session = await refreshAccessToken()
     } catch {
-      setAccessToken(null);
-      return null;
+      setAccessToken(null)
+      return null
     }
+    return toUser(session)
   },
-};
+}

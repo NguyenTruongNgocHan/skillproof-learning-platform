@@ -1,19 +1,20 @@
 package com.skillproof.backend.identity.application;
 
-import com.skillproof.backend.common.exception.ConflictException;
-import com.skillproof.backend.identity.api.RegisterRequest;
-import com.skillproof.backend.identity.api.RegisterResponse;
-import com.skillproof.backend.identity.domain.UserAccount;
-import com.skillproof.backend.identity.domain.UserRole;
-import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
+import java.time.Instant;
+import java.util.Locale;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.Locale;
+import com.skillproof.backend.common.exception.ConflictException;
+import com.skillproof.backend.identity.api.RegisterRequest;
+import com.skillproof.backend.identity.api.RegisterResponse;
+import com.skillproof.backend.identity.domain.UserAccount;
+import com.skillproof.backend.identity.domain.UserRole;
+import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
 
 @Service
 public class RegisterUserService {

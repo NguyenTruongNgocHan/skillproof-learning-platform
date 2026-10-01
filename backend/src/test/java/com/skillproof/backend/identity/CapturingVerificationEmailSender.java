@@ -10,8 +10,8 @@ import com.skillproof.backend.identity.infrastructure.email.VerificationEmailSen
 class CapturingVerificationEmailSender
         implements VerificationEmailSender {
 
-    private final Map<String, String> latestTokens =
-            new ConcurrentHashMap<>();
+    private final Map<String, String> latestTokens
+            = new ConcurrentHashMap<>();
 
     @Override
     public void sendVerificationEmail(

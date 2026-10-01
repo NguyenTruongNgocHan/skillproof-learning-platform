@@ -1,9 +1,10 @@
 package com.skillproof.backend.identity.infrastructure;
 
-import com.skillproof.backend.identity.domain.UserProfile;
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.UUID;
+import com.skillproof.backend.identity.domain.UserProfile;
 
 public interface UserProfileRepository extends JpaRepository<UserProfile, UUID> {
 }

@@ -1,5 +1,5 @@
-import { HelpCircle, ClipboardList, Zap } from "lucide-react";
-import Button from "@/components/ui/Button";
+import { HelpCircle, ClipboardList, Zap } from "lucide-react"
+import Button from "@/components/ui/Button"
 
 const PRACTICE_ITEMS = [
   {
@@ -20,7 +20,7 @@ const PRACTICE_ITEMS = [
     desc: "Real-time competitive coding problem",
     btn: "Join Challenge",
   },
-];
+]
 
 export default function PracticeSection() {
   return (
@@ -68,7 +68,13 @@ export default function PracticeSection() {
             >
               <Icon width={18} height={18} color="var(--brand)" />
             </div>
-            <div style={{ fontWeight: "600", color: "var(--fg)", fontSize: "0.875rem" }}>
+            <div
+              style={{
+                fontWeight: "600",
+                color: "var(--fg)",
+                fontSize: "0.875rem",
+              }}
+            >
               {title}
             </div>
             <div
@@ -89,5 +95,5 @@ export default function PracticeSection() {
         ))}
       </div>
     </div>
-  );
+  )
 }

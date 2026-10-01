@@ -22,25 +22,23 @@ public class GlobalExceptionHandler {
                     GlobalExceptionHandler.class
             );
 
-    @ExceptionHandler(
-            MethodArgumentNotValidException.class
-    )
-    public ResponseEntity<ApiError>
-            handleValidation(
-                    MethodArgumentNotValidException exception,
-                    HttpServletRequest request
-            ) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidation(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request
+    ) {
 
         Map<String, String> fieldErrors
                 = new LinkedHashMap<>();
 
         exception.getBindingResult()
                 .getFieldErrors()
-                .forEach(error
+                .forEach(
+                        error
                         -> fieldErrors.putIfAbsent(
-                        error.getField(),
-                        error.getDefaultMessage()
-                )
+                                error.getField(),
+                                error.getDefaultMessage()
+                        )
                 );
 
         ApiError error
@@ -57,14 +55,11 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(
-            ConstraintViolationException.class
-    )
-    public ResponseEntity<ApiError>
-            handleConstraintViolation(
-                    ConstraintViolationException exception,
-                    HttpServletRequest request
-            ) {
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiError> handleConstraintViolation(
+            ConstraintViolationException exception,
+            HttpServletRequest request
+    ) {
 
         ApiError error
                 = ApiError.of(
@@ -79,14 +74,11 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(
-            BadRequestException.class
-    )
-    public ResponseEntity<ApiError>
-            handleBadRequest(
-                    BadRequestException exception,
-                    HttpServletRequest request
-            ) {
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequest(
+            BadRequestException exception,
+            HttpServletRequest request
+    ) {
 
         ApiError error
                 = ApiError.of(
@@ -101,14 +93,11 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(
-            ConflictException.class
-    )
-    public ResponseEntity<ApiError>
-            handleConflict(
-                    ConflictException exception,
-                    HttpServletRequest request
-            ) {
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiError> handleConflict(
+            ConflictException exception,
+            HttpServletRequest request
+    ) {
 
         ApiError error
                 = ApiError.of(
@@ -128,9 +117,17 @@ public class GlobalExceptionHandler {
             UnauthorizedException exception,
             HttpServletRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                ApiError.of(HttpStatus.UNAUTHORIZED, exception.getCode(), exception.getMessage(), request.getRequestURI())
-        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(
+                        ApiError.of(
+                                HttpStatus.UNAUTHORIZED,
+                                exception.getCode(),
+                                exception.getMessage(),
+                                request.getRequestURI()
+                        )
+                );
     }
 
     @ExceptionHandler(NotFoundException.class)
@@ -138,29 +135,64 @@ public class GlobalExceptionHandler {
             NotFoundException exception,
             HttpServletRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ApiError.of(HttpStatus.NOT_FOUND, exception.getCode(),
-                        exception.getMessage(), request.getRequestURI())
-        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(
+                        ApiError.of(
+                                HttpStatus.NOT_FOUND,
+                                exception.getCode(),
+                                exception.getMessage(),
+                                request.getRequestURI()
+                        )
+                );
     }
 
-    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    @ExceptionHandler(
+            org.springframework.security.access.AccessDeniedException.class
+    )
     public ResponseEntity<ApiError> handleForbidden(
             org.springframework.security.access.AccessDeniedException exception,
             HttpServletRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                ApiError.of(HttpStatus.FORBIDDEN, "ACCESS_DENIED",
-                        "You do not have permission to perform this action.", request.getRequestURI())
-        );
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(
+                        ApiError.of(
+                                HttpStatus.FORBIDDEN,
+                                "ACCESS_DENIED",
+                                "You do not have permission to perform this action.",
+                                request.getRequestURI()
+                        )
+                );
+    }
+
+    @ExceptionHandler(
+            org.springframework.dao.DataIntegrityViolationException.class
+    )
+    public ResponseEntity<ApiError> handleDataConflict(
+            org.springframework.dao.DataIntegrityViolationException exception,
+            HttpServletRequest request
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(
+                        ApiError.of(
+                                HttpStatus.CONFLICT,
+                                "DATA_CONFLICT",
+                                "This change conflicts with existing content or a database constraint.",
+                                request.getRequestURI()
+                        )
+                );
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError>
-            handleUnexpected(
-                    Exception exception,
-                    HttpServletRequest request
-            ) {
+    public ResponseEntity<ApiError> handleUnexpected(
+            Exception exception,
+            HttpServletRequest request
+    ) {
 
         log.error(
                 "Unhandled exception for {} {}",
@@ -178,9 +210,7 @@ public class GlobalExceptionHandler {
                 );
 
         return ResponseEntity
-                .status(
-                        HttpStatus.INTERNAL_SERVER_ERROR
-                )
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(error);
     }
 }

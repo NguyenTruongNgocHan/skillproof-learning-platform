@@ -1,5 +1,5 @@
-import { Award } from "lucide-react";
-import EmptyState from "@/components/feedback/EmptyState";
+import { Award } from "lucide-react"
+import EmptyState from "@/components/feedback/EmptyState"
 
 export default function CertificatesSection() {
   return (
@@ -20,5 +20,5 @@ export default function CertificatesSection() {
         description="Complete a learning path to earn your first certificate."
       />
     </div>
-  );
+  )
 }

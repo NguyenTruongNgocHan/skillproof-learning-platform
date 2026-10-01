@@ -1,15 +1,19 @@
-import { Search } from "lucide-react";
-import EmptyState from "@/components/feedback/EmptyState";
-import CommunityContentCard from "@/features/community/components/CommunityContentCard";
-import type { CommunityContentItem } from "@/mocks/community/communityContent";
+import { Search } from "lucide-react"
+import EmptyState from "@/components/feedback/EmptyState"
+import CommunityContentCard from "@/features/community/components/CommunityContentCard"
+import type { CommunityContentItem } from "@/mocks/community/communityContent"
 
 interface CommunityGridProps {
-  items: CommunityContentItem[];
-  isAuthenticated: boolean;
-  onProtectedAction: (item: CommunityContentItem) => void;
+  items: CommunityContentItem[]
+  isAuthenticated: boolean
+  onProtectedAction: (item: CommunityContentItem) => void
 }
 
-export default function CommunityGrid({ items, isAuthenticated, onProtectedAction }: CommunityGridProps) {
+export default function CommunityGrid({
+  items,
+  isAuthenticated,
+  onProtectedAction,
+}: CommunityGridProps) {
   if (items.length === 0) {
     return (
       <EmptyState
@@ -17,7 +21,7 @@ export default function CommunityGrid({ items, isAuthenticated, onProtectedActio
         title="No content found"
         description="Try adjusting your filters."
       />
-    );
+    )
   }
 
   return (
@@ -37,5 +41,5 @@ export default function CommunityGrid({ items, isAuthenticated, onProtectedActio
         />
       ))}
     </div>
-  );
+  )
 }

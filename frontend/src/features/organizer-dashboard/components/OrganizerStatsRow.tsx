@@ -1,7 +1,7 @@
-import type { StatCard } from "@/mocks/dashboard/organizerDashboard";
+import type { StatCard } from "@/mocks/dashboard/organizerDashboard"
 
 interface OrganizerStatsRowProps {
-  stats: StatCard[];
+  stats: StatCard[]
 }
 
 export default function OrganizerStatsRow({ stats }: OrganizerStatsRowProps) {
@@ -64,5 +64,5 @@ export default function OrganizerStatsRow({ stats }: OrganizerStatsRowProps) {
         </div>
       ))}
     </div>
-  );
+  )
 }

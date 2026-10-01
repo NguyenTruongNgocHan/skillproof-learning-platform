@@ -1,21 +1,23 @@
-import Button from "@/components/ui/Button";
-import type { CommunityContentItem } from "@/mocks/community/communityContent";
+import Button from "@/components/ui/Button"
+import type { CommunityContentItem } from "@/mocks/community/communityContent"
 
-function difficultyStyle(difficulty: CommunityContentItem["difficulty"]): { background: string; color: string } {
+function difficultyStyle(
+  difficulty: CommunityContentItem["difficulty"],
+): { background: string; color: string } {
   switch (difficulty) {
     case "Beginner":
-      return { background: "var(--success-bg)", color: "var(--success)" };
+      return { background: "var(--success-bg)", color: "var(--success)" }
     case "Intermediate":
-      return { background: "#FFFBEB", color: "#B45309" };
+      return { background: "#FFFBEB", color: "#B45309" }
     case "Advanced":
-      return { background: "#FEF2F2", color: "#DC2626" };
+      return { background: "#FEF2F2", color: "#DC2626" }
   }
 }
 
 interface CommunityContentCardProps {
-  item: CommunityContentItem;
-  isAuthenticated: boolean;
-  onProtectedAction: (item: CommunityContentItem) => void;
+  item: CommunityContentItem
+  isAuthenticated: boolean
+  onProtectedAction: (item: CommunityContentItem) => void
 }
 
 export default function CommunityContentCard({
@@ -26,9 +28,9 @@ export default function CommunityContentCard({
   const typeBadge =
     item.type === "Quiz"
       ? { background: "#EFF6FF", color: "#2563EB" }
-      : { background: "#F5F3FF", color: "#7C3AED" };
+      : { background: "#F5F3FF", color: "#7C3AED" }
 
-  const diffStyle = difficultyStyle(item.difficulty);
+  const diffStyle = difficultyStyle(item.difficulty)
 
   return (
     <div
@@ -71,7 +73,15 @@ export default function CommunityContentCard({
       </div>
 
       {/* Title */}
-      <p style={{ fontWeight: 600, color: "var(--fg)", fontSize: "1rem", lineHeight: 1.4, margin: 0 }}>
+      <p
+        style={{
+          fontWeight: 600,
+          color: "var(--fg)",
+          fontSize: "1rem",
+          lineHeight: 1.4,
+          margin: 0,
+        }}
+      >
         {item.title}
       </p>
 
@@ -81,7 +91,14 @@ export default function CommunityContentCard({
       </p>
 
       {/* Topic + Difficulty */}
-      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <span
           style={{
             fontSize: "0.75rem",
@@ -109,7 +126,8 @@ export default function CommunityContentCard({
 
       {/* Stats */}
       <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)", margin: 0 }}>
-        {item.questions} questions&nbsp;&middot;&nbsp;&#9733; {item.rating} ({item.reviewCount})
+        {item.questions} questions&nbsp;&middot;&nbsp;&#9733; {item.rating} (
+        {item.reviewCount})
       </p>
 
       {/* CTA */}
@@ -124,5 +142,5 @@ export default function CommunityContentCard({
         </Button>
       </div>
     </div>
-  );
+  )
 }

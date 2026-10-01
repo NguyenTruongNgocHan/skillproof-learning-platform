@@ -1,24 +1,27 @@
-import { Award, ClipboardCheck, ShieldCheck } from "lucide-react";
-import Container from "@/components/ui/Container";
-import SectionHeading from "@/components/ui/SectionHeading";
+import { Award, ClipboardCheck, ShieldCheck } from "lucide-react"
+import Container from "@/components/ui/Container"
+import SectionHeading from "@/components/ui/SectionHeading"
 
 const stages = [
   {
     icon: ClipboardCheck,
     title: "Meet the requirements",
-    description: "Progress and assessment evidence are evaluated against the published Completion Policy.",
+    description:
+      "Progress and assessment evidence are evaluated against the published Completion Policy.",
   },
   {
     icon: ShieldCheck,
     title: "Authorized issuance",
-    description: "An authorized organizer in an approved organization decides when to issue a certificate.",
+    description:
+      "An authorized organizer in an approved organization decides when to issue a certificate.",
   },
   {
     icon: Award,
     title: "Keep a traceable record",
-    description: "The issued certificate links back to the learner, organization, program and path version.",
+    description:
+      "The issued certificate links back to the learner, organization, program and path version.",
   },
-];
+]
 
 export default function CertificationSection() {
   return (
@@ -32,7 +35,9 @@ export default function CertificationSection() {
         <div className="sp-certification__stages">
           {stages.map(({ icon: Icon, title, description }, index) => (
             <div className="sp-certification__stage" key={title}>
-              <span className="sp-certification__icon"><Icon size={23} aria-hidden="true" /></span>
+              <span className="sp-certification__icon">
+                <Icon size={23} aria-hidden="true" />
+              </span>
               <span className="sp-certification__count">0{index + 1}</span>
               <h3>{title}</h3>
               <p>{description}</p>
@@ -40,7 +45,8 @@ export default function CertificationSection() {
           ))}
         </div>
         <p className="sp-certification__boundary">
-          Community practice, battle ratings, payments and recommendation scores do not replace completion evidence.
+          Community practice, battle ratings, payments and recommendation scores
+          do not replace completion evidence.
         </p>
       </Container>
       <style>{`
@@ -56,5 +62,5 @@ export default function CertificationSection() {
         @media (prefers-reduced-motion: reduce) { .sp-certification__stage { transition: none; } }
       `}</style>
     </section>
-  );
+  )
 }

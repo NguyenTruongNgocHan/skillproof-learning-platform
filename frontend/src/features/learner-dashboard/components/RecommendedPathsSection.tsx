@@ -1,11 +1,13 @@
-import Button from "@/components/ui/Button";
-import type { MockRecommendedPath } from "@/mocks/dashboard/learnerDashboard";
+import Button from "@/components/ui/Button"
+import type { MockRecommendedPath } from "@/mocks/dashboard/learnerDashboard"
 
 interface RecommendedPathsSectionProps {
-  paths: MockRecommendedPath[];
+  paths: MockRecommendedPath[]
 }
 
-export default function RecommendedPathsSection({ paths }: RecommendedPathsSectionProps) {
+export default function RecommendedPathsSection({
+  paths,
+}: RecommendedPathsSectionProps) {
   return (
     <div>
       <div
@@ -71,11 +73,21 @@ export default function RecommendedPathsSection({ paths }: RecommendedPathsSecti
             >
               {path.category}
             </span>
-            <div style={{ fontWeight: "600", color: "var(--fg)", fontSize: "0.9rem" }}>
+            <div
+              style={{
+                fontWeight: "600",
+                color: "var(--fg)",
+                fontSize: "0.9rem",
+              }}
+            >
               {path.title}
             </div>
-            <div style={{ fontSize: "0.8rem", color: "var(--fg-muted)" }}>{path.org}</div>
-            <div style={{ fontSize: "0.75rem", color: "var(--fg-muted)" }}>{path.meta}</div>
+            <div style={{ fontSize: "0.8rem", color: "var(--fg-muted)" }}>
+              {path.org}
+            </div>
+            <div style={{ fontSize: "0.75rem", color: "var(--fg-muted)" }}>
+              {path.meta}
+            </div>
             <div style={{ marginTop: "4px" }}>
               <Button variant="outline" size="sm">
                 Enroll
@@ -85,5 +97,5 @@ export default function RecommendedPathsSection({ paths }: RecommendedPathsSecti
         ))}
       </div>
     </div>
-  );
+  )
 }

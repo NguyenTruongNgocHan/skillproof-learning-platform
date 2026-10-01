@@ -5,13 +5,13 @@ import {
   Settings,
   Award,
   CheckCircle,
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import Container from "@/components/ui/Container";
-import SectionHeading from "@/components/ui/SectionHeading";
-import Button from "@/components/ui/Button";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { getNextRouteForUserState } from "@/utils/authFlow";
+} from "lucide-react"
+import { Link } from "react-router-dom"
+import Container from "@/components/ui/Container"
+import SectionHeading from "@/components/ui/SectionHeading"
+import Button from "@/components/ui/Button"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { getNextRouteForUserState } from "@/utils/authFlow"
 
 const capabilities = [
   {
@@ -40,7 +40,7 @@ const capabilities = [
     title: "Manage Certification Programs",
     description: "Evaluate published requirements before authorized issuance",
   },
-];
+]
 
 const fakePaths = [
   {
@@ -55,7 +55,7 @@ const fakePaths = [
     name: "Cloud Infrastructure Fundamentals",
     status: "Concept",
   },
-];
+]
 
 function DashboardPreview() {
   return (
@@ -109,7 +109,9 @@ function DashboardPreview() {
                   <p className="text-xs font-medium text-skin truncate">
                     {path.name}
                   </p>
-                  <p className="text-xs text-muted-skin">Illustrative program</p>
+                  <p className="text-xs text-muted-skin">
+                    Illustrative program
+                  </p>
                 </div>
                 <span
                   className="text-xs font-medium px-2 py-0.5 rounded flex-shrink-0"
@@ -126,11 +128,11 @@ function DashboardPreview() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default function OrganizerSection() {
-  const { user } = useAuth();
+  const { user } = useAuth()
   return (
     <section className="py-24 bg-skin">
       <Container>
@@ -192,5 +194,5 @@ export default function OrganizerSection() {
         </div>
       </Container>
     </section>
-  );
+  )
 }

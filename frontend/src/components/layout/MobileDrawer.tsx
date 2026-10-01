@@ -1,12 +1,12 @@
-import { useEffect } from "react";
-import { X } from "lucide-react";
-import AppSidebar from "@/components/layout/AppSidebar";
-import type { NavItem } from "@/config/navigation";
+import { useEffect } from "react"
+import { X } from "lucide-react"
+import AppSidebar from "@/components/layout/AppSidebar"
+import type { NavItem } from "@/config/navigation"
 
 interface MobileDrawerProps {
-  open: boolean;
-  onClose: () => void;
-  items: NavItem[];
+  open: boolean
+  onClose: () => void
+  items: NavItem[]
 }
 
 export default function MobileDrawer({
@@ -15,14 +15,14 @@ export default function MobileDrawer({
   items,
 }: MobileDrawerProps) {
   useEffect(() => {
-    if (!open) return;
+    if (!open) return
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-  if (!open) return null;
+      if (event.key === "Escape") onClose()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [open, onClose])
+  if (!open) return null
 
   return (
     <>
@@ -66,5 +66,5 @@ export default function MobileDrawer({
         <AppSidebar items={items} />
       </aside>
     </>
-  );
+  )
 }

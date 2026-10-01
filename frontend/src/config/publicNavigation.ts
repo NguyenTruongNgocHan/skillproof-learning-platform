@@ -3,8 +3,7 @@ export const LANDING_NAV = [
   { label: "Learning", id: "learning" },
   { label: "For organizations", id: "organizations" },
   { label: "Credentials", id: "credentials" },
-  
-] as const;
+] as const
 export function sectionUrl(id: string) {
-  return `/#${id}`;
+  return `/#${id}`
 }

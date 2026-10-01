@@ -1,12 +1,24 @@
-import { Briefcase, Building2, GraduationCap, ShieldCheck } from "lucide-react";
-import Container from "@/components/ui/Container";
-import SectionHeading from "@/components/ui/SectionHeading";
+import { Briefcase, Building2, GraduationCap, ShieldCheck } from "lucide-react"
+import Container from "@/components/ui/Container"
+import SectionHeading from "@/components/ui/SectionHeading"
 
 const audiences = [
-  { icon: Briefcase, title: "Recruiters", description: "Check a credential before an interview." },
-  { icon: Building2, title: "Employers", description: "See who issued it and whether it is current." },
-  { icon: GraduationCap, title: "Institutions", description: "Review the evidence behind an achievement." },
-];
+  {
+    icon: Briefcase,
+    title: "Recruiters",
+    description: "Check a credential before an interview.",
+  },
+  {
+    icon: Building2,
+    title: "Employers",
+    description: "See who issued it and whether it is current.",
+  },
+  {
+    icon: GraduationCap,
+    title: "Institutions",
+    description: "Review the evidence behind an achievement.",
+  },
+]
 
 export default function VerificationSection() {
   return (
@@ -20,34 +32,62 @@ export default function VerificationSection() {
 
         <div className="sp-verification__layout">
           <div className="sp-verification__people">
-            <p className="sp-verification__label">A PUBLIC ANSWER, WITHOUT AN ACCOUNT</p>
+            <p className="sp-verification__label">
+              A PUBLIC ANSWER, WITHOUT AN ACCOUNT
+            </p>
             {audiences.map(({ icon: Icon, title, description }, index) => (
               <div className="sp-verification__person" key={title}>
-                <span className="sp-verification__icon"><Icon size={20} aria-hidden="true" /></span>
-                <div><h3>{title}</h3><p>{description}</p></div>
-                <span className="sp-verification__number" aria-hidden="true">0{index + 1}</span>
+                <span className="sp-verification__icon">
+                  <Icon size={20} aria-hidden="true" />
+                </span>
+                <div>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </div>
+                <span className="sp-verification__number" aria-hidden="true">
+                  0{index + 1}
+                </span>
               </div>
             ))}
           </div>
 
-          <div className="sp-verification__visual" aria-label="Illustration of a future public credential page">
+          <div
+            className="sp-verification__visual"
+            aria-label="Illustration of a future public credential page"
+          >
             <div className="sp-verification__halo" aria-hidden="true" />
             <div className="sp-verification__sheet">
               <div className="sp-verification__sheet-top">
-                <span><ShieldCheck size={21} aria-hidden="true" /> SkillProof</span>
+                <span>
+                  <ShieldCheck size={21} aria-hidden="true" /> SkillProof
+                </span>
                 <small>CONCEPT PREVIEW</small>
               </div>
-              <div className="sp-verification__seal"><ShieldCheck size={34} strokeWidth={1.6} aria-hidden="true" /></div>
+              <div className="sp-verification__seal">
+                <ShieldCheck size={34} strokeWidth={1.6} aria-hidden="true" />
+              </div>
               <h3>Proof, in one place.</h3>
               <p>Issuer, status and proof in one view.</p>
-              <div className="sp-verification__field" aria-hidden="true"><span>ISSUER</span><i /></div>
-              <div className="sp-verification__field" aria-hidden="true"><span>STATUS</span><i /></div>
-              <div className="sp-verification__field" aria-hidden="true"><span>EVIDENCE</span><i /></div>
+              <div className="sp-verification__field" aria-hidden="true">
+                <span>ISSUER</span>
+                <i />
+              </div>
+              <div className="sp-verification__field" aria-hidden="true">
+                <span>STATUS</span>
+                <i />
+              </div>
+              <div className="sp-verification__field" aria-hidden="true">
+                <span>EVIDENCE</span>
+                <i />
+              </div>
             </div>
             <span className="sp-verification__float" aria-hidden="true">
               <ShieldCheck size={17} /> Independent review
             </span>
-            <p className="sp-verification__note">Concept preview. Public lookup will show only the details needed for verification.</p>
+            <p className="sp-verification__note">
+              Concept preview. Public lookup will show only the details needed
+              for verification.
+            </p>
           </div>
         </div>
       </Container>
@@ -86,5 +126,5 @@ export default function VerificationSection() {
         @media (prefers-reduced-motion: reduce) { .sp-verification__sheet, .sp-verification__float { animation: none; } }
       `}</style>
     </section>
-  );
+  )
 }

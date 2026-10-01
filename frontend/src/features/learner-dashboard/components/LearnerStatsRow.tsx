@@ -1,16 +1,24 @@
-import { Target, Clock } from "lucide-react";
-import type { CAREER_GOAL, WEEKLY_GOAL } from "@/mocks/dashboard/learnerDashboard";
+import { Target, Clock } from "lucide-react"
+import type {
+  CAREER_GOAL,
+  WEEKLY_GOAL,
+} from "@/mocks/dashboard/learnerDashboard"
 
 interface LearnerStatsRowProps {
-  careerGoal: typeof CAREER_GOAL;
-  weeklyGoal: typeof WEEKLY_GOAL;
+  careerGoal: typeof CAREER_GOAL
+  weeklyGoal: typeof WEEKLY_GOAL
 }
 
-export default function LearnerStatsRow({ careerGoal, weeklyGoal }: LearnerStatsRowProps) {
-  const weeklyPct = Math.round((weeklyGoal.completed / weeklyGoal.target) * 100);
+export default function LearnerStatsRow({
+  careerGoal,
+  weeklyGoal,
+}: LearnerStatsRowProps) {
+  const weeklyPct = Math.round((weeklyGoal.completed / weeklyGoal.target) * 100)
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+    <div
+      style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}
+    >
       {/* Learning Goal card */}
       <div
         style={{
@@ -41,11 +49,19 @@ export default function LearnerStatsRow({ careerGoal, weeklyGoal }: LearnerStats
           >
             <Target width={16} height={16} color="var(--brand)" />
           </div>
-          <span style={{ fontSize: "0.8rem", color: "var(--fg-muted)", fontWeight: "500" }}>
+          <span
+            style={{
+              fontSize: "0.8rem",
+              color: "var(--fg-muted)",
+              fontWeight: "500",
+            }}
+          >
             Learning Goal
           </span>
         </div>
-        <div style={{ fontWeight: "700", fontSize: "1rem", color: "var(--fg)" }}>
+        <div
+          style={{ fontWeight: "700", fontSize: "1rem", color: "var(--fg)" }}
+        >
           {careerGoal.targetRole}
         </div>
         <div style={{ marginTop: "8px" }}>
@@ -110,11 +126,19 @@ export default function LearnerStatsRow({ careerGoal, weeklyGoal }: LearnerStats
           >
             <Clock width={16} height={16} color="var(--brand)" />
           </div>
-          <span style={{ fontSize: "0.8rem", color: "var(--fg-muted)", fontWeight: "500" }}>
+          <span
+            style={{
+              fontSize: "0.8rem",
+              color: "var(--fg-muted)",
+              fontWeight: "500",
+            }}
+          >
             This Week
           </span>
         </div>
-        <div style={{ fontWeight: "700", fontSize: "1rem", color: "var(--fg)" }}>
+        <div
+          style={{ fontWeight: "700", fontSize: "1rem", color: "var(--fg)" }}
+        >
           {weeklyGoal.completed} / {weeklyGoal.target} {weeklyGoal.unit}
         </div>
         <div style={{ marginTop: "8px" }}>
@@ -149,5 +173,5 @@ export default function LearnerStatsRow({ careerGoal, weeklyGoal }: LearnerStats
         </div>
       </div>
     </div>
-  );
+  )
 }

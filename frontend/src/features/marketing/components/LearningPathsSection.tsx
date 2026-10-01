@@ -1,10 +1,10 @@
-import { Link } from "react-router-dom";
-import { Clock, BookOpen, Award } from "lucide-react";
-import Container from "@/components/ui/Container";
-import SectionHeading from "@/components/ui/SectionHeading";
-import Badge from "@/components/ui/Badge";
-import { landingLearningPaths } from "@/data/landingLearningPaths";
-import type { LearningPath } from "@/types";
+import { Link } from "react-router-dom"
+import { Clock, BookOpen, Award } from "lucide-react"
+import Container from "@/components/ui/Container"
+import SectionHeading from "@/components/ui/SectionHeading"
+import Badge from "@/components/ui/Badge"
+import { landingLearningPaths } from "@/data/landingLearningPaths"
+import type { LearningPath } from "@/types"
 
 function PathCard({ path }: { path: LearningPath }) {
   return (
@@ -30,7 +30,7 @@ function PathCard({ path }: { path: LearningPath }) {
         </Badge>
       )}
     </div>
-  );
+  )
 }
 
 export default function LearningPathsSection() {
@@ -62,5 +62,5 @@ export default function LearningPathsSection() {
         </div>
       </Container>
     </section>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-import type { PathRow } from "@/mocks/dashboard/organizerDashboard";
+import type { PathRow } from "@/mocks/dashboard/organizerDashboard"
 
 interface LearningPathsTableProps {
-  rows: PathRow[];
+  rows: PathRow[]
 }
 
 export default function LearningPathsTable({ rows }: LearningPathsTableProps) {
@@ -28,23 +28,25 @@ export default function LearningPathsTable({ rows }: LearningPathsTableProps) {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              {["Path Name", "Status", "Enrolled", "Completion Rate"].map((h) => (
-                <th
-                  key={h}
-                  style={{
-                    padding: "10px 16px",
-                    textAlign: "left",
-                    fontSize: "0.7rem",
-                    fontWeight: "600",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    color: "var(--fg-muted)",
-                    borderBottom: "1px solid var(--border)",
-                  }}
-                >
-                  {h}
-                </th>
-              ))}
+              {["Path Name", "Status", "Enrolled", "Completion Rate"].map(
+                (h) => (
+                  <th
+                    key={h}
+                    style={{
+                      padding: "10px 16px",
+                      textAlign: "left",
+                      fontSize: "0.7rem",
+                      fontWeight: "600",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--fg-muted)",
+                      borderBottom: "1px solid var(--border)",
+                    }}
+                  >
+                    {h}
+                  </th>
+                ),
+              )}
             </tr>
           </thead>
           <tbody>
@@ -52,7 +54,8 @@ export default function LearningPathsTable({ rows }: LearningPathsTableProps) {
               <tr
                 key={row.name}
                 style={{
-                  borderBottom: i < rows.length - 1 ? "1px solid var(--border)" : "none",
+                  borderBottom:
+                    i < rows.length - 1 ? "1px solid var(--border)" : "none",
                 }}
               >
                 <td
@@ -77,7 +80,9 @@ export default function LearningPathsTable({ rows }: LearningPathsTableProps) {
                           ? "var(--success-bg)"
                           : "rgba(245,158,11,0.12)",
                       color:
-                        row.status === "Published" ? "var(--success)" : "var(--warning)",
+                        row.status === "Published"
+                          ? "var(--success)"
+                          : "var(--warning)",
                     }}
                   >
                     {row.status}
@@ -107,5 +112,5 @@ export default function LearningPathsTable({ rows }: LearningPathsTableProps) {
         </table>
       </div>
     </div>
-  );
+  )
 }

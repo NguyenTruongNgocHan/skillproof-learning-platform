@@ -1,9 +1,9 @@
 package com.skillproof.backend.identity.api;
 
-import com.skillproof.backend.identity.domain.AccountStatus;
-
 import java.time.Instant;
 import java.util.UUID;
+
+import com.skillproof.backend.identity.domain.AccountStatus;
 
 public record VerifyEmailResponse(
         UUID id,
@@ -11,5 +11,6 @@ public record VerifyEmailResponse(
         String displayName,
         AccountStatus status,
         Instant verifiedAt
-) {
+        ) {
+
 }

@@ -1,67 +1,69 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { getNextRouteForUserState } from "@/utils/authFlow";
-import { LANDING_NAV, sectionUrl } from "@/config/publicNavigation";
-import { ROUTES } from "@/config/appRoutes";
-import Button from "@/components/ui/Button";
-import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
-import BrandLogo from "@/components/ui/BrandLogo";
+import { useEffect, useState } from "react"
+import { Link, useLocation } from "react-router-dom"
+import { Menu, X } from "lucide-react"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { getNextRouteForUserState } from "@/utils/authFlow"
+import { LANDING_NAV, sectionUrl } from "@/config/publicNavigation"
+import { ROUTES } from "@/config/appRoutes"
+import Button from "@/components/ui/Button"
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
+import BrandLogo from "@/components/ui/BrandLogo"
 
 export default function PublicHeader() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [active, setActive] = useState("");
-  const location = useLocation();
-  const { user } = useAuth();
+  const [scrolled, setScrolled] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [active, setActive] = useState("")
+  const location = useLocation()
+  const { user } = useAuth()
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
   useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname, location.hash]);
+    setMobileOpen(false)
+  }, [location.pathname, location.hash])
   useEffect(() => {
-    if (!mobileOpen) return;
+    if (!mobileOpen) return
     const close = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMobileOpen(false);
-    };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, [mobileOpen]);
+      if (e.key === "Escape") setMobileOpen(false)
+    }
+    window.addEventListener("keydown", close)
+    return () => window.removeEventListener("keydown", close)
+  }, [mobileOpen])
   useEffect(() => {
     if (location.pathname !== ROUTES.HOME) {
-      setActive("");
-      return;
+      setActive("")
+      return
     }
     const sections = LANDING_NAV.map((item) =>
       document.getElementById(item.id),
-    ).filter((node): node is HTMLElement => !!node);
+    ).filter((node): node is HTMLElement => !!node)
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries)
-          if (entry.isIntersecting) setActive(entry.target.id);
+          if (entry.isIntersecting) setActive(entry.target.id)
       },
       { rootMargin: "-100px 0px -58% 0px", threshold: 0 },
-    );
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, [location.pathname]);
+    )
+    sections.forEach((section) => observer.observe(section))
+    return () => observer.disconnect()
+  }, [location.pathname])
   const links = LANDING_NAV.map((item) => (
     <Link
       key={item.id}
       to={sectionUrl(item.id)}
       aria-current={active === item.id ? "location" : undefined}
-      className={`public-nav-link ${active === item.id ? "public-nav-link--active" : ""}`}
+      className={`public-nav-link ${
+        active === item.id ? "public-nav-link--active" : ""
+      }`}
       onClick={() => setMobileOpen(false)}
     >
       {item.label}
     </Link>
-  ));
-  const accountRoute = getNextRouteForUserState(user);
+  ))
+  const accountRoute = getNextRouteForUserState(user)
   return (
     <header
       className={`public-header ${scrolled ? "public-header--scrolled" : ""}`}
@@ -132,5 +134,5 @@ export default function PublicHeader() {
         </nav>
       )}
     </header>
-  );
+  )
 }

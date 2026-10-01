@@ -1,19 +1,19 @@
-import type { ActivityRow } from "@/mocks/dashboard/adminDashboard";
+import type { ActivityRow } from "@/mocks/dashboard/adminDashboard"
 
 interface SystemActivityProps {
-  rows: ActivityRow[];
+  rows: ActivityRow[]
 }
 
 function statusStyle(status: string): { background: string; color: string } {
   switch (status) {
     case "Success":
-      return { background: "var(--success-bg)", color: "var(--success)" };
+      return { background: "var(--success-bg)", color: "var(--success)" }
     case "Failed":
-      return { background: "rgba(239,68,68,0.12)", color: "#ef4444" };
+      return { background: "rgba(239,68,68,0.12)", color: "#ef4444" }
     case "Pending":
     case "Review":
     default:
-      return { background: "rgba(245,158,11,0.12)", color: "var(--warning)" };
+      return { background: "rgba(245,158,11,0.12)", color: "var(--warning)" }
   }
 }
 
@@ -65,7 +65,8 @@ export default function SystemActivity({ rows }: SystemActivityProps) {
               <tr
                 key={i}
                 style={{
-                  borderBottom: i < rows.length - 1 ? "1px solid var(--border)" : "none",
+                  borderBottom:
+                    i < rows.length - 1 ? "1px solid var(--border)" : "none",
                 }}
               >
                 <td
@@ -116,5 +117,5 @@ export default function SystemActivity({ rows }: SystemActivityProps) {
         </table>
       </div>
     </div>
-  );
+  )
 }

@@ -1,10 +1,12 @@
-import type { ActivityItem } from "@/mocks/dashboard/organizerDashboard";
+import type { ActivityItem } from "@/mocks/dashboard/organizerDashboard"
 
 interface OrganizerRecentActivityProps {
-  items: ActivityItem[];
+  items: ActivityItem[]
 }
 
-export default function OrganizerRecentActivity({ items }: OrganizerRecentActivityProps) {
+export default function OrganizerRecentActivity({
+  items,
+}: OrganizerRecentActivityProps) {
   return (
     <div>
       <h2
@@ -33,7 +35,8 @@ export default function OrganizerRecentActivity({ items }: OrganizerRecentActivi
               justifyContent: "space-between",
               alignItems: "center",
               padding: "12px 16px",
-              borderBottom: i < items.length - 1 ? "1px solid var(--border)" : "none",
+              borderBottom:
+                i < items.length - 1 ? "1px solid var(--border)" : "none",
               gap: "12px",
             }}
           >
@@ -60,5 +63,5 @@ export default function OrganizerRecentActivity({ items }: OrganizerRecentActivi
         ))}
       </div>
     </div>
-  );
+  )
 }

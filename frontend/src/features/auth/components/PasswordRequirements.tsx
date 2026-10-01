@@ -1,8 +1,8 @@
-import { CheckCircle, Circle } from "lucide-react";
+import { CheckCircle, Circle } from "lucide-react"
 import type {
   PasswordCheckResult,
   PasswordStrength,
-} from "@/features/auth/validation/passwordPolicy";
+} from "@/features/auth/validation/passwordPolicy"
 
 const requirements = [
   { key: "minLength" as const, label: "At least 12 characters" },
@@ -15,33 +15,33 @@ const requirements = [
     label: "No leading or trailing spaces",
   },
   { key: "notCommon" as const, label: "Not a commonly used password" },
-];
+]
 
 const strengthColors: Record<PasswordStrength, string> = {
   weak: "var(--error)",
   fair: "var(--warning)",
   strong: "var(--success)",
   "very-strong": "var(--success)",
-};
+}
 
 const strengthLabels: Record<PasswordStrength, string> = {
   weak: "Weak",
   fair: "Fair",
   strong: "Strong",
   "very-strong": "Very Strong",
-};
+}
 
 const strengthWidth: Record<PasswordStrength, string> = {
   weak: "25%",
   fair: "50%",
   strong: "75%",
   "very-strong": "100%",
-};
+}
 
 interface PasswordRequirementsProps {
-  checks: PasswordCheckResult;
-  strength: PasswordStrength;
-  password: string;
+  checks: PasswordCheckResult
+  strength: PasswordStrength
+  password: string
 }
 
 export default function PasswordRequirements({
@@ -49,7 +49,7 @@ export default function PasswordRequirements({
   strength,
   password,
 }: PasswordRequirementsProps) {
-  if (!password) return null;
+  if (!password) return null
   return (
     <div
       className="rounded-lg p-3 flex flex-col gap-2.5"
@@ -113,5 +113,5 @@ export default function PasswordRequirements({
         ))}
       </div>
     </div>
-  );
+  )
 }

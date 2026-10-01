@@ -1,36 +1,36 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { User, LogOut } from "lucide-react";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import Avatar from "@/components/ui/Avatar";
-import type { User as UserType } from "@/features/auth/types/auth.types";
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { User, LogOut } from "lucide-react"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import Avatar from "@/components/ui/Avatar"
+import type { User as UserType } from "@/features/auth/types/auth.types"
 
 interface UserMenuProps {
-  user: UserType;
+  user: UserType
 }
 
 export default function UserMenu({ user }: UserMenuProps) {
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const { logout } = useAuth();
+  const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+  const { logout } = useAuth()
 
   async function handleSignOut() {
-    setOpen(false);
-    await logout();
-    navigate("/");
+    setOpen(false)
+    await logout()
+    navigate("/")
   }
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+      if (event.key === "Escape") setOpen(false)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [open])
   const menuItems = [
     { icon: User, label: "Profile", action: () => navigate("/profile") },
-  ];
+  ]
 
   return (
     <div style={{ position: "relative" }}>
@@ -74,8 +74,8 @@ export default function UserMenu({ user }: UserMenuProps) {
               <button
                 key={label}
                 onClick={() => {
-                  setOpen(false);
-                  action();
+                  setOpen(false)
+                  action()
                 }}
                 style={{
                   display: "flex",
@@ -92,12 +92,12 @@ export default function UserMenu({ user }: UserMenuProps) {
                   textAlign: "left",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background =
-                    "var(--bg-subtle)";
+                  ;(e.currentTarget as HTMLButtonElement).style.background =
+                    "var(--bg-subtle)"
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background =
-                    "none";
+                  ;(e.currentTarget as HTMLButtonElement).style.background =
+                    "none"
                 }}
               >
                 <Icon width={15} height={15} />
@@ -124,12 +124,12 @@ export default function UserMenu({ user }: UserMenuProps) {
                 textAlign: "left",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "var(--bg-subtle)";
+                ;(e.currentTarget as HTMLButtonElement).style.background =
+                  "var(--bg-subtle)"
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "none";
+                ;(e.currentTarget as HTMLButtonElement).style.background =
+                  "none"
               }}
             >
               <LogOut width={15} height={15} />
@@ -139,5 +139,5 @@ export default function UserMenu({ user }: UserMenuProps) {
         </>
       )}
     </div>
-  );
+  )
 }

@@ -1,13 +1,20 @@
-import { Users, TrendingUp, Building2, Clock, BookOpen, Award } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import {
+  Users,
+  TrendingUp,
+  Building2,
+  Clock,
+  BookOpen,
+  Award,
+} from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
 export interface MetricCard {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  color: string;
-  bg: string;
-  highlight?: boolean;
+  icon: LucideIcon
+  label: string
+  value: string
+  color: string
+  bg: string
+  highlight?: boolean
 }
 
 export const ADMIN_METRICS: MetricCard[] = [
@@ -54,50 +61,83 @@ export const ADMIN_METRICS: MetricCard[] = [
     color: "#14B8A6",
     bg: "rgba(20,184,166,0.12)",
   },
-];
+]
 
 export interface PendingOrg {
-  name: string;
-  submitted: string;
+  name: string
+  submitted: string
 }
 
 export const PENDING_ORGS: PendingOrg[] = [
   { name: "TechVentures Vietnam", submitted: "2 days ago" },
   { name: "EduPro Academy", submitted: "3 days ago" },
   { name: "CloudLearn Inc.", submitted: "5 days ago" },
-];
+]
 
 export interface PendingPath {
-  name: string;
-  org: string;
+  name: string
+  org: string
 }
 
 export const PENDING_PATHS: PendingPath[] = [
   { name: "Advanced React Patterns", org: "EduPro Academy" },
   { name: "Kubernetes Operations", org: "CloudLearn Inc." },
-];
+]
 
 export interface ReportedItem {
-  name: string;
-  reason: string;
+  name: string
+  reason: string
 }
 
 export const REPORTED_CONTENT: ReportedItem[] = [
-  { name: "Quiz: Java Interview Prep", reason: "Reported for misleading content" },
-];
+  {
+    name: "Quiz: Java Interview Prep",
+    reason: "Reported for misleading content",
+  },
+]
 
 export interface ActivityRow {
-  action: string;
-  user: string;
-  time: string;
-  status: string;
+  action: string
+  user: string
+  time: string
+  status: string
 }
 
 export const ACTIVITY_ROWS: ActivityRow[] = [
-  { action: "User registered", user: "alex.nguyen@gmail.com", time: "5 min ago", status: "Success" },
-  { action: "Organization submitted", user: "techventures@vn.com", time: "1 hour ago", status: "Pending" },
-  { action: "Certificate issued", user: "system", time: "2 hours ago", status: "Success" },
-  { action: "Learning path published", user: "admin@skillproof.io", time: "3 hours ago", status: "Success" },
-  { action: "Login attempt failed", user: "unknown@test.com", time: "4 hours ago", status: "Failed" },
-  { action: "Quiz reported", user: "learner@gmail.com", time: "Yesterday", status: "Review" },
-];
+  {
+    action: "User registered",
+    user: "alex.nguyen@gmail.com",
+    time: "5 min ago",
+    status: "Success",
+  },
+  {
+    action: "Organization submitted",
+    user: "techventures@vn.com",
+    time: "1 hour ago",
+    status: "Pending",
+  },
+  {
+    action: "Certificate issued",
+    user: "system",
+    time: "2 hours ago",
+    status: "Success",
+  },
+  {
+    action: "Learning path published",
+    user: "admin@skillproof.io",
+    time: "3 hours ago",
+    status: "Success",
+  },
+  {
+    action: "Login attempt failed",
+    user: "unknown@test.com",
+    time: "4 hours ago",
+    status: "Failed",
+  },
+  {
+    action: "Quiz reported",
+    user: "learner@gmail.com",
+    time: "Yesterday",
+    status: "Review",
+  },
+]

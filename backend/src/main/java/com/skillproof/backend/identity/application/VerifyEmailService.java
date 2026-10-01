@@ -1,5 +1,10 @@
 package com.skillproof.backend.identity.application;
 
+import java.time.Instant;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.skillproof.backend.common.exception.BadRequestException;
 import com.skillproof.backend.common.exception.ConflictException;
 import com.skillproof.backend.identity.api.VerifyEmailRequest;
@@ -9,10 +14,6 @@ import com.skillproof.backend.identity.domain.EmailVerificationToken;
 import com.skillproof.backend.identity.domain.UserAccount;
 import com.skillproof.backend.identity.infrastructure.EmailVerificationTokenRepository;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
 
 @Service
 public class VerifyEmailService {

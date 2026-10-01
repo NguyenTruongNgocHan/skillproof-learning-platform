@@ -1,15 +1,15 @@
-import { Monitor, Moon, Sun } from "lucide-react";
-import { useTheme } from "@/app/providers/ThemeProvider";
+import { Monitor, Moon, Sun } from "lucide-react"
+import { useTheme } from "@/app/providers/ThemeProvider"
 export default function ThemeSwitcher({
   compact: _compact = false,
 }: {
-  compact?: boolean;
+  compact?: boolean
 }) {
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme()
   const next =
-    theme === "system" ? "light" : theme === "light" ? "dark" : "system";
+    theme === "system" ? "light" : theme === "light" ? "dark" : "system"
   const Icon =
-    theme === "system" ? Monitor : resolvedTheme === "dark" ? Moon : Sun;
+    theme === "system" ? Monitor : resolvedTheme === "dark" ? Moon : Sun
   return (
     <button
       type="button"
@@ -20,5 +20,5 @@ export default function ThemeSwitcher({
     >
       <Icon aria-hidden="true" size={18} />
     </button>
-  );
+  )
 }

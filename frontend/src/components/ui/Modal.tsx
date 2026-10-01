@@ -1,12 +1,12 @@
-import { ReactNode, useEffect } from "react";
-import { X } from "lucide-react";
+import { ReactNode, useEffect } from "react"
+import { X } from "lucide-react"
 
 interface ModalProps {
-  open: boolean;
-  onClose: () => void;
-  title?: string;
-  children: ReactNode;
-  maxWidth?: string;
+  open: boolean
+  onClose: () => void
+  title?: string
+  children: ReactNode
+  maxWidth?: string
 }
 
 export default function Modal({
@@ -17,26 +17,26 @@ export default function Modal({
   maxWidth = "480px",
 }: ModalProps) {
   useEffect(() => {
-    if (!open) return;
+    if (!open) return
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handler);
-    document.body.style.overflow = "hidden";
+      if (e.key === "Escape") onClose()
+    }
+    document.addEventListener("keydown", handler)
+    document.body.style.overflow = "hidden"
     return () => {
-      document.removeEventListener("keydown", handler);
-      document.body.style.overflow = "";
-    };
-  }, [open, onClose]);
+      document.removeEventListener("keydown", handler)
+      document.body.style.overflow = ""
+    }
+  }, [open, onClose])
 
-  if (!open) return null;
+  if (!open) return null
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.5)" }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) onClose()
       }}
     >
       <div
@@ -72,5 +72,5 @@ export default function Modal({
         {children}
       </div>
     </div>
-  );
+  )
 }

@@ -1,12 +1,12 @@
-import { Plus, HelpCircle, Award, BadgeCheck } from "lucide-react";
-import Button from "@/components/ui/Button";
+import { Plus, HelpCircle, Award, BadgeCheck } from "lucide-react"
+import Button from "@/components/ui/Button"
 
 const QUICK_ACTIONS = [
   { icon: Plus, label: "Create Learning Path" },
   { icon: HelpCircle, label: "Create Quiz" },
   { icon: Award, label: "Create Certification" },
   { icon: BadgeCheck, label: "Issue Certificate" },
-];
+]
 
 export default function OrganizerQuickActions() {
   return (
@@ -75,5 +75,5 @@ export default function OrganizerQuickActions() {
         ))}
       </div>
     </div>
-  );
+  )
 }

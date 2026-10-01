@@ -1,5 +1,6 @@
 package com.skillproof.backend.organization.api;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.skillproof.backend.organization.application.OrganizationService;
 import com.skillproof.backend.organization.domain.Organization;
+import com.skillproof.backend.organization.domain.OrganizationReviewView;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -34,14 +37,23 @@ public class AdminOrganizationController {
 
     }
 
+    public record ReviewResponse(@JsonProperty("reviewer_user_id") UUID reviewerUserId,
+            String decision, String reason, @JsonProperty("reviewed_at") Instant reviewedAt) {
+
+        static ReviewResponse from(OrganizationReviewView value) {
+            return new ReviewResponse(value.reviewerUserId(), value.decision().name(),
+                    value.reason(), value.reviewedAt());
+        }
+    }
+
     @GetMapping("/pending")
     public List<Organization> pending() {
         return service.pending();
     }
 
     @GetMapping("/{id}/reviews")
-    public List<java.util.Map<String, Object>> reviews(@PathVariable UUID id) {
-        return service.reviews(id);
+    public List<ReviewResponse> reviews(@PathVariable UUID id) {
+        return service.reviews(id).stream().map(ReviewResponse::from).toList();
     }
 
     @PostMapping("/{id}/review")

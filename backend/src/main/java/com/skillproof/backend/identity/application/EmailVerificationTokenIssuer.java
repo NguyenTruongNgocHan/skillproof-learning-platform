@@ -1,11 +1,12 @@
 package com.skillproof.backend.identity.application;
 
-import com.skillproof.backend.identity.domain.EmailVerificationToken;
-import com.skillproof.backend.identity.infrastructure.EmailVerificationTokenRepository;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
+import com.skillproof.backend.identity.domain.EmailVerificationToken;
+import com.skillproof.backend.identity.infrastructure.EmailVerificationTokenRepository;
 
 @Service
 public class EmailVerificationTokenIssuer {

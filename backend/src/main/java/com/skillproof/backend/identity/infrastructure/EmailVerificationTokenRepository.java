@@ -1,14 +1,15 @@
 package com.skillproof.backend.identity.infrastructure;
 
-import com.skillproof.backend.identity.domain.EmailVerificationToken;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
+import com.skillproof.backend.identity.domain.EmailVerificationToken;
 
 public interface EmailVerificationTokenRepository
         extends JpaRepository<EmailVerificationToken, UUID> {

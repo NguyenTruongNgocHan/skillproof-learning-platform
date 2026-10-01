@@ -21,15 +21,18 @@ public class AdminAccountService {
     private final UserAccountRepository users;
     private final AuthSessionRepository sessions;
     private final AuditService audit;
+    private final OrganizationRoleTransitionPolicy organizationRolePolicy;
 
     public AdminAccountService(
             UserAccountRepository users,
             AuthSessionRepository sessions,
-            AuditService audit
+            AuditService audit,
+            OrganizationRoleTransitionPolicy organizationRolePolicy
     ) {
         this.users = users;
         this.sessions = sessions;
         this.audit = audit;
+        this.organizationRolePolicy = organizationRolePolicy;
     }
 
     @Transactional(readOnly = true)
@@ -87,6 +90,7 @@ public class AdminAccountService {
 
         var account = users.findByIdForUpdate(accountId)
                 .orElseThrow(this::accountNotFound);
+        organizationRolePolicy.assertTransitionAllowed(accountId, role);
         account.changeRole(role);
         revokeSessions(accountId);
         audit.record(actorId, "ACCOUNT_ROLE_CHANGED", "SUCCESS",

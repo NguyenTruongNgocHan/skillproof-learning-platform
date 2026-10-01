@@ -1,126 +1,150 @@
 import {
   createContext,
-  useContext,
-  useState,
   useCallback,
+  useContext,
   useEffect,
   useRef,
-} from "react";
-import type { ReactNode } from "react";
-import { CheckCircle, XCircle, AlertCircle, X } from "lucide-react";
+  useState,
+} from "react"
+import type { ReactNode } from "react"
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Info,
+  X,
+  XCircle,
+} from "lucide-react"
 
-type ToastType = "success" | "error" | "warning" | "info";
+type ToastType = "success" | "error" | "warning" | "info"
 
 interface Toast {
-  id: string;
-  type: ToastType;
-  message: string;
+  id: string
+  type: ToastType
+  message: string
 }
 
 interface ToastContextValue {
-  toast: (type: ToastType, message: string) => void;
+  toast: (type: ToastType, message: string) => void
 }
 
-const ToastContext = createContext<ToastContextValue | null>(null);
+const ToastContext = createContext<ToastContextValue | null>(null)
+
+const toastMeta = {
+  success: {
+    icon: CheckCircle2,
+    label: "Done",
+  },
+  error: {
+    icon: XCircle,
+    label: "Something went wrong",
+  },
+  warning: {
+    icon: AlertTriangle,
+    label: "A quick heads-up",
+  },
+  info: {
+    icon: Info,
+    label: "Good to know",
+  },
+} satisfies Record<
+  ToastType,
+  {
+    icon: typeof CheckCircle2
+    label: string
+  }
+>
 
 export function useToast() {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error("useToast must be used within ToastProvider");
-  return ctx;
+  const context = useContext(ToastContext)
+
+  if (!context) {
+    throw new Error("useToast must be used within ToastProvider")
+  }
+
+  return context
 }
 
-const icons = {
-  success: CheckCircle,
-  error: XCircle,
-  warning: AlertCircle,
-  info: AlertCircle,
-};
-
-const colors: Record<ToastType, string> = {
-  success: "var(--success)",
-  error: "var(--error)",
-  warning: "var(--warning)",
-  info: "var(--brand)",
-};
-
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
-  useEffect(
-    () => () => {
-      timers.current.forEach(clearTimeout);
-      timers.current.clear();
-    },
-    [],
-  );
+  const [toasts, setToasts] = useState<Toast[]>([])
+  const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>())
+
+  useEffect(() => {
+    const currentTimers = timers.current
+
+    return () => {
+      currentTimers.forEach(clearTimeout)
+      currentTimers.clear()
+    }
+  }, [])
+
+  const remove = useCallback((id: string) => {
+    const timer = timers.current.get(id)
+
+    if (timer) {
+      clearTimeout(timer)
+      timers.current.delete(id)
+    }
+
+    setToasts((current) => current.filter((item) => item.id !== id))
+  }, [])
 
   const toast = useCallback((type: ToastType, message: string) => {
-    const id = crypto.randomUUID();
-    setToasts((prev) =>
+    const id = crypto.randomUUID()
+
+    setToasts((current) =>
       [
-        ...prev.filter((item) => item.message !== message),
+        ...current.filter((item) => item.message !== message),
         { id, type, message },
       ].slice(-4),
-    );
-    timers.current.set(
-      id,
-      setTimeout(() => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
-        timers.current.delete(id);
-      }, 5000),
-    );
-  }, []);
+    )
 
-  const remove = (id: string) => {
-    clearTimeout(timers.current.get(id));
-    timers.current.delete(id);
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+    const timer = setTimeout(() => {
+      setToasts((current) => current.filter((item) => item.id !== id))
+      timers.current.delete(id)
+    }, 5000)
+
+    timers.current.set(id, timer)
+  }, [])
 
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
+
       <div
+        className="toast-viewport"
         aria-live="polite"
         aria-atomic="false"
-        className="fixed top-4 right-4 z-50 flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2 pointer-events-none"
       >
         {toasts.map(({ id, type, message }) => {
-          const Icon = icons[type];
+          const { icon: Icon, label } = toastMeta[type]
+
           return (
             <div
               key={id}
+              className={`sp-toast sp-toast--${type}`}
               role={type === "error" ? "alert" : "status"}
-              className="flex items-start gap-3 px-4 py-3 rounded-xl pointer-events-auto"
-              style={{
-                background: "var(--surface)",
-                boxShadow: "var(--shadow-lg)",
-                border: "1px solid var(--border)",
-              }}
             >
-              <Icon
-                style={{
-                  width: 16,
-                  height: 16,
-                  color: colors[type],
-                  flexShrink: 0,
-                  marginTop: 2,
-                }}
-              />
-              <p className="text-sm flex-1" style={{ color: "var(--fg)" }}>
-                {message}
-              </p>
+              <div className="sp-toast__icon" aria-hidden="true">
+                <Icon size={18} />
+              </div>
+
+              <div className="sp-toast__content">
+                <strong>{label}</strong>
+                <p>{message}</p>
+              </div>
+
               <button
+                type="button"
+                className="sp-toast__close"
                 onClick={() => remove(id)}
-                aria-label="Dismiss"
-                style={{ color: "var(--fg-muted)" }}
+                aria-label="Dismiss notification"
               >
-                <X style={{ width: 14, height: 14 }} />
+                <X size={15} aria-hidden="true" />
               </button>
             </div>
-          );
+          )
         })}
       </div>
     </ToastContext.Provider>
-  );
+  )
 }

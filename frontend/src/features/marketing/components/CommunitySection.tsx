@@ -1,13 +1,6 @@
-import {
-  Shield,
-  Users,
-  CheckCircle,
-  Star,
-  BookOpen,
-  Award,
-} from "lucide-react";
-import Container from "@/components/ui/Container";
-import SectionHeading from "@/components/ui/SectionHeading";
+import { Shield, Users, CheckCircle, Star, BookOpen, Award } from "lucide-react"
+import Container from "@/components/ui/Container"
+import SectionHeading from "@/components/ui/SectionHeading"
 
 export default function CommunitySection() {
   return (
@@ -86,8 +79,14 @@ export default function CommunitySection() {
             <div className="space-y-3">
               {[
                 { icon: BookOpen, text: "Community quizzes and mock tests" },
-                { icon: Star, text: "Community ratings are planned as a discovery signal" },
-                { icon: CheckCircle, text: "Access will follow the content’s published policy" },
+                {
+                  icon: Star,
+                  text: "Community ratings are planned as a discovery signal",
+                },
+                {
+                  icon: CheckCircle,
+                  text: "Access will follow the content’s published policy",
+                },
               ].map((item) => (
                 <div key={item.text} className="flex items-start gap-2.5">
                   <item.icon
@@ -103,9 +102,10 @@ export default function CommunitySection() {
         </div>
 
         <div className="rounded-lg border border-skin bg-subtle-skin px-5 py-3 text-sm text-muted-skin text-center">
-          Concept preview. Community practice does not automatically count toward an official program or certificate.
+          Concept preview. Community practice does not automatically count
+          toward an official program or certificate.
         </div>
       </Container>
     </section>
-  );
+  )
 }

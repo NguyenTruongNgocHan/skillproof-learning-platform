@@ -10,7 +10,7 @@ class IdentityTestMailConfig {
     @Bean
     @Primary
     CapturingVerificationEmailSender
-    capturingVerificationEmailSender() {
+            capturingVerificationEmailSender() {
 
         return new CapturingVerificationEmailSender();
     }

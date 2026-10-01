@@ -1,6 +1,6 @@
-import Container from "@/components/ui/Container";
-import SectionHeading from "@/components/ui/SectionHeading";
-import type { JourneyStep } from "@/types";
+import Container from "@/components/ui/Container"
+import SectionHeading from "@/components/ui/SectionHeading"
+import type { JourneyStep } from "@/types"
 
 const steps: JourneyStep[] = [
   {
@@ -11,12 +11,14 @@ const steps: JourneyStep[] = [
   {
     step: 2,
     title: "Follow a Learning Path",
-    description: "Work through structured modules, resources and practice content",
+    description:
+      "Work through structured modules, resources and practice content",
   },
   {
     step: 3,
     title: "Practice and compete",
-    description: "Reinforce understanding through quizzes and realtime 1v1 challenges",
+    description:
+      "Reinforce understanding through quizzes and realtime 1v1 challenges",
   },
   {
     step: 4,
@@ -26,18 +28,22 @@ const steps: JourneyStep[] = [
   {
     step: 5,
     title: "Earn your certificate",
-    description: "An authorized organizer may issue a certificate after requirements are met",
+    description:
+      "An authorized organizer may issue a certificate after requirements are met",
   },
   {
     step: 6,
     title: "Share and verify",
     description: "Share your issued credential for independent verification",
   },
-];
+]
 
 export default function JourneySection() {
   return (
-    <section className="py-24 bg-skin sp-journey" aria-labelledby="sp-journey-heading">
+    <section
+      className="py-24 bg-skin sp-journey"
+      aria-labelledby="sp-journey-heading"
+    >
       <Container>
         <div id="sp-journey-heading">
           <SectionHeading
@@ -51,7 +57,10 @@ export default function JourneySection() {
           <ol className="sp-journey__steps">
             {steps.map((step) => (
               <li className="sp-journey__step" key={step.step}>
-                <span className="sp-journey__number" aria-label={`Step ${step.step}`}>
+                <span
+                  className="sp-journey__number"
+                  aria-label={`Step ${step.step}`}
+                >
                   <span>{String(step.step).padStart(2, "0")}</span>
                 </span>
                 <div className="sp-journey__text">
@@ -169,5 +178,5 @@ export default function JourneySection() {
         }
       `}</style>
     </section>
-  );
+  )
 }

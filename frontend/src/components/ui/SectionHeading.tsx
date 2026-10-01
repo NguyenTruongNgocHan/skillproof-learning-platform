@@ -1,8 +1,8 @@
 interface SectionHeadingProps {
-  eyebrow?: string;
-  title: string;
-  subtitle?: string;
-  centered?: boolean;
+  eyebrow?: string
+  title: string
+  subtitle?: string
+  centered?: boolean
 }
 
 export default function SectionHeading({
@@ -26,11 +26,13 @@ export default function SectionHeading({
       </h2>
       {subtitle && (
         <p
-          className={`mt-4 text-lg text-muted-skin ${centered ? "max-w-2xl mx-auto" : "max-w-2xl"}`}
+          className={`mt-4 text-lg text-muted-skin ${
+            centered ? "max-w-2xl mx-auto" : "max-w-2xl"
+          }`}
         >
           {subtitle}
         </p>
       )}
     </div>
-  );
+  )
 }

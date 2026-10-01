@@ -1,16 +1,17 @@
 package com.skillproof.backend.identity.application;
 
-import com.skillproof.backend.identity.api.ResendVerificationRequest;
-import com.skillproof.backend.identity.domain.AccountStatus;
-import com.skillproof.backend.identity.domain.UserAccount;
-import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
+import java.time.Instant;
+import java.util.Locale;
+import java.util.Optional;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.Locale;
-import java.util.Optional;
+import com.skillproof.backend.identity.api.ResendVerificationRequest;
+import com.skillproof.backend.identity.domain.AccountStatus;
+import com.skillproof.backend.identity.domain.UserAccount;
+import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
 
 @Service
 public class ResendEmailVerificationService {

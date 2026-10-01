@@ -95,8 +95,8 @@ class IdentityControllerIntegrationTest {
                                 )
                 );
 
-        var account =
-                userAccountRepository
+        var account
+                = userAccountRepository
                         .findByEmail(
                                 "learner@example.com"
                         )
@@ -205,10 +205,10 @@ class IdentityControllerIntegrationTest {
                         status().isCreated()
                 );
 
-        String token =
-                emailSender.latestToken(
-                                "learner@example.com"
-                        )
+        String token
+                = emailSender.latestToken(
+                        "learner@example.com"
+                )
                         .orElseThrow();
 
         verify(token)
@@ -228,8 +228,8 @@ class IdentityControllerIntegrationTest {
                                 .exists()
                 );
 
-        var account =
-                userAccountRepository
+        var account
+                = userAccountRepository
                         .findByEmail(
                                 "learner@example.com"
                         )
@@ -249,9 +249,9 @@ class IdentityControllerIntegrationTest {
     void invalidVerificationTokenShouldBeRejected()
             throws Exception {
 
-        String invalidToken =
-                "invalid-verification-token-"
-                        + UUID.randomUUID();
+        String invalidToken
+                = "invalid-verification-token-"
+                + UUID.randomUUID();
 
         verify(invalidToken)
                 .andExpect(
@@ -274,8 +274,8 @@ class IdentityControllerIntegrationTest {
                         status().isCreated()
                 );
 
-        var account =
-                userAccountRepository
+        var account
+                = userAccountRepository
                         .findByEmail(
                                 "learner@example.com"
                         )
@@ -283,24 +283,24 @@ class IdentityControllerIntegrationTest {
 
         tokenRepository.deleteAll();
 
-        String rawToken =
-                "expired-verification-token-"
-                        + UUID.randomUUID();
+        String rawToken
+                = "expired-verification-token-"
+                + UUID.randomUUID();
 
-        Instant createdAt =
-                Instant.now()
+        Instant createdAt
+                = Instant.now()
                         .minus(
                                 Duration.ofHours(1)
                         );
 
-        Instant expiresAt =
-                Instant.now()
+        Instant expiresAt
+                = Instant.now()
                         .minus(
                                 Duration.ofMinutes(30)
                         );
 
-        EmailVerificationToken expiredToken =
-                EmailVerificationToken.issue(
+        EmailVerificationToken expiredToken
+                = EmailVerificationToken.issue(
                         account.getId(),
                         tokenCodec.hash(rawToken),
                         createdAt,
@@ -332,10 +332,10 @@ class IdentityControllerIntegrationTest {
                         status().isCreated()
                 );
 
-        String token =
-                emailSender.latestToken(
-                                "learner@example.com"
-                        )
+        String token
+                = emailSender.latestToken(
+                        "learner@example.com"
+                )
                         .orElseThrow();
 
         verify(token)
@@ -364,10 +364,10 @@ class IdentityControllerIntegrationTest {
                         status().isCreated()
                 );
 
-        String firstToken =
-                emailSender.latestToken(
-                                "learner@example.com"
-                        )
+        String firstToken
+                = emailSender.latestToken(
+                        "learner@example.com"
+                )
                         .orElseThrow();
 
         resend(
@@ -377,10 +377,10 @@ class IdentityControllerIntegrationTest {
                         status().isAccepted()
                 );
 
-        String secondToken =
-                emailSender.latestToken(
-                                "learner@example.com"
-                        )
+        String secondToken
+                = emailSender.latestToken(
+                        "learner@example.com"
+                )
                         .orElseThrow();
 
         assertThat(secondToken)
@@ -422,7 +422,7 @@ class IdentityControllerIntegrationTest {
     }
 
     private org.springframework.test.web.servlet.ResultActions
-    registerDefault()
+            registerDefault()
             throws Exception {
 
         return register(
@@ -433,11 +433,11 @@ class IdentityControllerIntegrationTest {
     }
 
     private org.springframework.test.web.servlet.ResultActions
-    register(
-            String email,
-            String displayName,
-            String password
-    ) throws Exception {
+            register(
+                    String email,
+                    String displayName,
+                    String password
+            ) throws Exception {
 
         String body = """
                 {
@@ -462,9 +462,9 @@ class IdentityControllerIntegrationTest {
     }
 
     private org.springframework.test.web.servlet.ResultActions
-    verify(
-            String token
-    ) throws Exception {
+            verify(
+                    String token
+            ) throws Exception {
 
         String body = """
                 {
@@ -485,9 +485,9 @@ class IdentityControllerIntegrationTest {
     }
 
     private org.springframework.test.web.servlet.ResultActions
-    resend(
-            String email
-    ) throws Exception {
+            resend(
+                    String email
+            ) throws Exception {
 
         String body = """
                 {

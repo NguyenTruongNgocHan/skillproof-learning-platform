@@ -1,35 +1,41 @@
-import type { User, UserRole } from '@/features/auth/types/auth.types';
+import type { User, UserRole } from "@/features/auth/types/auth.types"
 
 export function getDefaultRouteForRole(role: UserRole): string {
   switch (role) {
-    case 'ADMIN': return '/admin';
-    case 'ORGANIZER': return '/organizer/verification-pending';
-    case 'LEARNER': return '/app';
+    case "ADMIN":
+      return "/admin"
+    case "ORGANIZER":
+      return "/organizer/verification-pending"
+    case "LEARNER":
+      return "/app"
   }
 }
 
 export function getNextRouteAfterLogin(user: User): string {
-  if (user.emailVerificationStatus === 'UNVERIFIED') return '/verify-email';
-  return getNextRouteAfterVerification(user);
+  if (user.emailVerificationStatus === "UNVERIFIED") return "/verify-email"
+  return getNextRouteAfterVerification(user)
 }
 
 export function getNextRouteAfterVerification(user: User): string {
-  if (user.role === 'LEARNER') {
-    if (user.onboardingStatus !== 'COMPLETED') return '/onboarding/learner';
-    return '/app';
+  if (user.role === "LEARNER") {
+    return "/app"
   }
-  if (user.role === 'ORGANIZER') {
-    if (user.onboardingStatus !== 'COMPLETED') return '/onboarding/organizer';
-    return '/organizer/verification-pending';
+
+  if (user.role === "ORGANIZER") {
+    return "/organizer/verification-pending"
   }
-  return '/admin';
+
+  return "/admin"
 }
 
 export function getNextRouteForUserState(user: User | null): string {
-  if (!user) return '/login';
-  return getNextRouteAfterLogin(user);
+  if (!user) return "/login"
+  return getNextRouteAfterLogin(user)
 }
 
-export function canAccessRole(user: User | null, requiredRole: UserRole): boolean {
-  return !!user && user.role === requiredRole;
+export function canAccessRole(
+  user: User | null,
+  requiredRole: UserRole,
+): boolean {
+  return !!user && user.role === requiredRole
 }

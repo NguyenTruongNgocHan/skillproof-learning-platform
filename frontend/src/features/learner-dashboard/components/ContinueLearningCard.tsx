@@ -1,11 +1,13 @@
-import Button from "@/components/ui/Button";
-import type { MockLearningPath } from "@/mocks/dashboard/learnerDashboard";
+import Button from "@/components/ui/Button"
+import type { MockLearningPath } from "@/mocks/dashboard/learnerDashboard"
 
 interface ContinueLearningCardProps {
-  path: MockLearningPath;
+  path: MockLearningPath
 }
 
-export default function ContinueLearningCard({ path }: ContinueLearningCardProps) {
+export default function ContinueLearningCard({
+  path,
+}: ContinueLearningCardProps) {
   return (
     <div
       style={{
@@ -84,5 +86,5 @@ export default function ContinueLearningCard({ path }: ContinueLearningCardProps
         </Button>
       </div>
     </div>
-  );
+  )
 }

@@ -1,13 +1,14 @@
 package com.skillproof.backend.identity.infrastructure.email;
 
-import com.skillproof.backend.identity.application.EmailVerificationProperties;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
+import com.skillproof.backend.identity.application.EmailVerificationProperties;
 
 @Component
 public class SmtpVerificationEmailSender

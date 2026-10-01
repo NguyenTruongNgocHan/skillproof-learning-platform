@@ -25,14 +25,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/v1/auth")
 public class IdentityController {
 
-    private final RegisterUserService
-            registerUserService;
+    private final RegisterUserService registerUserService;
 
-    private final VerifyEmailService
-            verifyEmailService;
+    private final VerifyEmailService verifyEmailService;
 
-    private final ResendEmailVerificationService
-            resendEmailVerificationService;
+    private final ResendEmailVerificationService resendEmailVerificationService;
     private final AuthenticationService authenticationService;
     private final TokenProperties tokenProperties;
     private final ForgotPasswordService forgotPasswordService;
@@ -47,14 +44,14 @@ public class IdentityController {
             ForgotPasswordService forgotPasswordService,
             ResetPasswordService resetPasswordService
     ) {
-        this.registerUserService =
-                registerUserService;
+        this.registerUserService
+                = registerUserService;
 
-        this.verifyEmailService =
-                verifyEmailService;
+        this.verifyEmailService
+                = verifyEmailService;
 
-        this.resendEmailVerificationService =
-                resendEmailVerificationService;
+        this.resendEmailVerificationService
+                = resendEmailVerificationService;
         this.authenticationService = authenticationService;
         this.tokenProperties = tokenProperties;
         this.forgotPasswordService = forgotPasswordService;
@@ -64,12 +61,11 @@ public class IdentityController {
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(
             @Valid
-            @RequestBody
-            RegisterRequest request
+            @RequestBody RegisterRequest request
     ) {
 
-        RegisterResponse response =
-                registerUserService.register(
+        RegisterResponse response
+                = registerUserService.register(
                         request
                 );
 
@@ -80,11 +76,10 @@ public class IdentityController {
 
     @PostMapping("/verify-email")
     public ResponseEntity<VerifyEmailResponse>
-    verifyEmail(
-            @Valid
-            @RequestBody
-            VerifyEmailRequest request
-    ) {
+            verifyEmail(
+                    @Valid
+                    @RequestBody VerifyEmailRequest request
+            ) {
 
         return ResponseEntity.ok(
                 verifyEmailService.verify(
@@ -95,11 +90,10 @@ public class IdentityController {
 
     @PostMapping("/resend-verification")
     public ResponseEntity<Void>
-    resendVerification(
-            @Valid
-            @RequestBody
-            ResendVerificationRequest request
-    ) {
+            resendVerification(
+                    @Valid
+                    @RequestBody ResendVerificationRequest request
+            ) {
 
         resendEmailVerificationService.resend(
                 request
@@ -112,8 +106,8 @@ public class IdentityController {
 
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request,
-                              HttpServletRequest servletRequest,
-                              HttpServletResponse servletResponse) {
+            HttpServletRequest servletRequest,
+            HttpServletResponse servletResponse) {
         var issued = authenticationService.login(request, metadata(servletRequest));
         setRefreshCookie(servletResponse, issued.refreshToken());
         return issued.response();
@@ -158,9 +152,13 @@ public class IdentityController {
     }
 
     private String refreshCookie(HttpServletRequest request) {
-        if (request.getCookies() == null) return null;
+        if (request.getCookies() == null) {
+            return null;
+        }
         for (Cookie cookie : request.getCookies()) {
-            if ("skillproof_refresh".equals(cookie.getName())) return cookie.getValue();
+            if ("skillproof_refresh".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
         }
         return null;
     }

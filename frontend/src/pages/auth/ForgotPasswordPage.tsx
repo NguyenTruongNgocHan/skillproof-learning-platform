@@ -1,36 +1,36 @@
-import { useState } from "react";
-import type { FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, MailCheck } from "lucide-react";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { useToast } from "@/components/ui/Toast";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import LoadingSpinner from "@/components/feedback/LoadingSpinner";
+import { useState } from "react"
+import type { FormEvent } from "react"
+import { Link } from "react-router-dom"
+import { ArrowLeft, MailCheck } from "lucide-react"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { useToast } from "@/components/ui/Toast"
+import Button from "@/components/ui/Button"
+import Input from "@/components/ui/Input"
+import LoadingSpinner from "@/components/feedback/LoadingSpinner"
 
 export default function ForgotPasswordPage() {
-  const { forgotPassword } = useAuth();
-  const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const { forgotPassword } = useAuth()
+  const { toast } = useToast()
+  const [email, setEmail] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    setLoading(true);
+    event.preventDefault()
+    setLoading(true)
     try {
-      await forgotPassword(email.trim());
-      setSubmitted(true);
-      toast("success", "Check your inbox for the next step.");
+      await forgotPassword(email.trim())
+      setSubmitted(true)
+      toast("success", "Check your inbox for the next step.")
     } catch (error: unknown) {
       toast(
         "error",
         error instanceof Error
           ? error.message
           : "The request could not be completed.",
-      );
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
@@ -113,5 +113,5 @@ export default function ForgotPasswordPage() {
         </Link>
       </section>
     </main>
-  );
+  )
 }

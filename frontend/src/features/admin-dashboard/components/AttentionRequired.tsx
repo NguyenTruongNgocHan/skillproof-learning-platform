@@ -1,11 +1,15 @@
-import { AlertTriangle } from "lucide-react";
-import Button from "@/components/ui/Button";
-import type { PendingOrg, PendingPath, ReportedItem } from "@/mocks/dashboard/adminDashboard";
+import { AlertTriangle } from "lucide-react"
+import Button from "@/components/ui/Button"
+import type {
+  PendingOrg,
+  PendingPath,
+  ReportedItem,
+} from "@/mocks/dashboard/adminDashboard"
 
 interface AttentionRequiredProps {
-  pendingOrgs: PendingOrg[];
-  pendingPaths: PendingPath[];
-  reportedContent: ReportedItem[];
+  pendingOrgs: PendingOrg[]
+  pendingPaths: PendingPath[]
+  reportedContent: ReportedItem[]
 }
 
 export default function AttentionRequired({
@@ -72,7 +76,13 @@ export default function AttentionRequired({
               }}
             >
               <div style={{ flex: 1, minWidth: "150px" }}>
-                <div style={{ fontWeight: "600", fontSize: "0.875rem", color: "var(--fg)" }}>
+                <div
+                  style={{
+                    fontWeight: "600",
+                    fontSize: "0.875rem",
+                    color: "var(--fg)",
+                  }}
+                >
                   {org.name}
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "var(--fg-muted)" }}>
@@ -128,7 +138,13 @@ export default function AttentionRequired({
               }}
             >
               <div style={{ flex: 1, minWidth: "150px" }}>
-                <div style={{ fontWeight: "600", fontSize: "0.875rem", color: "var(--fg)" }}>
+                <div
+                  style={{
+                    fontWeight: "600",
+                    fontSize: "0.875rem",
+                    color: "var(--fg)",
+                  }}
+                >
                   {path.name}
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "var(--fg-muted)" }}>
@@ -180,10 +196,18 @@ export default function AttentionRequired({
             }}
           >
             <div style={{ flex: 1, minWidth: "150px" }}>
-              <div style={{ fontWeight: "600", fontSize: "0.875rem", color: "var(--fg)" }}>
+              <div
+                style={{
+                  fontWeight: "600",
+                  fontSize: "0.875rem",
+                  color: "var(--fg)",
+                }}
+              >
                 {item.name}
               </div>
-              <div style={{ fontSize: "0.75rem", color: "var(--fg-muted)" }}>{item.reason}</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--fg-muted)" }}>
+                {item.reason}
+              </div>
             </div>
             <span
               style={{
@@ -204,5 +228,5 @@ export default function AttentionRequired({
         ))}
       </div>
     </div>
-  );
+  )
 }

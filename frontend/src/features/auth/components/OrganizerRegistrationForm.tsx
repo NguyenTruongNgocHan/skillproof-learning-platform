@@ -1,25 +1,24 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ChevronLeft, ArrowRight } from "lucide-react";
+import { useState } from "react"
+import { Link } from "react-router-dom"
+import { ArrowRight, ChevronLeft } from "lucide-react"
 import {
   checkPassword,
-  isPasswordValid,
   getPasswordStrength,
-} from "@/features/auth/validation/passwordPolicy";
-import PasswordRequirements from "@/features/auth/components/PasswordRequirements";
-import Input from "@/components/ui/Input";
-import PasswordInput from "@/components/ui/PasswordInput";
-import Button from "@/components/ui/Button";
-import Checkbox from "@/components/ui/Checkbox";
-import LoadingSpinner from "@/components/feedback/LoadingSpinner";
-import type { RegisterOrganizerData } from "@/features/auth/types/auth.types";
-import BrandLogo from "@/components/ui/BrandLogo";
-import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
+  isPasswordValid,
+} from "@/features/auth/validation/passwordPolicy"
+import AuthShell from "@/features/auth/components/AuthShell"
+import PasswordRequirements from "@/features/auth/components/PasswordRequirements"
+import Input from "@/components/ui/Input"
+import PasswordInput from "@/components/ui/PasswordInput"
+import Button from "@/components/ui/Button"
+import Checkbox from "@/components/ui/Checkbox"
+import LoadingSpinner from "@/components/feedback/LoadingSpinner"
+import type { RegisterOrganizerData } from "@/features/auth/types/auth.types"
 
 interface OrganizerRegistrationFormProps {
-  onSubmit: (data: RegisterOrganizerData) => Promise<void>;
-  onBack: () => void;
-  loading: boolean;
+  onSubmit: (data: RegisterOrganizerData) => Promise<void>
+  onBack: () => void
+  loading: boolean
 }
 
 export default function OrganizerRegistrationForm({
@@ -27,200 +26,182 @@ export default function OrganizerRegistrationForm({
   onBack,
   loading,
 }: OrganizerRegistrationFormProps) {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const passwordChecks = checkPassword(password);
-  const passwordValid = isPasswordValid(passwordChecks);
-  const passwordStrength = getPasswordStrength(password);
+  const passwordChecks = checkPassword(password)
+  const passwordValid = isPasswordValid(passwordChecks)
+  const passwordStrength = getPasswordStrength(password)
+
   const passwordsMatch =
-    password !== "" && confirmPassword !== "" && password === confirmPassword;
+    password !== "" &&
+    confirmPassword !== "" &&
+    password === confirmPassword
+
   const confirmError =
     confirmPassword !== "" && !passwordsMatch
-      ? "Passwords do not match."
-      : null;
+      ? "Those passwords don't match yet."
+      : null
 
   const formValid =
     fullName.trim() !== "" &&
     email.trim() !== "" &&
     passwordValid &&
     passwordsMatch &&
-    agreedToTerms;
+    agreedToTerms
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!formValid) return;
-    setError(null);
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault()
+
+    if (!formValid) return
+
+    setError(null)
+
     try {
       await onSubmit({
-        fullName,
-        email,
+        fullName: fullName.trim(),
+        email: email.trim(),
         password,
-      });
+      })
     } catch (err: unknown) {
       setError(
         err instanceof Error
           ? err.message
-          : "Registration failed. Please try again.",
-      );
+          : "We couldn't create your account. Please try again.",
+      )
     }
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-6"
-      style={{ background: "var(--bg)" }}
+    <AuthShell
+      mode="register"
+      backTo="/register"
+      backLabel="Choose another path"
     >
-      <div className="w-full max-w-md flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <BrandLogo />
-          <ThemeSwitcher />
-        </div>
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center gap-1 text-sm font-medium w-fit"
-          style={{ color: "var(--fg-muted)" }}
-        >
-          <ChevronLeft size={16} />
-          Back
-        </button>
 
-        <div>
-          <h2 className="text-2xl font-bold" style={{ color: "var(--fg)" }}>
-            Create organizer account
-          </h2>
-          <p className="text-sm mt-1" style={{ color: "var(--fg-muted)" }}>
-            Set up your organization on SkillProof
-          </p>
-        </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Input
-            label="Full Name"
-            type="text"
-            autoComplete="name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
+      <div className="auth-intro auth-intro--compact">
 
-          <Input
-            label="Work Email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+        <h1>Start with your account</h1>
 
-          <div className="flex flex-col gap-1">
-            <PasswordInput
-              label="Password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            {password !== "" && (
-              <PasswordRequirements
-                checks={passwordChecks}
-                strength={passwordStrength}
-                password={password}
-              />
-            )}
-          </div>
-
-          <PasswordInput
-            label="Confirm Password"
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            error={confirmError ?? undefined}
-          />
-
-          <p className="text-sm" style={{ color: "var(--fg-muted)" }}>
-            After email verification, you will submit your organization details
-            for review.
-          </p>
-
-          <Checkbox
-            checked={agreedToTerms}
-            onChange={(e) => setAgreedToTerms(e.target.checked)}
-            label={
-              <span style={{ color: "var(--fg-muted)" }}>
-                I agree to the{" "}
-                <Link
-                  to="/terms"
-                  className="font-medium"
-                  style={{ color: "var(--brand)" }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link
-                  to="/privacy"
-                  className="font-medium"
-                  style={{ color: "var(--brand)" }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Privacy Policy
-                </Link>
-              </span>
-            }
-          />
-
-          {error && (
-            <div
-              className="text-sm rounded-lg px-3 py-2"
-              style={{
-                color: "var(--error)",
-                background: "color-mix(in srgb, var(--error) 10%, transparent)",
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          <Button
-            type="submit"
-            variant="primary"
-            className="w-full flex items-center justify-center gap-2"
-            disabled={!formValid || loading}
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <LoadingSpinner size={16} />
-                Creating account…
-              </span>
-            ) : (
-              <>
-                Continue
-                <ArrowRight size={16} />
-              </>
-            )}
-          </Button>
-        </form>
-
-        <p className="text-center text-sm" style={{ color: "var(--fg-muted)" }}>
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="font-medium"
-            style={{ color: "var(--brand)" }}
-          >
-            Sign in
-          </Link>
+        <p>
+          Create your personal sign-in first. After verifying your email,
+          you'll be guided through your organization application.
         </p>
       </div>
-    </div>
-  );
+
+      <form onSubmit={handleSubmit} className="auth-form-stack">
+        <Input
+          label="Full name"
+          type="text"
+          autoComplete="name"
+          value={fullName}
+          onChange={(event) => setFullName(event.target.value)}
+          required
+        />
+
+        <Input
+          label="Work email"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          required
+        />
+
+        <div>
+          <PasswordInput
+            label="Password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+          />
+
+          {password !== "" && (
+            <PasswordRequirements
+              checks={passwordChecks}
+              strength={passwordStrength}
+              password={password}
+            />
+          )}
+        </div>
+
+        <PasswordInput
+          label="Confirm password"
+          autoComplete="new-password"
+          value={confirmPassword}
+          onChange={(event) => setConfirmPassword(event.target.value)}
+          required
+          error={confirmError ?? undefined}
+        />
+
+        <div className="auth-context-note">
+          After verifying your email, you'll tell us about your organization
+          before it is submitted for review.
+        </div>
+
+        <Checkbox
+          checked={agreedToTerms}
+          onChange={(event) => setAgreedToTerms(event.target.checked)}
+          label={
+            <span style={{ color: "var(--fg-muted)" }}>
+              I agree to the{" "}
+              <Link
+                to="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(event) => event.stopPropagation()}
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                to="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(event) => event.stopPropagation()}
+              >
+                Privacy Policy
+              </Link>
+              .
+            </span>
+          }
+        />
+
+        {error && (
+          <div className="auth-message auth-message--error" role="alert">
+            {error}
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          variant="primary"
+          className="w-full flex items-center justify-center gap-2"
+          disabled={!formValid || loading}
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <LoadingSpinner size={16} />
+              Creating your account…
+            </span>
+          ) : (
+            <>
+              Create account
+              <ArrowRight size={16} aria-hidden="true" />
+            </>
+          )}
+        </Button>
+      </form>
+
+      <p className="auth-switch">
+        Already have an account? <Link to="/login">Sign in</Link>
+      </p>
+    </AuthShell>
+  )
 }

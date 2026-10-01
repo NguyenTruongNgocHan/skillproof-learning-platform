@@ -1,4 +1,4 @@
-import LegalLayout from "./LegalLayout";
+import LegalLayout from "./LegalLayout"
 export default function TermsPage() {
   return (
     <LegalLayout
@@ -27,11 +27,12 @@ export default function TermsPage() {
       <section>
         <h2>Content and credentials</h2>
         <p>
-          Learning paths, quizzes, realtime challenges, payments and
-          certificates shown as previews or upcoming features are not yet active
-          services. Illustrations and sample content are not evidence of an
-          issued credential, enrollment or assessment result. A credential will
-          be valid only when its future verification service confirms it.
+          Published learning paths, learning progress and assessment attempts
+          belong to an enrolled path version. Practice and mock scores do not
+          represent an official result. Organizer content must be their own work
+          or used with permission. Realtime challenges, payments and
+          certificates shown as previews are not active services. Learning
+          completion is not an issued or state-recognized certificate.
         </p>
       </section>
       <section>
@@ -53,5 +54,5 @@ export default function TermsPage() {
         </p>
       </section>
     </LegalLayout>
-  );
+  )
 }

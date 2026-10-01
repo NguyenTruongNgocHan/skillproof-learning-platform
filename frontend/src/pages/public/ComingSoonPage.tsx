@@ -1,10 +1,10 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft, Clock3 } from "lucide-react";
-import PublicHeader from "@/components/layout/PublicHeader";
-import PublicFooter from "@/components/layout/PublicFooter";
+import { Link } from "react-router-dom"
+import { ArrowLeft, Clock3 } from "lucide-react"
+import PublicHeader from "@/components/layout/PublicHeader"
+import PublicFooter from "@/components/layout/PublicFooter"
 interface ComingSoonPageProps {
-  title: string;
-  description?: string;
+  title: string
+  description?: string
 }
 export default function ComingSoonPage({
   title,
@@ -32,5 +32,5 @@ export default function ComingSoonPage({
       </main>
       <PublicFooter />
     </div>
-  );
+  )
 }

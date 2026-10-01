@@ -41,36 +41,54 @@ public class SecurityConfig {
                 .httpBasic(
                         AbstractHttpConfigurer::disable
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(
-                        authorization ->
-                                authorization
-                                        .requestMatchers(
-                                                "/health",
-                                                "/swagger-ui.html",
-                                                "/swagger-ui/**",
-                                                "/v3/api-docs/**",
-                                                "/api/v1/auth/register",
-                                                "/api/v1/auth/verify-email",
-                                                "/api/v1/auth/resend-verification",
-                                                "/api/v1/auth/login",
-                                                "/api/v1/auth/refresh",
-                                                "/api/v1/auth/logout",
-                                                "/api/v1/auth/forgot-password",
-                                                "/api/v1/auth/reset-password",
-                                                "/oauth2/**",
-                                                "/login/oauth2/**"
-                                        )
-                                        .permitAll()
-                                        .requestMatchers("/api/v1/admin/**")
-                                        .hasRole("ADMIN")
-                                        .anyRequest()
-                                        .authenticated()
+                .sessionManagement(
+                        session
+                        -> session.sessionCreationPolicy(
+                                SessionCreationPolicy.IF_REQUIRED
+                        )
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests(
+                        authorization
+                        -> authorization
+                                .requestMatchers(
+                                        "/health",
+                                        "/swagger-ui.html",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**",
+                                        "/api/v1/auth/register",
+                                        "/api/v1/learning/paths",
+                                        "/api/v1/learning/paths/*",
+                                        "/api/v1/auth/verify-email",
+                                        "/api/v1/auth/resend-verification",
+                                        "/api/v1/auth/login",
+                                        "/api/v1/auth/refresh",
+                                        "/api/v1/auth/logout",
+                                        "/api/v1/auth/forgot-password",
+                                        "/api/v1/auth/reset-password",
+                                        "/oauth2/**",
+                                        "/login/oauth2/**",
+                                        "/ws/realtime/**"
+                                )
+                                .permitAll()
+                                .requestMatchers(
+                                        "/api/v1/admin/**"
+                                )
+                                .hasRole("ADMIN")
+                                .anyRequest()
+                                .authenticated()
+                )
+                .addFilterBefore(
+                        jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         if (activeProfiles.contains("oauth")) {
-            http.oauth2Login(oauth -> oauth.successHandler(oauthSuccessHandler));
+            http.oauth2Login(
+                    oauth
+                    -> oauth.successHandler(
+                            oauthSuccessHandler
+                    )
+            );
         }
 
         return http.build();
@@ -78,7 +96,6 @@ public class SecurityConfig {
 
     @Bean
     PasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder(12);
     }
 
@@ -87,12 +104,39 @@ public class SecurityConfig {
             @Value("${skillproof.cors.allowed-origin}") String allowedOrigin
     ) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(allowedOrigin));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
+        configuration.setAllowedOrigins(
+                List.of(allowedOrigin)
+        );
+
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        configuration.setAllowedHeaders(
+                List.of(
+                        "Authorization",
+                        "Content-Type"
+                )
+        );
+
         configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+
+        UrlBasedCorsConfigurationSource source
+                = new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
+
         return source;
     }
 }

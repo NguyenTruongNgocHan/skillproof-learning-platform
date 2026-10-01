@@ -1,12 +1,6 @@
 package com.skillproof.backend.identity;
 
-import com.skillproof.backend.identity.infrastructure.AuthSessionRepository;
-import com.skillproof.backend.identity.infrastructure.EmailVerificationTokenRepository;
-import com.skillproof.backend.identity.infrastructure.PasswordResetTokenRepository;
-import com.skillproof.backend.identity.infrastructure.RefreshTokenRepository;
-import com.skillproof.backend.identity.infrastructure.SecurityAuditEventRepository;
-import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
-import jakarta.servlet.http.Cookie;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +10,18 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.skillproof.backend.identity.infrastructure.AuthSessionRepository;
+import com.skillproof.backend.identity.infrastructure.EmailVerificationTokenRepository;
+import com.skillproof.backend.identity.infrastructure.PasswordResetTokenRepository;
+import com.skillproof.backend.identity.infrastructure.RefreshTokenRepository;
+import com.skillproof.backend.identity.infrastructure.SecurityAuditEventRepository;
+import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
+
+import jakarta.servlet.http.Cookie;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,15 +33,24 @@ class PasswordRecoveryIntegrationTest {
     private static final String OLD_PASSWORD = "StrongPass@123";
     private static final String NEW_PASSWORD = "NewStrongPass@456";
 
-    @Autowired MockMvc mockMvc;
-    @Autowired UserAccountRepository users;
-    @Autowired EmailVerificationTokenRepository verificationTokens;
-    @Autowired PasswordResetTokenRepository resetTokens;
-    @Autowired AuthSessionRepository sessions;
-    @Autowired RefreshTokenRepository refreshTokens;
-    @Autowired SecurityAuditEventRepository auditEvents;
-    @Autowired CapturingVerificationEmailSender verificationEmailSender;
-    @Autowired CapturingPasswordResetEmailSender resetEmailSender;
+    @Autowired
+    MockMvc mockMvc;
+    @Autowired
+    UserAccountRepository users;
+    @Autowired
+    EmailVerificationTokenRepository verificationTokens;
+    @Autowired
+    PasswordResetTokenRepository resetTokens;
+    @Autowired
+    AuthSessionRepository sessions;
+    @Autowired
+    RefreshTokenRepository refreshTokens;
+    @Autowired
+    SecurityAuditEventRepository auditEvents;
+    @Autowired
+    CapturingVerificationEmailSender verificationEmailSender;
+    @Autowired
+    CapturingPasswordResetEmailSender resetEmailSender;
 
     @BeforeEach
     void cleanDatabase() {
@@ -144,8 +153,8 @@ class PasswordRecoveryIntegrationTest {
 
     private void registerAndVerify() throws Exception {
         mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
                                 {
                                   "email":"recovery@example.com",
                                   "displayName":"Recovery Test",
@@ -156,8 +165,8 @@ class PasswordRecoveryIntegrationTest {
 
         String token = verificationEmailSender.latestToken(EMAIL).orElseThrow();
         mockMvc.perform(post("/api/v1/auth/verify-email")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
                                 {"token":"%s"}
                                 """.formatted(token)))
                 .andExpect(status().isOk());

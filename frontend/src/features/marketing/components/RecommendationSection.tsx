@@ -1,6 +1,6 @@
-import { ArrowRight, Compass, Layers3, Sparkles } from "lucide-react";
-import Container from "@/components/ui/Container";
-import SectionHeading from "@/components/ui/SectionHeading";
+import { ArrowRight, Compass, Layers3, Sparkles } from "lucide-react"
+import Container from "@/components/ui/Container"
+import SectionHeading from "@/components/ui/SectionHeading"
 export default function RecommendationSection() {
   return (
     <section className="marketing-section bg-subtle-skin">
@@ -30,9 +30,10 @@ export default function RecommendationSection() {
           </div>
         </div>
         <p className="recommendation-disclosure">
-          This is a concept preview. Recommendations help discovery and do not determine completion or certificate eligibility.
+          This is a concept preview. Recommendations help discovery and do not
+          determine completion or certificate eligibility.
         </p>
       </Container>
     </section>
-  );
+  )
 }

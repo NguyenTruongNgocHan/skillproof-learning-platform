@@ -1,7 +1,6 @@
 package com.skillproof.backend.organization.api;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -16,8 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.skillproof.backend.organization.application.OrganizationService;
 import com.skillproof.backend.organization.domain.Organization;
+import com.skillproof.backend.organization.domain.OrganizationMemberView;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -57,7 +59,9 @@ public class OrganizationController {
 
     }
 
-    public record MemberRequest(@NotNull UUID userId) {
+    public record MemberRequest(@NotBlank
+            @Email
+            @Size(max = 320) String email) {
 
     }
 
@@ -65,57 +69,82 @@ public class OrganizationController {
 
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record MemberResponse(@JsonProperty("user_id") UUID userId,
+            boolean active, String email, List<String> grants) {
+
+        static MemberResponse from(OrganizationMemberView value) {
+            return new MemberResponse(value.userId(), value.active(),
+                    value.email(), value.grants());
+        }
+    }
+
+    public record AuthorityResponse(boolean allowed) {
+
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+
     public Organization create(Authentication auth, @Valid @RequestBody CreateRequest r) {
         return service.create(actor(auth), new OrganizationService.Create(r.legalName(), r.displayName(), r.website(), r.industry(), r.country(), r.registrationNumber(), r.contactName(), r.contactEmail(), r.contactPhone()));
     }
 
     @PostMapping("/mine/resubmit")
+
     public Organization resubmit(Authentication auth, @Valid @RequestBody CreateRequest r) {
         return service.resubmit(actor(auth), new OrganizationService.Create(r.legalName(), r.displayName(), r.website(), r.industry(), r.country(), r.registrationNumber(), r.contactName(), r.contactEmail(), r.contactPhone()));
     }
 
     @GetMapping("/mine")
+
     public Organization mine(Authentication auth) {
         return service.mine(actor(auth));
     }
 
     @GetMapping("/{id}")
+
     public Organization get(Authentication auth, @PathVariable UUID id) {
         return service.get(id, actor(auth), auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
     }
 
     @PatchMapping("/{id}")
+
     public Organization update(Authentication auth, @PathVariable UUID id, @Valid @RequestBody UpdateRequest r) {
         return service.update(id, actor(auth), new OrganizationService.Update(r.displayName(), r.website(), r.industry(), r.contactPhone()));
     }
 
     @GetMapping("/{id}/members")
-    public List<Map<String, Object>> members(Authentication auth, @PathVariable UUID id) {
-        return service.members(id, actor(auth));
+
+    public List<MemberResponse> members(Authentication auth, @PathVariable UUID id) {
+        return service.members(id, actor(auth)).stream().map(MemberResponse::from).toList();
     }
 
     @PostMapping("/{id}/members")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+
     public void add(Authentication auth, @PathVariable UUID id, @Valid @RequestBody MemberRequest r) {
-        service.addMember(id, actor(auth), r.userId());
+        service.addMember(id, actor(auth), r.email());
     }
 
     @PatchMapping("/{id}/members/{userId}/grants")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+
     public void grant(Authentication auth, @PathVariable UUID id, @PathVariable UUID userId, @Valid @RequestBody GrantRequest r) {
         service.setGrant(id, actor(auth), userId, new OrganizationService.Grant(r.authority(), r.active()));
     }
 
     @DeleteMapping("/{id}/members/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+
     public void remove(Authentication auth, @PathVariable UUID id, @PathVariable UUID userId) {
         service.removeMember(id, actor(auth), userId);
     }
 
     @GetMapping("/{id}/authority/{authority}")
-    public Map<String, Boolean> authority(Authentication auth, @PathVariable UUID id, @PathVariable OrganizationService.Authority authority) {
-        return Map.of("allowed", service.can(id, actor(auth), authority.name()));
+
+    public AuthorityResponse authority(Authentication auth, @PathVariable UUID id,
+            @PathVariable OrganizationService.Authority authority) {
+        return new AuthorityResponse(service.can(id, actor(auth), authority.name()));
     }
 }

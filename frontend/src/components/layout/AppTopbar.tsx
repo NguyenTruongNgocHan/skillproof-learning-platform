@@ -1,12 +1,12 @@
-import { Menu } from "lucide-react";
-import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
-import UserMenu from "@/components/layout/UserMenu";
-import type { User } from "@/features/auth/types/auth.types";
+import { Menu } from "lucide-react"
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
+import UserMenu from "@/components/layout/UserMenu"
+import type { User } from "@/features/auth/types/auth.types"
 
 interface AppTopbarProps {
-  onMenuToggle: () => void;
-  pageTitle: string;
-  user: User;
+  onMenuToggle: () => void
+  pageTitle: string
+  user: User
 }
 
 export default function AppTopbar({
@@ -70,5 +70,5 @@ export default function AppTopbar({
         <UserMenu user={user} />
       </div>
     </header>
-  );
+  )
 }

@@ -1,6 +1,8 @@
 package com.skillproof.backend.identity.infrastructure;
 
-import com.skillproof.backend.identity.domain.UserAccount;
+import java.time.Instant;
+import java.util.Locale;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -8,8 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.Locale;
+import com.skillproof.backend.identity.domain.UserAccount;
 
 @Component
 public class AdminAccountBootstrap implements ApplicationRunner {

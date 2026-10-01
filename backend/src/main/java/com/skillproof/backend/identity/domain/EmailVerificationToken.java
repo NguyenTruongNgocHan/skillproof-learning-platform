@@ -1,13 +1,13 @@
 package com.skillproof.backend.identity.domain;
 
+import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import java.time.Instant;
-import java.util.Objects;
-import java.util.UUID;
 
 @Entity
 @Table(name = "email_verification_token")

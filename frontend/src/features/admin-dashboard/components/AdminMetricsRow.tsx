@@ -1,7 +1,7 @@
-import type { MetricCard } from "@/mocks/dashboard/adminDashboard";
+import type { MetricCard } from "@/mocks/dashboard/adminDashboard"
 
 interface AdminMetricsRowProps {
-  metrics: MetricCard[];
+  metrics: MetricCard[]
 }
 
 export default function AdminMetricsRow({ metrics }: AdminMetricsRowProps) {
@@ -52,11 +52,17 @@ export default function AdminMetricsRow({ metrics }: AdminMetricsRowProps) {
           >
             {value}
           </div>
-          <div style={{ fontSize: "0.72rem", color: "var(--fg-muted)", lineHeight: "1.3" }}>
+          <div
+            style={{
+              fontSize: "0.72rem",
+              color: "var(--fg-muted)",
+              lineHeight: "1.3",
+            }}
+          >
             {label}
           </div>
         </div>
       ))}
     </div>
-  );
+  )
 }

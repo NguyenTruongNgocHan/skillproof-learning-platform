@@ -1,9 +1,9 @@
-import LegalLayout from "./LegalLayout";
+import LegalLayout from "./LegalLayout"
 export default function PrivacyPage() {
   return (
     <LegalLayout
       title="Privacy notice"
-      intro="How the current SkillProof identity and organization flows use information you provide."
+      intro="Review draft: information used by account, organization and learning flows."
     >
       <section>
         <h2>Information used today</h2>
@@ -14,7 +14,24 @@ export default function PrivacyPage() {
           registration number (if supplied), contact name, contact email,
           website and phone (if supplied). Administrators can record an approval
           decision and reason. Profile fields you choose to save may include a
-          headline, bio, avatar URL, locale and time zone.
+          headline, bio, avatar URL, locale and time zone. If you enroll in a
+          learning path, we also store the path version, resource completions,
+          assessment attempts, selected answers, scores and completion state.
+          Learner onboarding choices are stored with your account.
+          Uploaded profile images, organization documents and lesson files may
+          contain personal information or third party content.
+        </p>
+      </section>
+      <section>
+        <h2>Uploaded files</h2>
+        <p>
+          File bytes are kept in a private object storage bucket configured by
+          the platform operator. The database records their owner, linked
+          organization or lesson, file type, size and integrity hash. Access to
+          the files goes through the application after an account and permission
+          check. The operator must publish the actual storage provider, data
+          location, backup and deletion policy before opening the service to
+          the public.
         </p>
       </section>
       <section>
@@ -25,7 +42,8 @@ export default function PrivacyPage() {
           control access. We use organization application details to review
           whether an organization can act as an official organizer. We record
           security and review events to investigate changes and prevent
-          unauthorized access.
+          unauthorized access. Learning records let you resume your enrolled
+          version, review progress and receive assessment feedback.
         </p>
       </section>
       <section>
@@ -33,9 +51,9 @@ export default function PrivacyPage() {
         <p>
           The refresh session uses a browser cookie; the access token is held in
           memory. We store your display theme preference on your device. Some
-          existing learner onboarding preferences may also be saved locally in
-          the browser; do not treat browser data as authorization. Security
-          audit records can contain your IP address and browser user agent.
+          learner preferences on the backend; browser data is not authorization.
+          Security audit records can contain your IP address and browser user
+          agent.
         </p>
       </section>
       <section>
@@ -54,9 +72,11 @@ export default function PrivacyPage() {
           Authorized administrators can review accounts and organization
           applications. Approved organization members see information needed for
           their assigned permissions. We do not publish private registration and
-          review details as certificate verification data. Future learning,
-          payment, recommendation and certificate features require an updated
-          notice before they are enabled.
+          review details as certificate verification data. Learning attempts and
+          answers are currently returned only to the Learner who owns them;
+          access to organization-wide learner results needs a separate reviewed
+          feature. Payment, recommendation and certificate features require an
+          updated notice before they are enabled.
         </p>
       </section>
       <section>
@@ -78,5 +98,5 @@ export default function PrivacyPage() {
         </p>
       </section>
     </LegalLayout>
-  );
+  )
 }

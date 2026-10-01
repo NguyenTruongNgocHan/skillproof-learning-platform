@@ -35,15 +35,24 @@ class AuthenticationIntegrationTest {
     private static final String EMAIL = "auth@example.com";
     private static final String PASSWORD = "StrongPass@123";
 
-    @Autowired MockMvc mockMvc;
-    @Autowired ObjectMapper objectMapper;
-    @Autowired UserAccountRepository users;
-    @Autowired EmailVerificationTokenRepository verificationTokens;
-    @Autowired AuthSessionRepository sessions;
-    @Autowired RefreshTokenRepository refreshTokens;
-    @Autowired PasswordResetTokenRepository passwordResetTokens;
-    @Autowired SecurityAuditEventRepository auditEvents;
-    @Autowired CapturingVerificationEmailSender emailSender;
+    @Autowired
+    MockMvc mockMvc;
+    @Autowired
+    ObjectMapper objectMapper;
+    @Autowired
+    UserAccountRepository users;
+    @Autowired
+    EmailVerificationTokenRepository verificationTokens;
+    @Autowired
+    AuthSessionRepository sessions;
+    @Autowired
+    RefreshTokenRepository refreshTokens;
+    @Autowired
+    PasswordResetTokenRepository passwordResetTokens;
+    @Autowired
+    SecurityAuditEventRepository auditEvents;
+    @Autowired
+    CapturingVerificationEmailSender emailSender;
 
     @BeforeEach
     void cleanDatabase() {
@@ -73,7 +82,7 @@ class AuthenticationIntegrationTest {
                 .asText();
 
         mockMvc.perform(get("/api/v1/me")
-                        .header("Authorization", "Bearer " + accessToken))
+                .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(EMAIL));
 
@@ -124,7 +133,7 @@ class AuthenticationIntegrationTest {
                 .getCookie("skillproof_refresh");
 
         MvcResult refreshed = mockMvc.perform(post("/api/v1/auth/refresh")
-                        .cookie(original))
+                .cookie(original))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -151,11 +160,11 @@ class AuthenticationIntegrationTest {
                 .getCookie("skillproof_refresh");
 
         mockMvc.perform(post("/api/v1/auth/logout")
-                        .cookie(refreshCookie))
+                .cookie(refreshCookie))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(post("/api/v1/auth/refresh")
-                        .cookie(refreshCookie))
+                .cookie(refreshCookie))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -163,8 +172,8 @@ class AuthenticationIntegrationTest {
         register();
         String token = emailSender.latestToken(EMAIL).orElseThrow();
         mockMvc.perform(post("/api/v1/auth/verify-email")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
                                 {"token":"%s"}
                                 """.formatted(token)))
                 .andExpect(status().isOk());
@@ -172,8 +181,8 @@ class AuthenticationIntegrationTest {
 
     private void register() throws Exception {
         mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
                                 {
                                   "email":"auth@example.com",
                                   "displayName":"Auth Test",

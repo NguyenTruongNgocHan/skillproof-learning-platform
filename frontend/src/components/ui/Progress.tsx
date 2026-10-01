@@ -1,9 +1,9 @@
 interface ProgressProps {
-  value: number;
-  size?: "sm" | "md";
-  color?: "brand" | "success";
-  className?: string;
-  showLabel?: boolean;
+  value: number
+  size?: "sm" | "md"
+  color?: "brand" | "success"
+  className?: string
+  showLabel?: boolean
 }
 
 export default function Progress({
@@ -13,9 +13,9 @@ export default function Progress({
   className = "",
   showLabel = false,
 }: ProgressProps) {
-  const clampedValue = Math.min(100, Math.max(0, value));
-  const trackHeight = size === "sm" ? "4px" : "8px";
-  const fillColor = color === "brand" ? "#FF4F8B" : "#16a34a";
+  const clampedValue = Math.min(100, Math.max(0, value))
+  const trackHeight = size === "sm" ? "4px" : "8px"
+  const fillColor = color === "brand" ? "#FF4F8B" : "#16a34a"
 
   return (
     <div className={`w-full ${className}`}>
@@ -32,5 +32,5 @@ export default function Progress({
         <p className="mt-1 text-xs text-[#666A73]">{clampedValue}%</p>
       )}
     </div>
-  );
+  )
 }

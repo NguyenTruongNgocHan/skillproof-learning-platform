@@ -1,50 +1,50 @@
-import { useMemo, useState } from "react";
-import type { FormEvent } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { useToast } from "@/components/ui/Toast";
+import { useMemo, useState } from "react"
+import type { FormEvent } from "react"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
+import { AlertCircle, CheckCircle2 } from "lucide-react"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { useToast } from "@/components/ui/Toast"
 import {
   checkPassword,
   getPasswordStrength,
   isPasswordValid,
-} from "@/features/auth/validation/passwordPolicy";
-import PasswordRequirements from "@/features/auth/components/PasswordRequirements";
-import PasswordInput from "@/components/ui/PasswordInput";
-import Button from "@/components/ui/Button";
-import LoadingSpinner from "@/components/feedback/LoadingSpinner";
+} from "@/features/auth/validation/passwordPolicy"
+import PasswordRequirements from "@/features/auth/components/PasswordRequirements"
+import PasswordInput from "@/components/ui/PasswordInput"
+import Button from "@/components/ui/Button"
+import LoadingSpinner from "@/components/feedback/LoadingSpinner"
 
 export default function ResetPasswordPage() {
-  const { resetPassword } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token") ?? "";
-  const [password, setPassword] = useState("");
-  const [confirmation, setConfirmation] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const checks = useMemo(() => checkPassword(password), [password]);
+  const { resetPassword } = useAuth()
+  const { toast } = useToast()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get("token") ?? ""
+  const [password, setPassword] = useState("")
+  const [confirmation, setConfirmation] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const checks = useMemo(() => checkPassword(password), [password])
   const valid =
-    token.length > 0 && isPasswordValid(checks) && password === confirmation;
+    token.length > 0 && isPasswordValid(checks) && password === confirmation
 
   async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    if (!valid) return;
-    setError("");
-    setLoading(true);
+    event.preventDefault()
+    if (!valid) return
+    setError("")
+    setLoading(true)
     try {
-      await resetPassword(token, password);
-      toast("success", "Password updated. Sign in with your new password.");
-      navigate("/login?passwordReset=true", { replace: true });
+      await resetPassword(token, password)
+      toast("success", "Password updated. Sign in with your new password.")
+      navigate("/login?passwordReset=true", { replace: true })
     } catch (reason: unknown) {
       setError(
         reason instanceof Error
           ? reason.message
           : "This reset link is invalid or has expired.",
-      );
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
@@ -149,5 +149,5 @@ export default function ResetPasswordPage() {
         )}
       </section>
     </main>
-  );
+  )
 }

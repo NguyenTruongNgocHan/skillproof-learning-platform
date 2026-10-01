@@ -1,17 +1,18 @@
 package com.skillproof.backend.identity.application;
 
+import java.time.Instant;
+import java.util.Locale;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.skillproof.backend.common.exception.UnauthorizedException;
 import com.skillproof.backend.identity.domain.OAuthAccount;
 import com.skillproof.backend.identity.domain.UserAccount;
 import com.skillproof.backend.identity.infrastructure.OAuthAccountRepository;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.Locale;
-import java.util.UUID;
 
 @Service
 public class OAuthLoginService {

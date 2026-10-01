@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
-import PublicHeader from "@/components/layout/PublicHeader";
-import PublicFooter from "@/components/layout/PublicFooter";
-import Button from "@/components/ui/Button";
+import { Link } from "react-router-dom"
+import PublicHeader from "@/components/layout/PublicHeader"
+import PublicFooter from "@/components/layout/PublicFooter"
+import Button from "@/components/ui/Button"
 export default function NotFoundPage() {
   return (
     <div className="public-page">
@@ -21,5 +21,5 @@ export default function NotFoundPage() {
       </main>
       <PublicFooter />
     </div>
-  );
+  )
 }

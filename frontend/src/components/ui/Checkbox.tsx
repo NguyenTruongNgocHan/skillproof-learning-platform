@@ -1,11 +1,13 @@
-import { InputHTMLAttributes, ReactNode } from "react";
+import {
+  InputHTMLAttributes,
+  ReactNode,
+  useId,
+} from "react"
 
-interface CheckboxProps extends Omit<
-  InputHTMLAttributes<HTMLInputElement>,
-  "type"
-> {
-  label: string | ReactNode;
-  error?: string;
+interface CheckboxProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+  label: string | ReactNode
+  error?: string
 }
 
 export default function Checkbox({
@@ -13,33 +15,55 @@ export default function Checkbox({
   error,
   id,
   className = "",
+  disabled,
   ...props
 }: CheckboxProps) {
-  const inputId = id ?? "checkbox";
+  const generatedId = useId()
+  const inputId = id ?? generatedId
+
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       <label
         htmlFor={inputId}
-        className="flex items-start gap-2.5 cursor-pointer group"
+        className={`flex items-start gap-2.5 group ${
+          disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+        }`}
       >
-        <div className="relative flex-shrink-0 mt-0.5">
+        <span className="relative mt-0.5 flex h-4 w-4 flex-shrink-0">
           <input
             id={inputId}
             type="checkbox"
-            className="sr-only peer"
+            disabled={disabled}
+            className="peer absolute inset-0 h-4 w-4 cursor-pointer opacity-0 disabled:cursor-not-allowed"
             {...props}
           />
-          <div
-            className="w-4 h-4 rounded flex items-center justify-center transition-all peer-checked:[background:var(--brand)]"
+
+          <span
+            aria-hidden="true"
+            className="
+              pointer-events-none
+              flex h-4 w-4 items-center justify-center
+              rounded
+              border
+              transition-all
+              peer-focus-visible:ring-2
+              peer-focus-visible:ring-[var(--brand)]
+              peer-focus-visible:ring-offset-2
+              peer-focus-visible:ring-offset-[var(--bg)]
+              peer-checked:border-[var(--brand)]
+              peer-checked:bg-[var(--brand)]
+            "
             style={{
-              background: "var(--surface)",
-              border: `1px solid ${error ? "var(--error)" : "var(--border)"}`,
+              backgroundColor: "var(--surface)",
+              borderColor: error ? "var(--error)" : "var(--border)",
             }}
           >
             <svg
-              className="hidden peer-checked:block"
-              width="10"
-              height="10"
+              className="
+                hidden
+                h-2.5 w-2.5
+                peer-checked:[&]:block
+              "
               viewBox="0 0 10 10"
               fill="none"
             >
@@ -51,8 +75,9 @@ export default function Checkbox({
                 strokeLinejoin="round"
               />
             </svg>
-          </div>
-        </div>
+          </span>
+        </span>
+
         <span
           className="text-sm leading-relaxed"
           style={{ color: "var(--fg)" }}
@@ -60,11 +85,16 @@ export default function Checkbox({
           {label}
         </span>
       </label>
+
       {error && (
-        <p className="text-xs ml-6" style={{ color: "var(--error)" }}>
+        <p
+          className="ml-6 text-xs"
+          style={{ color: "var(--error)" }}
+          role="alert"
+        >
           {error}
         </p>
       )}
     </div>
-  );
+  )
 }

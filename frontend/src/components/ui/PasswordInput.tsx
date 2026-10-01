@@ -1,19 +1,17 @@
-import { useState, InputHTMLAttributes, forwardRef } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { useState, InputHTMLAttributes, forwardRef } from "react"
+import { Eye, EyeOff } from "lucide-react"
 
-interface PasswordInputProps extends Omit<
-  InputHTMLAttributes<HTMLInputElement>,
-  "type"
-> {
-  label?: string;
-  error?: string;
-  hint?: string;
+interface PasswordInputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+  label?: string
+  error?: string
+  hint?: string
 }
 
 const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ label, error, hint, className = "", id, ...props }, ref) => {
-    const [visible, setVisible] = useState(false);
-    const inputId = id ?? "password-field";
+    const [visible, setVisible] = useState(false)
+    const inputId = id ?? "password-field"
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
@@ -39,14 +37,16 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             onFocus={(e) => {
               e.currentTarget.style.borderColor = error
                 ? "var(--error)"
-                : "var(--brand)";
-              e.currentTarget.style.boxShadow = `0 0 0 3px ${error ? "rgba(220,38,38,0.1)" : "rgba(255,79,139,0.1)"}`;
+                : "var(--brand)"
+              e.currentTarget.style.boxShadow = `0 0 0 3px ${
+                error ? "rgba(220,38,38,0.1)" : "rgba(255,79,139,0.1)"
+              }`
             }}
             onBlur={(e) => {
               e.currentTarget.style.borderColor = error
                 ? "var(--error)"
-                : "var(--border)";
-              e.currentTarget.style.boxShadow = "none";
+                : "var(--border)"
+              e.currentTarget.style.boxShadow = "none"
             }}
             {...props}
           />
@@ -75,9 +75,9 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           </p>
         )}
       </div>
-    );
+    )
   },
-);
+)
 
-PasswordInput.displayName = "PasswordInput";
-export default PasswordInput;
+PasswordInput.displayName = "PasswordInput"
+export default PasswordInput

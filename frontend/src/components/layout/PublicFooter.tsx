@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { wordmarkDark } from "@/assets/brand";
+import { Link } from "react-router-dom"
+import { wordmarkDark } from "@/assets/brand"
 
 const columns = [
   {
@@ -20,7 +20,7 @@ const columns = [
       { label: "Terms", to: "/terms" },
     ],
   },
-];
+]
 
 export default function PublicFooter() {
   return (
@@ -72,5 +72,5 @@ export default function PublicFooter() {
         </div>
       </div>
     </footer>
-  );
+  )
 }

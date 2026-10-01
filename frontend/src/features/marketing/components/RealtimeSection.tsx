@@ -1,7 +1,7 @@
-import { Zap, Shield, BarChart2 } from "lucide-react";
-import Container from "@/components/ui/Container";
-import SectionHeading from "@/components/ui/SectionHeading";
-import Progress from "@/components/ui/Progress";
+import { Zap, Shield, BarChart2 } from "lucide-react"
+import Container from "@/components/ui/Container"
+import SectionHeading from "@/components/ui/SectionHeading"
+import Progress from "@/components/ui/Progress"
 
 function ChallengePreview() {
   return (
@@ -98,15 +98,14 @@ function ChallengePreview() {
         Concept preview of server-controlled scoring
       </p>
     </div>
-  );
+  )
 }
 
 const features = [
   {
     icon: Shield,
     title: "Server-controlled scoring",
-    description:
-      "The planned server will control timing and scoring",
+    description: "The planned server will control timing and scoring",
   },
   {
     icon: Zap,
@@ -118,7 +117,7 @@ const features = [
     title: "Skill measurement",
     description: "Planned topic-level feedback to help identify knowledge gaps",
   },
-];
+]
 
 export default function RealtimeSection() {
   return (
@@ -163,5 +162,5 @@ export default function RealtimeSection() {
         </div>
       </Container>
     </section>
-  );
+  )
 }

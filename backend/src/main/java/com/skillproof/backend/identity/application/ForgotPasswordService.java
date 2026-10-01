@@ -1,14 +1,15 @@
 package com.skillproof.backend.identity.application;
 
-import com.skillproof.backend.identity.api.ForgotPasswordRequest;
-import com.skillproof.backend.identity.domain.AccountStatus;
-import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
+import java.time.Instant;
+import java.util.Locale;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.Locale;
+import com.skillproof.backend.identity.api.ForgotPasswordRequest;
+import com.skillproof.backend.identity.domain.AccountStatus;
+import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
 
 @Service
 public class ForgotPasswordService {

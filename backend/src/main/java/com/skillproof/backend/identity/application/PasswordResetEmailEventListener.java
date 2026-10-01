@@ -1,11 +1,12 @@
 package com.skillproof.backend.identity.application;
 
-import com.skillproof.backend.identity.infrastructure.email.PasswordResetEmailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+
+import com.skillproof.backend.identity.infrastructure.email.PasswordResetEmailSender;
 
 @Component
 public class PasswordResetEmailEventListener {

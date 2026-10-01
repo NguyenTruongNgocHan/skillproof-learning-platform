@@ -1,14 +1,14 @@
-import type { ReactNode } from "react";
-import PublicHeader from "@/components/layout/PublicHeader";
-import PublicFooter from "@/components/layout/PublicFooter";
+import type { ReactNode } from "react"
+import PublicHeader from "@/components/layout/PublicHeader"
+import PublicFooter from "@/components/layout/PublicFooter"
 export default function LegalLayout({
   title,
   intro,
   children,
 }: {
-  title: string;
-  intro: string;
-  children: ReactNode;
+  title: string
+  intro: string
+  children: ReactNode
 }) {
   return (
     <div className="public-page">
@@ -28,5 +28,5 @@ export default function LegalLayout({
       </main>
       <PublicFooter />
     </div>
-  );
+  )
 }

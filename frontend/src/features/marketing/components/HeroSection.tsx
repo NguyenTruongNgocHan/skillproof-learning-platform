@@ -4,15 +4,15 @@ import {
   Play,
   ShieldCheck,
   Sparkles,
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import Button from "@/components/ui/Button";
-import Container from "@/components/ui/Container";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { getNextRouteForUserState } from "@/utils/authFlow";
+} from "lucide-react"
+import { Link } from "react-router-dom"
+import Button from "@/components/ui/Button"
+import Container from "@/components/ui/Container"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { getNextRouteForUserState } from "@/utils/authFlow"
 
 export default function HeroSection() {
-  const { user } = useAuth();
+  const { user } = useAuth()
   return (
     <section className="marketing-hero">
       <div className="hero-glow hero-glow--one" />
@@ -30,12 +30,14 @@ export default function HeroSection() {
             </h1>
             <p>
               SkillProof connects structured learning, meaningful assessment,
-              and credentials designed for independent verification in one trusted journey.
+              and credentials designed for independent verification in one
+              trusted journey.
             </p>
             <div className="hero-actions">
               <Button asChild variant="primary" size="lg">
                 <Link to={user ? getNextRouteForUserState(user) : "/register"}>
-                  {user ? "My workspace" : "Create an account"} <ArrowRight size={17} />
+                  {user ? "My workspace" : "Create an account"}{" "}
+                  <ArrowRight size={17} />
                 </Link>
               </Button>
               <a href="#how-it-works" className="hero-text-action">
@@ -119,5 +121,5 @@ export default function HeroSection() {
         </div>
       </Container>
     </section>
-  );
+  )
 }

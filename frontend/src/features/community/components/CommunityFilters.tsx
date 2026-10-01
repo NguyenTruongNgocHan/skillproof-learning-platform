@@ -1,22 +1,22 @@
-import { Search } from "lucide-react";
-import { TOPICS } from "@/mocks/community/communityContent";
+import { Search } from "lucide-react"
+import { TOPICS } from "@/mocks/community/communityContent"
 
-type TypeFilter = "all" | "quiz" | "mock-test";
+type TypeFilter = "all" | "quiz" | "mock-test"
 
 interface CommunityFiltersProps {
-  search: string;
-  typeFilter: string;
-  topicFilter: string;
-  onSearchChange: (v: string) => void;
-  onTypeChange: (v: string) => void;
-  onTopicChange: (v: string) => void;
+  search: string
+  typeFilter: string
+  topicFilter: string
+  onSearchChange: (v: string) => void
+  onTypeChange: (v: string) => void
+  onTopicChange: (v: string) => void
 }
 
 function pillClass(active: boolean) {
   return [
     "px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer border transition-colors",
     active ? "border-transparent text-white" : "border-transparent",
-  ].join(" ");
+  ].join(" ")
 }
 
 export default function CommunityFilters({
@@ -85,8 +85,9 @@ export default function CommunityFilters({
         {/* Type filters */}
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
           {(["all", "quiz", "mock-test"] as TypeFilter[]).map((t) => {
-            const label = t === "all" ? "All" : t === "quiz" ? "Quiz" : "Mock Test";
-            const active = typeFilter === t;
+            const label =
+              t === "all" ? "All" : t === "quiz" ? "Quiz" : "Mock Test"
+            const active = typeFilter === t
             return (
               <button
                 key={t}
@@ -95,20 +96,23 @@ export default function CommunityFilters({
                 style={
                   active
                     ? { background: "var(--brand)", color: "#fff" }
-                    : { background: "var(--bg-subtle)", color: "var(--fg-muted)" }
+                    : {
+                        background: "var(--bg-subtle)",
+                        color: "var(--fg-muted)",
+                      }
                 }
               >
                 {label}
               </button>
-            );
+            )
           })}
         </div>
 
         {/* Topic filters */}
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
           {TOPICS.map((topic) => {
-            const value = topic === "All" ? "all" : topic;
-            const active = topicFilter === value;
+            const value = topic === "All" ? "all" : topic
+            const active = topicFilter === value
             return (
               <button
                 key={topic}
@@ -117,15 +121,18 @@ export default function CommunityFilters({
                 style={
                   active
                     ? { background: "var(--brand)", color: "#fff" }
-                    : { background: "var(--bg-subtle)", color: "var(--fg-muted)" }
+                    : {
+                        background: "var(--bg-subtle)",
+                        color: "var(--fg-muted)",
+                      }
                 }
               >
                 {topic}
               </button>
-            );
+            )
           })}
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,6 +1,8 @@
 package com.skillproof.backend.identity.application;
 
 import com.skillproof.backend.identity.api.ProfileResponse;
+import com.skillproof.backend.media.contract.MediaAvatarQuery;
+import com.skillproof.backend.common.exception.BadRequestException;
 import com.skillproof.backend.identity.api.UpdateProfileRequest;
 import com.skillproof.backend.identity.domain.UserProfile;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
@@ -13,12 +15,15 @@ import java.util.UUID;
 
 @Service
 public class ProfileService {
+
     private final UserAccountRepository users;
     private final UserProfileRepository profiles;
+    private final MediaAvatarQuery media;
 
-    public ProfileService(UserAccountRepository users, UserProfileRepository profiles) {
+    public ProfileService(UserAccountRepository users, UserProfileRepository profiles, MediaAvatarQuery media) {
         this.users = users;
         this.profiles = profiles;
+        this.media = media;
     }
 
     @Transactional(readOnly = true)
@@ -32,6 +37,13 @@ public class ProfileService {
     public ProfileResponse update(UUID userId, UpdateProfileRequest request) {
         var user = users.findByIdForUpdate(userId).orElseThrow();
         var profile = profiles.findById(userId).orElseGet(() -> UserProfile.create(userId, Instant.now()));
+        if (request.avatarUrl() != null && request.avatarUrl().startsWith("media:")) {
+            try {
+                media.verifyAvatar(userId, UUID.fromString(request.avatarUrl().substring(6)));
+            } catch (IllegalArgumentException ex) {
+                throw new BadRequestException("INVALID_AVATAR", "Invalid avatar reference");
+            }
+        }
         user.updateDisplayName(request.displayName());
         profile.update(request.headline(), request.bio(), request.avatarUrl(), request.locale(),
                 request.timezone(), Instant.now());

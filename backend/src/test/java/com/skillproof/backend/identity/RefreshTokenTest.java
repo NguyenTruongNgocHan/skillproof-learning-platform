@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.skillproof.backend.identity.domain.RefreshToken;
 
 class RefreshTokenTest {
+
     @Test
     void issuedTokenIsUsableUntilConsumed() {
         Instant now = Instant.parse("2026-09-16T10:00:00Z");

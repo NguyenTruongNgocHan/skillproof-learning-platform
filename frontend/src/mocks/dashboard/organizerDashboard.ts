@@ -1,12 +1,12 @@
-import { BookOpen, Users, FileCheck, Award } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { BookOpen, Users, FileCheck, Award } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
 export interface StatCard {
-  icon: LucideIcon;
-  iconColor: string;
-  iconBg: string;
-  label: string;
-  value: string;
+  icon: LucideIcon
+  iconColor: string
+  iconBg: string
+  label: string
+  value: string
 }
 
 export const ORGANIZER_STATS: StatCard[] = [
@@ -38,13 +38,13 @@ export const ORGANIZER_STATS: StatCard[] = [
     label: "Certificates Issued",
     value: "47",
   },
-];
+]
 
 export interface PathRow {
-  name: string;
-  status: "Published" | "Draft";
-  enrolled: number | null;
-  completion: string | null;
+  name: string
+  status: "Published" | "Draft"
+  enrolled: number | null
+  completion: string | null
 }
 
 export const PATH_ROWS: PathRow[] = [
@@ -66,11 +66,11 @@ export const PATH_ROWS: PathRow[] = [
     enrolled: null,
     completion: null,
   },
-];
+]
 
 export interface ActivityItem {
-  text: string;
-  time: string;
+  text: string
+  time: string
 }
 
 export const RECENT_ACTIVITY: ActivityItem[] = [
@@ -79,4 +79,4 @@ export const RECENT_ACTIVITY: ActivityItem[] = [
   { text: "Certificate issued to Maria Santos", time: "1 hour ago" },
   { text: "Quiz 'REST API Basics' was published", time: "3 hours ago" },
   { text: "New learner registered via invite link", time: "Yesterday" },
-];
+]

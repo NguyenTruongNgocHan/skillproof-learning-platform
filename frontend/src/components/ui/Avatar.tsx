@@ -1,10 +1,10 @@
 interface AvatarProps {
-  name: string;
-  size?: "sm" | "md" | "lg";
-  src?: string;
+  name: string
+  size?: "sm" | "md" | "lg"
+  src?: string
 }
 
-const sizes = { sm: 32, md: 40, lg: 48 };
+const sizes = { sm: 32, md: 40, lg: 48 }
 
 export default function Avatar({ name, size = "md", src }: AvatarProps) {
   const initials = name
@@ -12,8 +12,8 @@ export default function Avatar({ name, size = "md", src }: AvatarProps) {
     .map((w) => w[0])
     .slice(0, 2)
     .join("")
-    .toUpperCase();
-  const px = sizes[size];
+    .toUpperCase()
+  const px = sizes[size]
 
   if (src) {
     return (
@@ -27,7 +27,7 @@ export default function Avatar({ name, size = "md", src }: AvatarProps) {
           objectFit: "cover",
         }}
       />
-    );
+    )
   }
 
   return (
@@ -43,5 +43,5 @@ export default function Avatar({ name, size = "md", src }: AvatarProps) {
     >
       {initials}
     </div>
-  );
+  )
 }
