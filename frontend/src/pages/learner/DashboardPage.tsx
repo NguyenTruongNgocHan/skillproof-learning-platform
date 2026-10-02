@@ -63,7 +63,7 @@ export default function DashboardPage() {
 
         <div className="discovery-home__content">
           {activeEnrollments.length > 0 && (
-            <DiscoverySection eyebrow="CONTINUE LEARNING" title="Pick up where you left off." actionLabel="My learning" actionTo="/app/learning">
+            <DiscoverySection title="Pick up where you left off." actionLabel="My learning" actionTo="/app/learning">
               <div className="discovery-card-grid">
                 {activeEnrollments.map((enrollment) => (
                   <InteractiveCard key={enrollment.id} className="discovery-content-card-wrap">
@@ -78,11 +78,11 @@ export default function DashboardPage() {
             </DiscoverySection>
           )}
 
-          <DiscoverySection eyebrow="EXPLORE FREELY" title="Something worth learning today." description="No plan required. Start anywhere and follow what catches your attention." actionLabel="Explore more" actionTo="/learning-paths">
+          <DiscoverySection title="Something worth learning today." description="No plan required. Start anywhere and follow what catches your attention." actionLabel="Explore more" actionTo="/learning-paths">
             <ExploreDiscovery paths={paths} />
           </DiscoverySection>
 
-          <DiscoverySection eyebrow="BUILD A SKILL" title="What are you curious about?" description={profile?.interests.length ? "Keep exploring areas you've shown interest in, or branch out into something new." : "Open a category to peek inside before deciding where to go."}>
+          <DiscoverySection title="What are you curious about?" description={profile?.interests.length ? "Keep exploring areas you've shown interest in, or branch out into something new." : "Open a category to peek inside before deciding where to go."}>
             {profile?.interests.length ? (
               <div className="discovery-interest-row">
                 {profile.interests.slice(0, 6).map((interest) => (
@@ -97,15 +97,15 @@ export default function DashboardPage() {
             )}
           </DiscoverySection>
 
-          <DiscoverySection eyebrow="REACH A GOAL" title="Start with where you want to go." description="SkillProof can eventually turn a natural-language goal into confirmed preferences and useful recommendations.">
+          <DiscoverySection title="Start with where you want to go." description="Tell SkillProof what you want to achieve. Start with the outcome; you do not need to know the exact path yet.">
             <GoalDiscoveryCard onStart={openGuide} />
           </DiscoverySection>
 
-          <DiscoverySection eyebrow="PREPARE & PRACTICE" title="Turn learning into practice." description="Challenge what you know and discover what to strengthen next." actionLabel="Explore practice" actionTo="/practice">
+          <DiscoverySection title="Turn learning into practice." description="Challenge what you know and discover what to strengthen next." actionLabel="Explore practice" actionTo="/practice">
             <PracticeDiscovery />
           </DiscoverySection>
 
-          <DiscoverySection eyebrow="EARN TRUSTED PROOF" title="Make progress mean something." description="Understand the requirements behind achievements and work toward evidence you can share." actionLabel="View eligibility" actionTo="/app/eligibility">
+          <DiscoverySection title="Make progress mean something." description="Understand the requirements behind achievements and work toward evidence you can share." actionLabel="View eligibility" actionTo="/app/eligibility">
             <TrustedProofDiscovery />
           </DiscoverySection>
         </div>

@@ -1,75 +1,97 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { ArrowRight, BookOpen, CheckCircle2, Clock3, Compass } from "lucide-react"
 import { Link } from "react-router-dom"
-import AppShell from "@/components/layout/AppShell"
+
+import LearnerShell from "@/components/layout/LearnerShell"
 import Button from "@/components/ui/Button"
 import { learningApi, type Enrollment } from "@/features/learning/learningApi"
+
 export default function MyLearningPage() {
-  const [items, setItems] = useState<Enrollment[]>([]),
-    [error, setError] = useState(""),
-    [loading, setLoading] = useState(true)
+  const [items, setItems] = useState<Enrollment[]>([])
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(true)
+
   async function load() {
     setLoading(true)
     try {
       setItems(await learningApi.mine())
       setError("")
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load enrollments")
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "We couldn't load your learning right now.")
     } finally {
       setLoading(false)
     }
   }
-  useEffect(() => {
-    void load()
-  }, [])
+
+  useEffect(() => { void load() }, [])
+
+  const active = useMemo(() => items.filter((item) => item.status === "ACTIVE"), [items])
+  const completed = useMemo(() => items.filter((item) => item.status === "COMPLETED"), [items])
+
   return (
-    <AppShell>
-      <div className="v7-wrap">
-        <header className="v7-hero">
-          <span className="org-eyebrow">YOUR LEARNING</span>
-          <h1>Your paths, at your pace.</h1>
-          <p>
-            Pick up exactly where you left off. Each enrollment keeps its
-            original published version.
-          </p>
+    <LearnerShell>
+      <main className="learner-page learner-page--learning">
+        <header className="learner-page__hero">
+          <div>
+            <p className="learner-page__intro">Your learning</p>
+            <h1>Keep moving forward.</h1>
+            <p>Return to what you are learning now, or revisit something you have already completed.</p>
+          </div>
+          <Link to="/learning-paths" className="learner-page__hero-action">
+            <Compass size={18} /> Discover something new
+          </Link>
         </header>
+
         {loading ? (
-          <p role="status">Loading your learning…</p>
+          <div className="learner-state" role="status"><span className="learner-state__pulse" />Loading your learning…</div>
         ) : error ? (
-          <p role="alert" className="org-error">
-            {error}{" "}
-            <Button variant="outline" onClick={() => void load()}>
-              Retry
-            </Button>
-          </p>
+          <div className="learner-state learner-state--error" role="alert">
+            <strong>We couldn't open your learning.</strong><span>{error}</span>
+            <Button variant="outline" onClick={() => void load()}>Try again</Button>
+          </div>
         ) : items.length === 0 ? (
-          <div className="v7-card">
-            <h2>Your next step starts here</h2>
-            <p>You have not enrolled in a path yet.</p>
-            <Button asChild>
-              <Link to="/learning-paths">Explore paths</Link>
-            </Button>
-          </div>
+          <section className="learner-empty learner-empty--wide">
+            <span className="learner-empty__icon"><BookOpen size={24} /></span>
+            <h2>Your first path is waiting.</h2>
+            <p>Explore published learning paths and choose one that feels worth your time.</p>
+            <Button asChild><Link to="/learning-paths">Explore learning paths <ArrowRight size={16} /></Link></Button>
+          </section>
         ) : (
-          <div className="v7-grid">
-            {items.map((item) => (
-              <article className="v7-card" key={item.id}>
-                <span className="org-eyebrow">
-                  {item.status} · Version {item.version_no}
-                </span>
-                <h2>{item.title}</h2>
-                <p>{item.summary}</p>
-                <Button asChild>
-                  <Link to={`/app/learning/${item.id}`}>
-                    {item.status === "COMPLETED"
-                      ? "Review your learning"
-                      : "Continue learning"}
-                  </Link>
-                </Button>
-              </article>
-            ))}
-          </div>
+          <>
+            <section className="learner-content-section">
+              <div className="learner-content-section__heading">
+                <div><h2>In progress</h2><p>{active.length ? "Pick up where you left off." : "Nothing active right now."}</p></div>
+                <span>{active.length}</span>
+              </div>
+              {active.length ? (
+                <div className="learning-list">
+                  {active.map((item, index) => (
+                    <Link className="learning-row" to={`/app/learning/${item.id}`} key={item.id}>
+                      <span className="learning-row__index">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="learning-row__body"><strong>{item.title}</strong><small>{item.summary || "Continue your learning journey."}</small></span>
+                      <span className="learning-row__meta"><Clock3 size={14} /> Version {item.version_no}</span>
+                      <ArrowRight className="learning-row__arrow" size={18} />
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </section>
+
+            {completed.length ? (
+              <section className="learner-content-section learner-content-section--quiet">
+                <div className="learner-content-section__heading"><div><h2>Completed</h2><p>Learning you can return to whenever you need it.</p></div><span>{completed.length}</span></div>
+                <div className="learning-completed-grid">
+                  {completed.map((item) => (
+                    <Link className="learning-completed" to={`/app/learning/${item.id}`} key={item.id}>
+                      <CheckCircle2 size={20} /><span><strong>{item.title}</strong><small>Review learning · Version {item.version_no}</small></span><ArrowRight size={16} />
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+          </>
         )}
-      </div>
-    </AppShell>
+      </main>
+    </LearnerShell>
   )
 }

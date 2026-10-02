@@ -1,7 +1,7 @@
 import MediaPanel from "@/features/media/MediaPanel"
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import AppShell from "@/components/layout/AppShell"
+import LearnerShell from "@/components/layout/LearnerShell"
 import Button from "@/components/ui/Button"
 import {
   learningApi,
@@ -83,8 +83,8 @@ export default function CoursePage() {
     }
   }
   return (
-    <AppShell>
-      <div className="v7-wrap">
+    <LearnerShell>
+      <div className="learner-page learner-page--course">
         <Link to="/app/learning" className="profile-back">
           ← Your paths
         </Link>
@@ -101,10 +101,7 @@ export default function CoursePage() {
           course && (
             <>
               <header className="v7-hero">
-                <span className="org-eyebrow">
-                  VERSION {course.enrollment.version_no} ·{" "}
-                  {course.enrollment.status}
-                </span>
+                <span className="course-hero__context">Version {course.enrollment.version_no} · {course.enrollment.status === "COMPLETED" ? "Completed" : "In progress"}</span>
                 <h1>{course.enrollment.title}</h1>
                 <p>{course.enrollment.summary}</p>
                 <div
@@ -165,7 +162,7 @@ export default function CoursePage() {
                   ))}
                 </nav>
                 <section className="v7-card" aria-live="polite">
-                  <span className="org-eyebrow">LEARNING RESOURCE</span>
+                  
                   {selected ? (
                     <>
                       <h2>{selected.title}</h2>
@@ -207,7 +204,7 @@ export default function CoursePage() {
                 </section>
               </div>
               <section className="v7-section">
-                <span className="org-eyebrow">CHECK YOUR UNDERSTANDING</span>
+                
                 <h2>Practice and assessments</h2>
                 {assessments.length === 0 ? (
                   <p>No assessments published for this version.</p>
@@ -272,6 +269,6 @@ export default function CoursePage() {
           )
         )}
       </div>
-    </AppShell>
+    </LearnerShell>
   )
 }

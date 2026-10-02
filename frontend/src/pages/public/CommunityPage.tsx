@@ -1,114 +1,51 @@
 import { useState } from "react"
+import { MessageCircleQuestion, Users } from "lucide-react"
+
+import AuthGateModal from "@/components/auth/AuthGateModal"
+import LearnerSurface from "@/components/layout/LearnerSurface"
 import { useToast } from "@/components/ui/Toast"
 import { useAuth } from "@/features/auth/hooks/useAuth"
-import AuthGateModal from "@/components/auth/AuthGateModal"
-import PublicHeader from "@/components/layout/PublicHeader"
-import PublicFooter from "@/components/layout/PublicFooter"
 import CommunityFilters from "@/features/community/components/CommunityFilters"
 import CommunityGrid from "@/features/community/components/CommunityGrid"
-import { COMMUNITY_CONTENT } from "@/mocks/community/communityContent"
-import type { CommunityContentItem } from "@/mocks/community/communityContent"
+import { COMMUNITY_CONTENT, type CommunityContentItem } from "@/mocks/community/communityContent"
 
 type TypeFilter = "all" | "quiz" | "mock-test"
 
 export default function CommunityPage() {
   const { isAuthenticated } = useAuth()
   const { toast } = useToast()
-
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all")
   const [topicFilter, setTopicFilter] = useState("all")
   const [authGateOpen, setAuthGateOpen] = useState(false)
-  const [, setSelectedItem] = useState<CommunityContentItem | null>(null)
 
   const filtered = COMMUNITY_CONTENT.filter((item) => {
     if (typeFilter === "quiz" && item.type !== "Quiz") return false
     if (typeFilter === "mock-test" && item.type !== "Mock Test") return false
     if (topicFilter !== "all" && item.topic !== topicFilter) return false
-    if (search && !item.title.toLowerCase().includes(search.toLowerCase()))
-      return false
-    return true
+    return !search || item.title.toLowerCase().includes(search.toLowerCase())
   })
 
-  function handleStartPractice(item: CommunityContentItem) {
-    if (!isAuthenticated) {
-      setSelectedItem(item)
-      setAuthGateOpen(true)
-    } else {
-      toast(
-        "info",
-        "Community practice is in preview. Attempts are not available yet.",
-      )
-    }
+  function handleStartPractice(_item: CommunityContentItem) {
+    if (!isAuthenticated) setAuthGateOpen(true)
+    else toast("info", "Community practice is still a preview. Live attempts are not connected yet.")
   }
 
   return (
-    <div
-      style={{
-        background: "var(--bg)",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <div style={{ position: "sticky", top: 0, zIndex: 10 }}>
-        <PublicHeader />
-      </div>
+    <LearnerSurface>
+      <main className="learner-page learner-page--community">
+        <header className="learner-page__hero community-hero">
+          <div><span className="learner-page__intro"><Users size={15} /> Learn with others</span><h1>Practice beyond your<br />own learning path.</h1><p>Discover learner-created quizzes and mock tests without confusing community practice with official certification evidence.</p></div>
+          <div className="community-hero__note"><MessageCircleQuestion size={21} /><span><strong>Community supports practice.</strong><small>It does not create official completion or certificate eligibility.</small></span></div>
+        </header>
 
-      {/* Hero */}
-      <section style={{ textAlign: "center", padding: "48px 16px 40px" }}>
-        <h1 className="text-3xl font-bold mb-3" style={{ color: "var(--fg)" }}>
-          Community Practice Content
-        </h1>
-        <p style={{ color: "var(--fg-muted)", fontSize: "1rem" }}>
-          Sample community cards show how discovery will work. Practice and
-          ratings are not live yet.
-        </p>
-      </section>
-
-      <CommunityFilters
-        search={search}
-        typeFilter={typeFilter}
-        topicFilter={topicFilter}
-        onSearchChange={setSearch}
-        onTypeChange={(v) => setTypeFilter(v as TypeFilter)}
-        onTopicChange={setTopicFilter}
-      />
-
-      <main
-        style={{
-          maxWidth: "72rem",
-          margin: "0 auto",
-          padding: "24px 16px",
-          flex: 1,
-          width: "100%",
-        }}
-      >
-        <p
-          style={{
-            color: "var(--fg-muted)",
-            fontSize: "0.875rem",
-            marginBottom: "16px",
-          }}
-        >
-          Previewing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
-        </p>
-        <CommunityGrid
-          items={filtered}
-          isAuthenticated={isAuthenticated}
-          onProtectedAction={handleStartPractice}
-        />
+        <section className="learner-content-section community-browser">
+          <div className="learner-content-section__heading"><div><h2>Explore community practice</h2><p>Use topic and format filters to find something useful to try.</p></div><span>{filtered.length} preview{filtered.length === 1 ? "" : "s"}</span></div>
+          <CommunityFilters search={search} typeFilter={typeFilter} topicFilter={topicFilter} onSearchChange={setSearch} onTypeChange={(value) => setTypeFilter(value as TypeFilter)} onTopicChange={setTopicFilter} />
+          <CommunityGrid items={filtered} isAuthenticated={isAuthenticated} onProtectedAction={handleStartPractice} />
+        </section>
       </main>
-
-      <PublicFooter />
-
-      <AuthGateModal
-        open={authGateOpen}
-        onClose={() => {
-          setAuthGateOpen(false)
-          setSelectedItem(null)
-        }}
-      />
-    </div>
+      <AuthGateModal open={authGateOpen} onClose={() => setAuthGateOpen(false)} />
+    </LearnerSurface>
   )
 }

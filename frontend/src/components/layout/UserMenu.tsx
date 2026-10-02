@@ -1,142 +1,60 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { LogOut, Settings, User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { User, LogOut } from "lucide-react"
-import { useAuth } from "@/features/auth/hooks/useAuth"
+
 import Avatar from "@/components/ui/Avatar"
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import type { User as UserType } from "@/features/auth/types/auth.types"
 
-interface UserMenuProps {
-  user: UserType
-}
+interface UserMenuProps { user: UserType }
 
 export default function UserMenu({ user }: UserMenuProps) {
   const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const { logout } = useAuth()
+
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false)
+    const onPointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    window.addEventListener("keydown", onKeyDown)
+    window.addEventListener("pointerdown", onPointerDown)
+    return () => {
+      window.removeEventListener("keydown", onKeyDown)
+      window.removeEventListener("pointerdown", onPointerDown)
+    }
+  }, [open])
 
   async function handleSignOut() {
     setOpen(false)
     await logout()
-    navigate("/")
+    navigate("/", { replace: true })
   }
 
-  useEffect(() => {
-    if (!open) return
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false)
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [open])
-  const menuItems = [
-    { icon: User, label: "Profile", action: () => navigate("/profile") },
-  ]
+  const displayName = user.fullName?.trim() || "SkillProof learner"
+  const email = user.email ?? ""
 
   return (
-    <div style={{ position: "relative" }}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-label="Open account menu"
-        aria-expanded={open}
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          padding: "2px",
-          borderRadius: "9999px",
-        }}
-      >
-        <Avatar name={user.fullName ?? user.email ?? "User"} size="sm" />
+    <div className="user-menu" ref={rootRef}>
+      <button type="button" className={`user-menu__trigger${open ? " is-open" : ""}`} onClick={() => setOpen((value) => !value)} aria-label="Open account menu" aria-haspopup="menu" aria-expanded={open}>
+        <Avatar name={displayName || email || "User"} size="sm" />
       </button>
 
       {open && (
-        <>
-          <div
-            style={{ position: "fixed", inset: 0, zIndex: 10 }}
-            onClick={() => setOpen(false)}
-          />
-          <div
-            style={{
-              position: "absolute",
-              top: "calc(100% + 8px)",
-              right: 0,
-              zIndex: 20,
-              background: "var(--surface-elevated)",
-              borderRadius: "12px",
-              boxShadow:
-                "0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
-              border: "1px solid var(--border)",
-              minWidth: "180px",
-              padding: "6px",
-            }}
-          >
-            {menuItems.map(({ icon: Icon, label, action }) => (
-              <button
-                key={label}
-                onClick={() => {
-                  setOpen(false)
-                  action()
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  width: "100%",
-                  padding: "8px 12px",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "var(--fg)",
-                  fontSize: "0.875rem",
-                  borderRadius: "8px",
-                  textAlign: "left",
-                }}
-                onMouseEnter={(e) => {
-                  ;(e.currentTarget as HTMLButtonElement).style.background =
-                    "var(--bg-subtle)"
-                }}
-                onMouseLeave={(e) => {
-                  ;(e.currentTarget as HTMLButtonElement).style.background =
-                    "none"
-                }}
-              >
-                <Icon width={15} height={15} />
-                {label}
-              </button>
-            ))}
-            <div
-              style={{ margin: "4px 0", borderTop: "1px solid var(--border)" }}
-            />
-            <button
-              onClick={handleSignOut}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                width: "100%",
-                padding: "8px 12px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--danger, #ef4444)",
-                fontSize: "0.875rem",
-                borderRadius: "8px",
-                textAlign: "left",
-              }}
-              onMouseEnter={(e) => {
-                ;(e.currentTarget as HTMLButtonElement).style.background =
-                  "var(--bg-subtle)"
-              }}
-              onMouseLeave={(e) => {
-                ;(e.currentTarget as HTMLButtonElement).style.background =
-                  "none"
-              }}
-            >
-              <LogOut width={15} height={15} />
-              Sign out
-            </button>
+        <div className="user-menu__popover" role="menu">
+          <div className="user-menu__identity">
+            <Avatar name={displayName || email || "User"} size="md" />
+            <div><strong>{displayName}</strong>{email && <span>{email}</span>}</div>
           </div>
-        </>
+          <div className="user-menu__divider" />
+          <button type="button" role="menuitem" className="user-menu__item" onClick={() => { setOpen(false); navigate("/profile") }}><User size={16} /><span>Profile</span></button>
+          <button type="button" role="menuitem" className="user-menu__item" onClick={() => { setOpen(false); navigate("/profile") }}><Settings size={16} /><span>Account settings</span></button>
+          <div className="user-menu__divider" />
+          <button type="button" role="menuitem" className="user-menu__item user-menu__item--danger" onClick={() => void handleSignOut()}><LogOut size={16} /><span>Sign out</span></button>
+        </div>
       )}
     </div>
   )

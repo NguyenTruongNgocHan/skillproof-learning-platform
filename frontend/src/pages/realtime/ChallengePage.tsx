@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import AppShell from "@/components/layout/AppShell"
+import LearnerShell from "@/components/layout/LearnerShell"
 import Button from "@/components/ui/Button"
 import {
   RealtimeConnection,
@@ -78,22 +78,21 @@ export default function ChallengePage() {
   const battleId = battle?.battleId
 
   return (
-    <AppShell>
-      <div className="v7-wrap">
-        <header className="v7-hero">
-          <span className="org-eyebrow">REALTIME CHALLENGE · SERVER AUTHORITATIVE</span>
-          <h1>1v1 Challenge</h1>
+    <LearnerShell>
+      <div className="learner-page learner-page--challenge">
+        <header className="learner-page__hero challenge-hero">
+          <span className="course-hero__context">Live practice</span>
+          <h1>Ready for a live challenge?</h1>
           <p>
-            Both learners receive the same immutable question versions. The server
-            owns lifecycle, time, accepted answers, score and final result.
+            Match with another learner in the same skill area. SkillProof keeps the match, timing, answers, and result in sync for both of you.
           </p>
-          <p>{connected ? "Connected" : "Connecting…"}</p>
+          <p className={`challenge-connection${connected ? " is-online" : ""}`}>{connected ? "Ready to match" : "Connecting to live challenge…"}</p>
         </header>
 
         {error && <div className="org-error" role="alert">{error}</div>}
 
         {!battleId && (
-          <section className="v7-card">
+          <section className="challenge-panel">
             <h2>Find an opponent</h2>
             <label>
               Skill/domain context
@@ -102,14 +101,14 @@ export default function ChallengePage() {
                 onChange={event => setSkillContext(event.target.value)}
               />
             </label>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 12 }}>
+            <div className="challenge-actions">
               <Button onClick={() => send("queue.join", { skillContext })}>Quick match</Button>
               <Button variant="outline" onClick={() => send("queue.leave")}>Leave queue</Button>
               <Button variant="outline" onClick={() => send("room.create", { skillContext })}>
                 Create private room
               </Button>
             </div>
-            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <div className="challenge-room">
               <input
                 placeholder="Room code"
                 value={roomCode}
@@ -121,16 +120,15 @@ export default function ChallengePage() {
         )}
 
         {battleId && (
-          <section className="v7-card">
-            <span className="org-eyebrow">BATTLE {battle?.state}</span>
-            <h2>{battleId}</h2>
+          <section className="challenge-panel challenge-panel--battle">
+            <span className="course-hero__context">{battle?.state === "MATCHED" ? "Opponent found" : battle?.state === "RUNNING" ? "Challenge in progress" : battle?.state === "FINISHED" ? "Challenge complete" : "Preparing challenge"}</span>
             {battle?.state === "MATCHED" && (
               <Button onClick={() => send("battle.ready", { battleId })}>I'm ready</Button>
             )}
             {question && (
               <div>
                 <h3>{question.stem}</h3>
-                <div style={{ display: "grid", gap: 8 }}>
+                <div className="challenge-options">
                   {(question.options ?? []).map(option => (
                     <Button
                       key={option.id}
@@ -152,13 +150,13 @@ export default function ChallengePage() {
               variant="outline"
               onClick={() => send("battle.snapshot.request", { battleId })}
             >
-              Sync authoritative state
+              Reconnect match
             </Button>
           </section>
         )}
 
-        <section className="v7-card">
-          <h2>Your battle ratings</h2>
+        <section className="learner-content-section challenge-ratings">
+          <div className="learner-content-section__heading"><div><h2>Your battle ratings</h2><p>Ratings are skill-specific and remain separate from official learning completion.</p></div></div>
           {ratings.length > 0
             ? ratings.map(rating => (
                 <p key={rating.skill_context}>
@@ -169,7 +167,7 @@ export default function ChallengePage() {
             : <p>No rated battle yet.</p>}
         </section>
       </div>
-    </AppShell>
+    </LearnerShell>
   )
 }
 

@@ -1,11 +1,12 @@
 import type { ReactNode } from "react"
 import { ArrowRight } from "lucide-react"
 import { Link } from "react-router-dom"
+
 import { useDiscoveryMotion } from "@/features/discovery/hooks/useDiscoveryMotion"
 
 interface DiscoverySectionProps {
-  eyebrow: string
   title: string
+  eyebrow?: string
   description?: string
   actionLabel?: string
   actionTo?: string
@@ -14,8 +15,8 @@ interface DiscoverySectionProps {
 }
 
 export default function DiscoverySection({
-  eyebrow,
   title,
+  eyebrow,
   description,
   actionLabel,
   actionTo,
@@ -31,17 +32,17 @@ export default function DiscoverySection({
     >
       <div className="discovery-section__heading">
         <div>
-          <span className="discovery-section__eyebrow">{eyebrow}</span>
+          {eyebrow ? <span className="discovery-section__eyebrow">{eyebrow}</span> : null}
           <h2>{title}</h2>
-          {description && <p>{description}</p>}
+          {description ? <p>{description}</p> : null}
         </div>
 
-        {actionLabel && actionTo && (
+        {actionLabel && actionTo ? (
           <Link to={actionTo} className="discovery-section__action">
             {actionLabel}
             <ArrowRight size={16} />
           </Link>
-        )}
+        ) : null}
       </div>
       {children}
     </section>

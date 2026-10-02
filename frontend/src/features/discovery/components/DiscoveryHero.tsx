@@ -1,33 +1,30 @@
 import { ArrowRight, Search, Sparkles } from "lucide-react"
 import mascot from "@/imports/logo_dark.png"
 
-interface DiscoveryHeroProps {
-  firstName: string
-  onExplore: () => void
-  onGuideOpen: () => void
-}
+interface DiscoveryHeroProps { firstName: string; onExplore: () => void; onGuideOpen: () => void }
+const suggestions = ["Japanese", "Backend", "Communication"]
 
 export default function DiscoveryHero({ firstName, onExplore, onGuideOpen }: DiscoveryHeroProps) {
   return (
     <section className="discovery-hero">
+      <div className="discovery-hero__ambient discovery-hero__ambient--one" />
+      <div className="discovery-hero__ambient discovery-hero__ambient--two" />
       <div className="discovery-hero__inner">
         <div className="discovery-hero__copy">
           <span className="discovery-hero__welcome">Welcome back, {firstName}</span>
-          <h1>
-            What would you like<br />to <span>discover?</span>
-          </h1>
-          <p>
-            Learn something new, work toward a goal, or simply follow what catches your interest.
-          </p>
-
+          <h1>What would you like<br />to <span>discover?</span></h1>
+          <p>Learn something new, work toward a goal, or simply follow what catches your interest.</p>
           <button type="button" className="discovery-search" onClick={onExplore}>
-            <Search size={20} />
-            <span>Search skills, topics, and learning paths...</span>
-            <strong>Explore <ArrowRight size={16} /></strong>
+            <Search size={20} /><span>Search skills, topics, and learning paths...</span><strong>Explore <ArrowRight size={16} /></strong>
           </button>
+          <div className="discovery-hero__suggestions" aria-label="Popular discovery ideas">
+            <span>Try</span>
+            {suggestions.map((item) => <button key={item} type="button" onClick={onExplore}>{item}</button>)}
+            <button type="button" className="discovery-hero__surprise" onClick={onGuideOpen}><Sparkles size={13} /> Surprise me</button>
+          </div>
         </div>
-
         <button type="button" className="discovery-hero__mascot" onClick={onGuideOpen} aria-label="Open SkillProof Guide">
+          <span className="discovery-hero__orbit" />
           <span className="discovery-hero__spark discovery-hero__spark--one"><Sparkles size={18} /></span>
           <span className="discovery-hero__spark discovery-hero__spark--two"><Sparkles size={12} /></span>
           <img src={mascot} alt="" />

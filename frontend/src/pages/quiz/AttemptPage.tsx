@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { Link, useParams } from "react-router-dom"
-import AppShell from "@/components/layout/AppShell"
+import LearnerShell from "@/components/layout/LearnerShell"
 import Button from "@/components/ui/Button"
 import { quizApi, type AttemptView, type Result } from "@/features/quiz/quizApi"
 function isResult(value: AttemptView | Result): value is Result {
@@ -84,8 +84,8 @@ export default function AttemptPage() {
     }
   }
   return (
-    <AppShell>
-      <div className="v7-wrap">
+    <LearnerShell>
+      <div className="learner-page learner-page--attempt">
         <Link to="/app/learning" className="profile-back">
           ← Your paths
         </Link>
@@ -100,7 +100,7 @@ export default function AttemptPage() {
           </p>
         ) : result ? (
           <div className="v7-card v7-result">
-            <span className="org-eyebrow">{result.kind} RESULT</span>
+            
             <h1>
               {result.timedOut
                 ? "Time ran out"
@@ -124,9 +124,7 @@ export default function AttemptPage() {
           attempt && (
             <>
               <header className="v7-hero">
-                <span className="org-eyebrow">
-                  {attempt.attempt.kind} · IN PROGRESS
-                </span>
+                <span className="course-hero__context">{attempt.attempt.kind === "OFFICIAL" ? "Official assessment" : attempt.attempt.kind === "MOCK" ? "Mock test" : "Practice"} · In progress</span>
                 <h1>{attempt.attempt.title}</h1>
                 <p role="timer">
                   Time remaining: {Math.floor(remaining / 60)}:
@@ -188,6 +186,6 @@ export default function AttemptPage() {
           )
         )}
       </div>
-    </AppShell>
+    </LearnerShell>
   )
 }

@@ -1,91 +1,53 @@
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
-import PublicHeader from "@/components/layout/PublicHeader"
-import PublicFooter from "@/components/layout/PublicFooter"
+import { useEffect, useMemo, useState } from "react"
+import { ArrowRight, BookOpen, Search, Sparkles } from "lucide-react"
+import { Link, useSearchParams } from "react-router-dom"
+
+import LearnerSurface from "@/components/layout/LearnerSurface"
 import Button from "@/components/ui/Button"
 import { learningApi, type Path } from "@/features/learning/learningApi"
+
 export default function ExplorePathsPage() {
-  const [paths, setPaths] = useState<Path[]>([]),
-    [loading, setLoading] = useState(true),
-    [error, setError] = useState(""),
-    [query, setQuery] = useState("")
+  const [params, setParams] = useSearchParams()
+  const [paths, setPaths] = useState<Path[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const query = params.get("search") ?? ""
+
   async function load() {
     setLoading(true)
-    try {
-      setPaths(await learningApi.discover())
-      setError("")
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Unable to load published paths",
-      )
-    } finally {
-      setLoading(false)
-    }
+    try { setPaths(await learningApi.discover()); setError("") }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "We couldn't load learning paths right now.") }
+    finally { setLoading(false) }
   }
-  useEffect(() => {
-    void load()
-  }, [])
-  const shown = paths.filter((p) =>
-    (p.title + " " + p.summary + " " + (p.organization_name ?? ""))
-      .toLowerCase()
-      .includes(query.toLowerCase()),
-  )
+  useEffect(() => { void load() }, [])
+
+  const shown = useMemo(() => paths.filter((path) => `${path.title} ${path.summary} ${path.organization_name ?? ""}`.toLowerCase().includes(query.toLowerCase())), [paths, query])
+
   return (
-    <div className="public-page">
-      <PublicHeader />
-      <main className="v7-wrap">
-        <header className="v7-hero">
-          <span className="org-eyebrow">EXPLORE LEARNING</span>
-          <h1>Find a path worth finishing.</h1>
-          <p>
-            Explore real published programs. You choose when to enroll, and your
-            progress stays tied to the version you joined.
-          </p>
+    <LearnerSurface>
+      <main className="learner-page learner-page--explore">
+        <header className="explore-page__hero">
+          <div className="explore-page__glow" />
+          <div className="explore-page__copy">
+            <span><Sparkles size={15} /> Follow your curiosity</span>
+            <h1>Find something<br />worth <em>learning.</em></h1>
+            <p>Search published paths by skill, topic, or organization. You can look around before deciding what deserves your time.</p>
+          </div>
+          <label className="explore-search">
+            <Search size={20} />
+            <input type="search" value={query} onChange={(event) => { const value = event.target.value; setParams(value ? { search: value } : {}) }} placeholder="Try ‘Japanese’, ‘backend’, or an organization…" aria-label="Search learning paths" />
+            {query ? <button type="button" onClick={() => setParams({})}>Clear</button> : null}
+          </label>
         </header>
-        <label className="v7-search">
-          Search paths{" "}
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search a skill, path or organization"
-          />
-        </label>
-        {loading ? (
-          <p role="status">Loading published paths…</p>
-        ) : error ? (
-          <div role="alert" className="org-error">
-            {error}{" "}
-            <Button variant="outline" onClick={() => void load()}>
-              Retry
-            </Button>
-          </div>
-        ) : shown.length === 0 ? (
-          <div className="v7-card">
-            <h2>
-              {query
-                ? "No paths match your search"
-                : "No published learning paths yet"}
-            </h2>
-            <p>Check back when an approved organization publishes a path.</p>
-          </div>
-        ) : (
-          <div className="v7-grid">
-            {shown.map((path) => (
-              <article className="v7-card" key={path.id}>
-                <span className="org-eyebrow">{path.organization_name}</span>
-                <h2>{path.title}</h2>
-                <p>{path.summary}</p>
-                <small>Published version {path.version_no}</small>
-                <Button asChild variant="outline">
-                  <Link to={`/learning-paths/${path.id}`}>See the path</Link>
-                </Button>
-              </article>
-            ))}
-          </div>
-        )}
+
+        <section className="explore-results">
+          <div className="explore-results__heading"><h2>{query ? `Results for “${query}”` : "Explore published paths"}</h2>{!loading ? <span>{shown.length} available</span> : null}</div>
+          {loading ? <div className="learner-state" role="status">Finding learning paths…</div>
+            : error ? <div className="learner-state learner-state--error" role="alert"><strong>Discovery is unavailable right now.</strong><span>{error}</span><Button variant="outline" onClick={() => void load()}>Try again</Button></div>
+            : shown.length === 0 ? <div className="learner-empty"><span className="learner-empty__icon"><Search size={23} /></span><h3>{query ? "Nothing matched that search." : "No published paths yet."}</h3><p>{query ? "Try a broader skill, topic, or organization name." : "Published learning paths will appear here when they become available."}</p></div>
+            : <div className="path-gallery">{shown.map((path, index) => <Link className="path-gallery__item" to={`/learning-paths/${path.id}`} key={path.id}><span className="path-gallery__number">{String(index + 1).padStart(2, "0")}</span><span className="path-gallery__icon"><BookOpen size={21} /></span><div><small>{path.organization_name || "SkillProof learning"}</small><h3>{path.title}</h3><p>{path.summary || "Explore this published learning path."}</p><span>Explore path <ArrowRight size={14} /></span></div></Link>)}</div>}
+        </section>
       </main>
-      <PublicFooter />
-    </div>
+    </LearnerSurface>
   )
 }
