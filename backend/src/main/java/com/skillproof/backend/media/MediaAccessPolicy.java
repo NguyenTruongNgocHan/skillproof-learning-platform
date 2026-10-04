@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.skillproof.backend.identity.contract.IdentityAccessQuery;
 import com.skillproof.backend.learning.contract.LearningResourceAccessQuery;
 import com.skillproof.backend.organization.contract.OrganizationAuthorityQuery;
+import com.skillproof.backend.organization.contract.OrganizationPublicQuery;
 
 /**
  * Media owns storage authorization orchestration; Learning remains authority
@@ -19,11 +20,14 @@ public class MediaAccessPolicy {
     private final IdentityAccessQuery identities;
     private final LearningResourceAccessQuery learning;
     private final OrganizationAuthorityQuery organizations;
+    private final OrganizationPublicQuery organizationView;
 
-    public MediaAccessPolicy(IdentityAccessQuery identities, LearningResourceAccessQuery learning, OrganizationAuthorityQuery organizations) {
+    public MediaAccessPolicy(IdentityAccessQuery identities, LearningResourceAccessQuery learning,
+            OrganizationAuthorityQuery organizations, OrganizationPublicQuery organizationView) {
         this.identities = identities;
         this.learning = learning;
         this.organizations = organizations;
+        this.organizationView = organizationView;
     }
 
     void active(UUID actor) {
@@ -36,7 +40,9 @@ public class MediaAccessPolicy {
         if (identities.isActiveAdmin(actor)) {
             return;
         
-        }if (!identities.isActiveOrganizer(actor) || !organizations.hasAuthority(organizationId, actor, "MANAGE_PROFILE")) {
+        }        if (!identities.isActiveOrganizer(actor)
+                || (!organizations.hasAuthority(organizationId, actor, "MANAGE_PROFILE")
+                        && !organizationView.canPrepareApplication(organizationId, actor))) {
             throw new AccessDeniedException("Organization authority required");
     
         }}

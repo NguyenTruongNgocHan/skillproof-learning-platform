@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import com.skillproof.backend.media.StorageException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -186,6 +187,14 @@ public class GlobalExceptionHandler {
                                 request.getRequestURI()
                         )
                 );
+    }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ApiError> handleStorage(StorageException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiError.of(HttpStatus.SERVICE_UNAVAILABLE, exception.code(),
+                        exception.getMessage(), request.getRequestURI()));
     }
 
     @ExceptionHandler(Exception.class)

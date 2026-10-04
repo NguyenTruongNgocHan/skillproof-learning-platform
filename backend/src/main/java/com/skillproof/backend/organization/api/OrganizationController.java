@@ -102,6 +102,11 @@ public class OrganizationController {
         return service.mine(actor(auth));
     }
 
+    @GetMapping("/mine/all")
+    public List<Organization> memberships(Authentication auth) {
+        return service.memberships(actor(auth));
+    }
+
     @GetMapping("/{id}")
 
     public Organization get(Authentication auth, @PathVariable UUID id) {

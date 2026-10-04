@@ -6,6 +6,7 @@ import {
   organizationApi,
   type Organization,
 } from "@/features/organization/organizationApi"
+import { selectedOrganizationId } from "@/features/organization/OrganizationSwitcher"
 import { learningApi, type Path } from "@/features/learning/learningApi"
 export default function OrganizerPathsPage() {
   const navigate = useNavigate()
@@ -21,8 +22,12 @@ export default function OrganizerPathsPage() {
     setLoading(true)
     try {
       const o = await organizationApi.mine()
-      setOrg(o)
-      setItems(await learningApi.owned(o.id))
+      const selected = selectedOrganizationId()
+      const organization = selected
+        ? (await organizationApi.memberships()).find((item) => item.id === selected) ?? o
+        : o
+      setOrg(organization)
+      setItems(await learningApi.owned(organization.id))
       setError("")
     } catch (e) {
       setError(

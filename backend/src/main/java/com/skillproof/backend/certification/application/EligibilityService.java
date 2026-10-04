@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.skillproof.backend.certification.domain.CertificateEligibility;
+import com.skillproof.backend.certification.domain.Certificate;
 import com.skillproof.backend.certification.domain.CertificationProgram;
 import com.skillproof.backend.common.exception.BadRequestException;
 import com.skillproof.backend.common.exception.ConflictException;
@@ -32,6 +33,7 @@ public class EligibilityService {
     private final OrganizationAuthorityQuery organizationAuthorityQuery;
     private final QuizCompletionEvidenceQuery quizCompletionEvidenceQuery;
     private final ObjectMapper objectMapper;
+    private final CertificateRepository certificateRepository;
 
     public EligibilityService(
             CertificationProgramRepository programRepository,
@@ -40,7 +42,8 @@ public class EligibilityService {
             CompletionEvidenceQuery completionEvidenceQuery,
             OrganizationAuthorityQuery organizationAuthorityQuery,
             QuizCompletionEvidenceQuery quizCompletionEvidenceQuery,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            CertificateRepository certificateRepository) {
         this.programRepository = programRepository;
         this.eligibilityRepository = eligibilityRepository;
         this.certificationContextQuery = certificationContextQuery;
@@ -48,6 +51,7 @@ public class EligibilityService {
         this.organizationAuthorityQuery = organizationAuthorityQuery;
         this.quizCompletionEvidenceQuery = quizCompletionEvidenceQuery;
         this.objectMapper = objectMapper;
+        this.certificateRepository = certificateRepository;
     }
 
     @Transactional
@@ -131,9 +135,44 @@ public class EligibilityService {
         if (!learnerSelf && !authorizedOrganizer) {
             throw new UnauthorizedException("ELIGIBILITY_FORBIDDEN", "Eligibility is private");
         }
+
         return eligibilityRepository.findLatest(programId, learnerId)
                 .orElseThrow(() -> new NotFoundException(
                 "ELIGIBILITY_NOT_FOUND", "Eligibility evaluation not found"));
+    }
+
+    @Transactional
+    public Certificate issue(UUID actorId, UUID eligibilityId) {
+        var eligibility = eligibilityRepository.findById(eligibilityId)
+                .orElseThrow(() -> new NotFoundException("ELIGIBILITY_NOT_FOUND", "Eligibility evaluation not found"));
+        var program = requireProgram(eligibility.certificationProgramId());
+        requireCertificateAuthority(program.organizationId(), actorId);
+        if (eligibility.status() != CertificateEligibility.Status.ELIGIBLE) {
+            throw new ConflictException("LEARNER_NOT_ELIGIBLE", "Only eligible learners can receive a certificate");
+        }
+        return certificateRepository.findByProgramAndLearner(program.id(), eligibility.learnerUserId())
+                .orElseGet(() -> certificateRepository.save(new Certificate(
+                        UUID.randomUUID(), program.id(), eligibility.id(), eligibility.learnerUserId(),
+                        "SP-" + UUID.randomUUID().toString().replace("-", "").substring(0, 20).toUpperCase(),
+                        Certificate.Status.ISSUED, Instant.now(), null, null)));
+    }
+
+    @Transactional
+    public Certificate revoke(UUID actorId, UUID certificateId, String reason) {
+        var existing = certificateRepository.findById(certificateId)
+                .orElseThrow(() -> new NotFoundException("CERTIFICATE_NOT_FOUND", "Certificate not found"));
+        var program = requireProgram(existing.certificationProgramId());
+        requireCertificateAuthority(program.organizationId(), actorId);
+        if (existing.status() == Certificate.Status.REVOKED) return existing;
+        return certificateRepository.save(new Certificate(existing.id(), existing.certificationProgramId(),
+                existing.eligibilityId(), existing.learnerUserId(), existing.serialNumber(),
+                Certificate.Status.REVOKED, existing.issuedAt(), Instant.now(), reason));
+    }
+
+    @Transactional(readOnly = true)
+    public Certificate verify(String serialNumber) {
+        return certificateRepository.findBySerial(serialNumber)
+                .orElseThrow(() -> new NotFoundException("CERTIFICATE_NOT_FOUND", "Certificate not found"));
     }
 
     private CertificationProgram requireProgram(UUID programId) {

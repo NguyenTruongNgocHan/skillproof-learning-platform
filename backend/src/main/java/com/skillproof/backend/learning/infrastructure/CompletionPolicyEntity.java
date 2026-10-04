@@ -27,6 +27,12 @@ public class CompletionPolicyEntity {
     protected CompletionPolicyEntity() {
     }
 
+    public CompletionPolicyEntity(UUID versionId, boolean resources, boolean assessments) {
+        this.versionId = versionId;
+        this.requireAllResources = resources;
+        this.requireOfficialAssessments = assessments;
+    }
+
     public UUID getLogicalId() {
         return logicalId;
     }

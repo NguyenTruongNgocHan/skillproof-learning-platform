@@ -19,6 +19,7 @@ import {
   type Kind,
 } from "@/features/quiz/quizApi"
 import { organizationApi } from "@/features/organization/organizationApi"
+import { selectedOrganizationId } from "@/features/organization/OrganizationSwitcher"
 
 const errorText = (e: unknown) =>
   e instanceof Error ? e.message : "The action could not be saved"
@@ -63,7 +64,11 @@ export function usePathStudio() {
     if (!id) return false
     setLoading(true)
     try {
-      const org = await organizationApi.mine()
+      const mine = await organizationApi.mine()
+      const selected = selectedOrganizationId()
+      const org = selected
+        ? (await organizationApi.memberships()).find((item) => item.id === selected) ?? mine
+        : mine
       const [v, owned] = await Promise.all([
         learningApi.versions(id),
         learningApi.owned(org.id),

@@ -46,6 +46,11 @@ public class OrganizationRepository {
                 .findFirst().map(OrganizationEntity::toDomain);
     }
 
+    public List<Organization> memberships(UUID user) {
+        return organizations.findMembershipOrganizations(user).stream()
+                .map(OrganizationEntity::toDomain).toList();
+    }
+
     public List<Organization> pending() {
         return organizations.findByStatusOrderByCreatedAtAsc(Organization.Status.PENDING)
                 .stream().map(OrganizationEntity::toDomain).toList();
@@ -94,8 +99,13 @@ public class OrganizationRepository {
 
     public void addMember(UUID organizationId, UUID userId, UUID actor,
             Instant now, boolean owner) {
-        OrganizationMembershipEntity membership = memberships.saveAndFlush(
-                new OrganizationMembershipEntity(organizationId, userId, now));
+        OrganizationMembershipEntity membership = memberships.findByOrganizationIdAndUserId(organizationId, userId)
+                .map(existing -> {
+                    existing.activate();
+                    return existing;
+                })
+                .orElseGet(() -> memberships.saveAndFlush(
+                        new OrganizationMembershipEntity(organizationId, userId, now)));
         if (owner) {
             for (String authority : List.of("MANAGE_PROFILE", "MANAGE_MEMBERS",
                     "MANAGE_CONTENT", "ISSUE_CERTIFICATES")) {

@@ -23,4 +23,12 @@ public class OrganizationPublicQueryService implements OrganizationPublicQuery {
                 .map(organization -> new OrganizationView(
                 organization.id(), organization.displayName(), organization.status().name()));
     }
+
+    @Override
+    public boolean canPrepareApplication(UUID organizationId, UUID actorId) {
+        return organizations.publicView(organizationId)
+                .filter(organization -> organization.ownerUserId().equals(actorId)
+                        && organization.status() != com.skillproof.backend.organization.domain.Organization.Status.APPROVED)
+                .isPresent();
+    }
 }

@@ -1,8 +1,7 @@
 package com.skillproof.backend.certification.api;
 
-import com.skillproof.backend.certification.application.EligibilityService;
-import jakarta.validation.Valid;
 import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.skillproof.backend.certification.application.EligibilityService;
+import com.skillproof.backend.certification.domain.Certificate;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -54,6 +58,41 @@ public class EligibilityController {
             @PathVariable UUID learnerId) {
         return EligibilityResponse.from(
                 eligibilityService.latest(authenticatedUserId(authentication), programId, learnerId));
+    }
+
+    public record CertificateResponse(
+            UUID id, UUID certificationProgramId, UUID learnerUserId,
+            String serialNumber, Certificate.Status status,
+            java.time.Instant issuedAt, java.time.Instant revokedAt, String revocationReason) {
+
+        static CertificateResponse from(Certificate c) {
+            return new CertificateResponse(c.id(), c.certificationProgramId(), c.learnerUserId(),
+                    c.serialNumber(), c.status(), c.issuedAt(), c.revokedAt(), c.revocationReason());
+        }
+    }
+
+    public record RevokeRequest(@jakarta.validation.constraints.NotBlank
+            @jakarta.validation.constraints.Size(max = 1000) String reason) {
+
+    }
+
+    @PostMapping("/certification-eligibility/{eligibilityId}/certificate")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CertificateResponse issue(Authentication authentication, @PathVariable UUID eligibilityId) {
+        return CertificateResponse.from(eligibilityService.issue(
+                authenticatedUserId(authentication), eligibilityId));
+    }
+
+    @PostMapping("/certificates/{certificateId}/revoke")
+    public CertificateResponse revoke(Authentication authentication, @PathVariable UUID certificateId,
+            @Valid @RequestBody RevokeRequest request) {
+        return CertificateResponse.from(eligibilityService.revoke(
+                authenticatedUserId(authentication), certificateId, request.reason()));
+    }
+
+    @GetMapping("/public/certificates/{serialNumber}")
+    public CertificateResponse verify(@PathVariable String serialNumber) {
+        return CertificateResponse.from(eligibilityService.verify(serialNumber));
     }
 
     private UUID authenticatedUserId(Authentication authentication) {

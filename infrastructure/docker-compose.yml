@@ -53,6 +53,30 @@ services:
       retries: 5
       start_period: 10s
 
+  minio-init:
+    image: amazon/aws-cli:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: skillproof
+      MINIO_ROOT_PASSWORD: skillproof123
+      MEDIA_S3_BUCKET: skillproof-media
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        export AWS_ACCESS_KEY_ID="$$MINIO_ROOT_USER"
+        export AWS_SECRET_ACCESS_KEY="$$MINIO_ROOT_PASSWORD"
+        endpoint="http://minio:9000"
+        if ! aws s3api head-bucket --bucket "$$MEDIA_S3_BUCKET" --endpoint-url "$$endpoint" >/dev/null 2>&1; then
+          aws s3api create-bucket --bucket "$$MEDIA_S3_BUCKET" --endpoint-url "$$endpoint" >/dev/null
+        fi
+        aws s3api put-bucket-acl --bucket "$$MEDIA_S3_BUCKET" --acl private \
+          --endpoint-url "$$endpoint" >/dev/null
+        aws s3api head-bucket --bucket "$$MEDIA_S3_BUCKET" --endpoint-url "$$endpoint" >/dev/null
+        echo "Object storage bucket is ready."
+
 volumes:
   postgres_data:
   redis_data:

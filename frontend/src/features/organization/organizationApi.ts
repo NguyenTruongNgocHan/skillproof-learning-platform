@@ -35,8 +35,19 @@ export interface Member {
   active: boolean
   grants: Authority[]
 }
+export interface Certificate {
+  id: string
+  certificationProgramId: string
+  learnerUserId: string
+  serialNumber: string
+  status: "ISSUED" | "REVOKED"
+  issuedAt: string
+  revokedAt: string | null
+  revocationReason: string | null
+}
 export const organizationApi = {
   mine: () => apiClient.get<Organization>("/organizations/mine"),
+  memberships: () => apiClient.get<Organization[]>("/organizations/mine/all"),
   resubmit: (data: OrganizationApplication) =>
     apiClient.post<Organization>("/organizations/mine/resubmit", data),
   create: (data: OrganizationApplication) =>
@@ -78,4 +89,17 @@ export const organizationApi = {
       decision,
       reason,
     }),
+  issueCertificate: (eligibilityId: string) =>
+    apiClient.post<Certificate>(
+      `/certification-eligibility/${encodeURIComponent(eligibilityId)}/certificate`,
+    ),
+  revokeCertificate: (certificateId: string, reason: string) =>
+    apiClient.post<Certificate>(
+      `/certificates/${encodeURIComponent(certificateId)}/revoke`,
+      { reason },
+    ),
+  verifyCertificate: (serialNumber: string) =>
+    apiClient.get<Certificate>(
+      `/public/certificates/${encodeURIComponent(serialNumber)}`,
+    ),
 }

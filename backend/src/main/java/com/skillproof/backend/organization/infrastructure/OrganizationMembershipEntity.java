@@ -52,4 +52,8 @@ public class OrganizationMembershipEntity {
     void deactivate() {
         active = false;
     }
+
+    void activate() {
+        active = true;
+    }
 }

@@ -85,6 +85,11 @@ public class OrganizationService {
         return organizations.owned(actor).or(() -> organizations.memberOrganization(actor)).orElseThrow(() -> new NotFoundException("ORGANIZATION_NOT_FOUND", "No organization application found"));
     }
 
+    public List<Organization> memberships(UUID actor) {
+        organizer(actor);
+        return organizations.memberships(actor);
+    }
+
     public Organization get(UUID id, UUID actor, boolean admin) {
         Organization o = find(id);
         if (!admin && (users.find(actor).filter(u -> u.active() && "ORGANIZER".equals(u.role())).isEmpty() || !organizations.activeMember(id, actor))) {
@@ -145,8 +150,9 @@ public class OrganizationService {
         if (!candidate.active() || !"ORGANIZER".equals(candidate.role())) {
             throw new BadRequestException("MEMBER_NOT_ELIGIBLE", "Active organizer required");
         }
-        if (organizations.memberOrganization(candidate.id()).isPresent()) {
-            throw new ConflictException("MEMBER_ALREADY_ASSIGNED", "This organizer already belongs to an organization");
+        if (organizations.memberOrganization(candidate.id())
+                .filter(existing -> existing.id().equals(id)).isPresent()) {
+            throw new ConflictException("MEMBER_EXISTS", "Member already belongs to this organization");
         }
         try {
             organizations.addMember(id, candidate.id(), actor, Instant.now(), false);

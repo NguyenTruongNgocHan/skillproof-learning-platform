@@ -17,4 +17,6 @@ public interface OrganizationPublicQuery {
     }
 
     Optional<OrganizationView> find(UUID organizationId);
+
+    boolean canPrepareApplication(UUID organizationId, UUID actorId);
 }

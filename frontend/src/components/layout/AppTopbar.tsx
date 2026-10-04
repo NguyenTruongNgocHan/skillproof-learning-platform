@@ -2,6 +2,7 @@ import { Menu } from "lucide-react"
 import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
 import UserMenu from "@/components/layout/UserMenu"
 import type { User } from "@/features/auth/types/auth.types"
+import OrganizationSwitcher from "@/features/organization/OrganizationSwitcher"
 
 interface AppTopbarProps {
   onMenuToggle: () => void
@@ -66,6 +67,7 @@ export default function AppTopbar({
           position: "relative",
         }}
       >
+        {user.role === "ORGANIZER" && <OrganizationSwitcher />}
         <ThemeSwitcher />
         <UserMenu user={user} />
       </div>

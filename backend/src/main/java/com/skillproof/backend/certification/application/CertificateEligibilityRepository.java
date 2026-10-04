@@ -10,4 +10,6 @@ public interface CertificateEligibilityRepository {
     CertificateEligibility save(CertificateEligibility eligibility);
 
     Optional<CertificateEligibility> findLatest(UUID programId, UUID learnerId);
+
+    Optional<CertificateEligibility> findById(UUID id);
 }

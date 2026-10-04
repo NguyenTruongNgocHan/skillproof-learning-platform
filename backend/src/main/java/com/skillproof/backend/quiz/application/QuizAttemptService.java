@@ -93,7 +93,15 @@ public class QuizAttemptService {
     private Map<String, Object> view(QuizAttempt t) {
         var items = questions.findByIdAttemptIdOrderByPosition(t.id).stream().map(x -> {
             var q = questionVersions.findById(x.id.questionVersionId).orElseThrow();
-            return Map.<String, Object>of("question_version_id", q.id, "position", x.position, "points", x.points, "selected_option_id", x.selectedOptionId, "stem", q.stem, "options", options.findByQuestionVersionIdOrderByPosition(q.id).stream().map(o -> Map.<String, Object>of("id", o.id, "position", o.position, "body", o.body)).toList());
+            var item = new java.util.LinkedHashMap<String, Object>();
+            item.put("question_version_id", q.id);
+            item.put("position", x.position);
+            item.put("points", x.points);
+            item.put("selected_option_id", x.selectedOptionId);
+            item.put("stem", q.stem);
+            item.put("options", options.findByQuestionVersionIdOrderByPosition(q.id).stream()
+                    .map(o -> Map.<String, Object>of("id", o.id, "position", o.position, "body", o.body)).toList());
+            return item;
         }).toList();
         return Map.of("attempt", Map.of("id", t.id, "assessment_id", t.assessmentId, "status", t.status.name(), "started_at", t.startedAt, "deadline_at", t.deadlineAt), "questions", items);
     }

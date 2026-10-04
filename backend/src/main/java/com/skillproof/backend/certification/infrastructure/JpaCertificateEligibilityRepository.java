@@ -25,4 +25,9 @@ public class JpaCertificateEligibilityRepository implements CertificateEligibili
         return repository.findFirstByCertificationProgramIdAndLearnerUserIdOrderByEvaluatedAtDesc(p, l)
                 .map(CertificateEligibilityEntity::domain);
     }
+
+    @Override
+    public Optional<CertificateEligibility> findById(UUID id) {
+        return repository.findById(id).map(CertificateEligibilityEntity::domain);
+    }
 }
