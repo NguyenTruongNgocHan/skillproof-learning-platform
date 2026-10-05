@@ -7,14 +7,18 @@ import java.util.UUID;
  * provenance needed to bind a certification program.
  */
 public interface CertificationContextQuery {
-
     record CertificationContext(
-            UUID learningPathVersionId,
-            UUID organizationId,
-            UUID completionPolicyId,
-            boolean published) {
+        UUID learningPathVersionId,
+        UUID organizationId,
+        UUID completionPolicyId,
+        boolean published
+    ) {}
 
-    }
+    record PublishedSource(UUID id, String title, int versionNo) {}
 
-    CertificationContext requireCertificationContext(UUID learningPathVersionId);
+    java.util.List<PublishedSource> publishedSources(UUID organizationId);
+
+    CertificationContext requireCertificationContext(
+        UUID learningPathVersionId
+    );
 }

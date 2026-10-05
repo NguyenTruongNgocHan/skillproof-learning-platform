@@ -1,14 +1,13 @@
+import { organizerError } from "@/features/organizer/errorMessage"
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import AppShell from "@/components/layout/AppShell"
+import { OrganizerSurface } from "@/features/organizer/OrganizerSurface"
 import Button from "@/components/ui/Button"
-import {
-  organizationApi,
-  type Organization,
-} from "@/features/organization/organizationApi"
-import { selectedOrganizationId } from "@/features/organization/OrganizationSwitcher"
+import type { Organization } from "@/features/organization/organizationApi"
+import { useOrganizationContext } from "@/app/providers/OrganizationProvider"
 import { learningApi, type Path } from "@/features/learning/learningApi"
 export default function OrganizerPathsPage() {
+  const { organization: selectedContext, setDirty } = useOrganizationContext()
   const navigate = useNavigate()
   const [org, setOrg] = useState<Organization | null>(null),
     [items, setItems] = useState<Path[]>([]),
@@ -21,18 +20,16 @@ export default function OrganizerPathsPage() {
   async function load() {
     setLoading(true)
     try {
-      const o = await organizationApi.mine()
-      const selected = selectedOrganizationId()
-      const organization = selected
-        ? (await organizationApi.memberships()).find((item) => item.id === selected) ?? o
-        : o
+      const organization = selectedContext
+      if (!organization)
+        throw new Error(
+          "No approved organization is available for this workspace.",
+        )
       setOrg(organization)
       setItems(await learningApi.owned(organization.id))
       setError("")
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Unable to load organization paths",
-      )
+      setError(organizerError(e, "Unable to load organization paths"))
     } finally {
       setLoading(false)
     }
@@ -40,6 +37,10 @@ export default function OrganizerPathsPage() {
   useEffect(() => {
     void load()
   }, [])
+  useEffect(() => {
+    setDirty("path-create", Boolean(title || summary || slug))
+    return () => setDirty("path-create", false)
+  }, [title, summary, slug, setDirty])
   async function create(e: React.FormEvent) {
     e.preventDefault()
     if (!org) return
@@ -47,15 +48,16 @@ export default function OrganizerPathsPage() {
     setError("")
     try {
       const path = await learningApi.create(org.id, { slug, title, summary })
+      setDirty("path-create", false)
       navigate(`/organizer/paths/${path.id}`)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to create path")
+      setError(organizerError(e, "Unable to create path"))
     } finally {
       setBusy(false)
     }
   }
   return (
-    <AppShell>
+    <OrganizerSurface title="Content workspace" authority="MANAGE_CONTENT">
       <div className="v7-wrap">
         <header className="v7-hero">
           <span className="org-eyebrow">CONTENT STUDIO</span>
@@ -153,6 +155,6 @@ export default function OrganizerPathsPage() {
           </>
         )}
       </div>
-    </AppShell>
+    </OrganizerSurface>
   )
 }

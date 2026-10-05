@@ -1,3 +1,4 @@
+import { organizerError } from "@/features/organizer/errorMessage"
 import MediaPanel from "@/features/media/MediaPanel"
 import { useCallback, useEffect, useState } from "react"
 import { Link, useParams } from "react-router-dom"
@@ -19,20 +20,22 @@ import {
   type Kind,
 } from "@/features/quiz/quizApi"
 import { organizationApi } from "@/features/organization/organizationApi"
-import { selectedOrganizationId } from "@/features/organization/OrganizationSwitcher"
+import { useOrganizationContext } from "@/app/providers/OrganizationProvider"
 
 const errorText = (e: unknown) =>
-  e instanceof Error ? e.message : "The action could not be saved"
+  organizerError(e, "The action could not be saved")
 
 export function usePathStudio() {
   const { id } = useParams()
+  const { organization, setDirty } = useOrganizationContext()
   const [path, setPath] = useState<Path | null>(null),
     [versions, setVersions] = useState<Version[]>([]),
     [version, setVersion] = useState<Version | null>(null),
     [modules, setModules] = useState<Module[]>([]),
     [assessments, setAssessments] = useState<Assessment[]>([]),
-    [assessmentItems, setAssessmentItems] =
-      useState<Record<string, AssessmentQuestion[]>>({}),
+    [assessmentItems, setAssessmentItems] = useState<
+      Record<string, AssessmentQuestion[]>
+    >({}),
     [banks, setBanks] = useState<Bank[]>([]),
     [bank, setBank] = useState(""),
     [questions, setQuestions] = useState<Question[]>([]),
@@ -60,72 +63,90 @@ export function usePathStudio() {
     [attachQuestion, setAttachQuestion] = useState(""),
     [requireResources, setRequireResources] = useState(true),
     [requireOfficial, setRequireOfficial] = useState(true)
-  const load = useCallback(async () => {
-    if (!id) return false
-    setLoading(true)
-    try {
-      const mine = await organizationApi.mine()
-      const selected = selectedOrganizationId()
-      const org = selected
-        ? (await organizationApi.memberships()).find((item) => item.id === selected) ?? mine
-        : mine
-      const [v, owned] = await Promise.all([
-        learningApi.versions(id),
-        learningApi.owned(org.id),
-      ])
-      setPath(owned.find((p) => p.id === id) ?? null)
-      setVersions(v)
-      const chosen =
-        v.find((x) => x.status === "DRAFT") ??
-        v.find((x) => x.status === "PUBLISHED") ??
-        v[0] ??
-        null
-      setVersion(chosen)
-      if (chosen) {
-        const [outline, tests] = await Promise.all([
-          learningApi.outline(chosen.id),
-          quizApi.assessments(chosen.id),
-        ])
-        setModules(outline.modules)
-        setAssessments(tests)
-        setAssessmentItems(
-          Object.fromEntries(
-            await Promise.all(
-              tests.map(
-                async (test) =>
-                  [
-                    test.id,
-                    await quizApi.assessmentQuestions(test.id),
-                  ] as const,
+  const load = useCallback(
+    async (requestedVersionId?: string) => {
+      if (!id) return false
+      setLoading(true)
+      try {
+        if (!organization) throw new Error("Select an approved organization.")
+        const org = organization
+        const owned = await learningApi.owned(org.id)
+        if (!owned.some((p) => p.id === id))
+          throw new Error(
+            "This path belongs to another organization. Switch organization or return to the path list.",
+          )
+        const v = await learningApi.versions(id)
+        setPath(owned.find((p) => p.id === id) ?? null)
+        setVersions(v)
+        const chosen =
+          v.find((x) => x.id === requestedVersionId) ??
+          v.find((x) => x.status === "DRAFT") ??
+          v.find((x) => x.status === "PUBLISHED") ??
+          v[0] ??
+          null
+        setVersion(chosen)
+        if (chosen) {
+          const [outline, tests] = await Promise.all([
+            learningApi.outline(chosen.id),
+            quizApi.assessments(chosen.id),
+          ])
+          setModules(outline.modules)
+          setAssessments(tests)
+          setAssessmentItems(
+            Object.fromEntries(
+              await Promise.all(
+                tests.map(
+                  async (test) =>
+                    [
+                      test.id,
+                      await quizApi.assessmentQuestions(test.id),
+                    ] as const,
+                ),
               ),
             ),
-          ),
-        )
-        setRequireResources(outline.policy.require_all_resources)
-        setRequireOfficial(outline.policy.require_official_assessments)
-        const bs = await quizApi.banks(org.id)
-        setBanks(bs)
-        setBank((b) => b || bs[0]?.id || "")
+          )
+          setRequireResources(outline.policy.require_all_resources)
+          setRequireOfficial(outline.policy.require_official_assessments)
+          const bs = await quizApi.banks(org.id)
+          setBanks(bs)
+          setBank((b) => b || bs[0]?.id || "")
+        }
+        setError("")
+        return true
+      } catch (e) {
+        setError(errorText(e))
+        return false
+      } finally {
+        setLoading(false)
       }
-      setError("")
-      return true
-    } catch (e) {
-      setError(errorText(e))
-      return false
-    } finally {
-      setLoading(false)
-    }
-  }, [id])
+    },
+    [id, organization?.id],
+  )
   useEffect(() => {
     void load()
   }, [load])
   useEffect(() => {
+    setDirty(
+      "path-studio",
+      Boolean(moduleTitle || resourceTitle || resourceBody || assessmentTitle),
+    )
+    return () => setDirty("path-studio", false)
+  }, [moduleTitle, resourceTitle, resourceBody, assessmentTitle, setDirty])
+  useEffect(() => {
+    let live = true
     if (bank)
       quizApi
         .questions(bank)
-        .then(setQuestions)
-        .catch((e) => setError(errorText(e)))
+        .then((rows) => {
+          if (live) setQuestions(rows)
+        })
+        .catch((e) => {
+          if (live) setError(errorText(e))
+        })
     else setQuestions([])
+    return () => {
+      live = false
+    }
   }, [bank])
   async function act(job: () => Promise<unknown>, message: string) {
     setBusy(true)
@@ -155,7 +176,7 @@ export function usePathStudio() {
             })
           : learningApi.module(version.id, {
               title: moduleTitle,
-              position: modules.length + 1,
+              position: Math.max(0, ...modules.map((m) => m.position)) + 1,
             }),
       "Module saved.",
     )
@@ -169,7 +190,9 @@ export function usePathStudio() {
     const group = modules.find((m) => m.id === resourceModule)
     if (!group) return
     const data = {
-      position: editingResource?.position ?? group.resources.length + 1,
+      position:
+        editingResource?.position ??
+        Math.max(0, ...group.resources.map((r) => r.position)) + 1,
       kind: resourceKind,
       title: resourceTitle,
       ...(resourceKind === "ARTICLE"

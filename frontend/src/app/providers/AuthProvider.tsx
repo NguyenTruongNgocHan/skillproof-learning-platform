@@ -57,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await httpAuthRepository.logout()
+    localStorage.removeItem("skillproof.organizer.organization")
     setUser(null)
   }
 

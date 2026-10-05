@@ -1,17 +1,20 @@
-import { useEffect, useState, type FormEvent } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { ArrowLeft, Building2, CheckCircle2, ShieldCheck } from "lucide-react"
-import BrandLogo from "@/components/ui/BrandLogo"
-import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
-import Button from "@/components/ui/Button"
-import Input from "@/components/ui/Input"
 import { ApiError } from "@/services/api/apiClient"
+import { useEffect, useState, type FormEvent } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { useOrganizationContext } from "@/app/providers/OrganizationProvider"
 import {
   organizationApi,
-  type Organization,
   type OrganizationApplication,
 } from "@/features/organization/organizationApi"
-
+import BrandLogo from "@/components/ui/BrandLogo"
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
+import Input from "@/components/ui/Input"
+import Button from "@/components/ui/Button"
+import MediaPanel from "@/features/media/MediaPanel"
+import { ApplicationHistory } from "@/features/organizer/ApplicationHistory"
+import { useToast } from "@/components/ui/Toast"
+import "@/styles/organizer.css"
 const blank: OrganizationApplication = {
   legalName: "",
   displayName: "",
@@ -23,199 +26,250 @@ const blank: OrganizationApplication = {
   registrationNumber: "",
   contactPhone: "",
 }
-
 export default function OrganizerOnboardingPage() {
+  const {
+    owned,
+    loading,
+    error: contextError,
+    refresh,
+    setDirty,
+  } = useOrganizationContext()
+  const { user } = useAuth()
   const navigate = useNavigate()
-  const [existing, setExisting] = useState<Organization | null>(null)
-  const [form, setForm] = useState<OrganizationApplication>(blank)
-  const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
+  const [form, setForm] = useState(blank)
+  const [dirty, markDirty] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
-
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [review, setReview] = useState(false)
   useEffect(() => {
-    let active = true
-    organizationApi
-      .mine()
-      .then((org) => {
-        if (!active) return
-        setExisting(org)
-        if (org.status === "APPROVED") navigate("/organizer", { replace: true })
-        else if (org.status === "PENDING")
-          navigate("/organizer/verification-pending", { replace: true })
-        else
-          setForm({
-            legalName: org.legalName,
-            displayName: org.displayName,
-            website: org.website ?? "",
-            industry: org.industry,
-            country: org.country,
-            registrationNumber: org.registrationNumber ?? "",
-            contactName: org.contactName,
-            contactEmail: org.contactEmail,
-            contactPhone: org.contactPhone ?? "",
-          })
+    if (owned) {
+      setForm({
+        legalName: owned.legalName,
+        displayName: owned.displayName,
+        website: owned.website ?? "",
+        industry: owned.industry,
+        country: owned.country,
+        registrationNumber: owned.registrationNumber ?? "",
+        contactName: owned.contactName,
+        contactEmail: owned.contactEmail,
+        contactPhone: owned.contactPhone ?? "",
       })
-      .catch((e) => {
-        if (active && !(e instanceof ApiError && e.status === 404))
-          setError(
-            e instanceof Error ? e.message : "Could not load your application.",
-          )
-      })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
-    return () => {
-      active = false
-    }
-  }, [navigate])
-
-  function field(
-    key: keyof OrganizationApplication,
-    label: string,
-    opts: { required?: boolean; type?: string; hint?: string } = {},
-  ) {
-    return (
-      <Input
-        label={label}
-        type={opts.type ?? "text"}
-        required={opts.required}
-        hint={opts.hint}
-        value={form[key] ?? ""}
-        onChange={(e) =>
-          setForm((previous) => ({ ...previous, [key]: e.target.value }))
-        }
-      />
-    )
-  }
-
-  async function submit(e: FormEvent) {
+      markDirty(false)
+      setReview(false)
+    } else
+      setForm((previous) => ({ ...previous, contactEmail: user?.email ?? "" }))
+  }, [owned?.id, owned?.updatedAt, user?.id])
+  useEffect(() => {
+    setDirty("application", dirty)
+    return () => setDirty("application", false)
+  }, [dirty, setDirty])
+  useEffect(() => {
+    if (owned?.status === "PENDING")
+      navigate("/organizer/verification-pending", { replace: true })
+    if (owned?.status === "APPROVED") navigate("/organizer", { replace: true })
+  }, [owned?.status, navigate])
+  async function save(e: FormEvent) {
     e.preventDefault()
     if (busy) return
     setBusy(true)
     setError("")
+    setFieldErrors({})
     try {
-      const normalized = Object.fromEntries(
-        Object.entries(form).map(([key, value]) => [key, value?.trim()]),
-      ) as unknown as OrganizationApplication
-      if (existing?.status === "REJECTED")
-        await organizationApi.resubmit(normalized)
-      else await organizationApi.create(normalized)
-      navigate("/organizer/verification-pending", { replace: true })
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "The application could not be submitted. Please try again.",
+      if (!owned) await organizationApi.create(form)
+      else if (owned.status === "REJECTED") await organizationApi.resubmit(form)
+      else await organizationApi.saveDraft(form)
+      markDirty(false)
+      setDirty("application", false)
+      await refresh()
+      toast(
+        "success",
+        "Draft saved. Add documents and review before submitting.",
       )
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Save failed")
+      if (e instanceof ApiError) setFieldErrors(e.problem.fieldErrors ?? {})
     } finally {
       setBusy(false)
     }
   }
-
+  async function submit() {
+    if (!owned || dirty || busy) return
+    setBusy(true)
+    setError("")
+    try {
+      await organizationApi.submit()
+      await refresh()
+      toast("success", "Application submitted for review.")
+      navigate("/organizer/verification-pending", { replace: true })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Submit failed")
+    } finally {
+      setBusy(false)
+    }
+  }
+  const field = (
+    key: keyof OrganizationApplication,
+    label: string,
+    required = false,
+    type = "text",
+  ) => (
+    <Input
+      label={label}
+      required={required}
+      type={type}
+      maxLength={
+        {
+          legalName: 200,
+          displayName: 200,
+          website: 500,
+          industry: 120,
+          country: 120,
+          registrationNumber: 120,
+          contactName: 150,
+          contactEmail: 320,
+          contactPhone: 60,
+        }[key]
+      }
+      error={fieldErrors[key]}
+      disabled={busy}
+      value={form[key] ?? ""}
+      onChange={(e) => {
+        setForm((p) => ({ ...p, [key]: e.target.value }))
+        markDirty(true)
+        setReview(false)
+      }}
+    />
+  )
   return (
-    <div className="org-application-page">
-      <header className="org-application-header">
+    <div className="sporg-shell">
+      <header className="sporg-shell-header">
         <BrandLogo />
         <ThemeSwitcher compact />
       </header>
-      <main className="org-application-main">
-        <Link to="/" className="auth-back">
-          <ArrowLeft size={16} /> Back to home
-        </Link>
-        <div className="org-application-heading">
-          <span className="auth-intro__eyebrow">
-            <Building2 size={16} /> ORGANIZATION APPLICATION
-          </span>
+      <main className="sporg">
+        <header className="sporg-heading">
+          <p className="sporg-eyebrow">Organization application</p>
           <h1>
-            {existing?.status === "REJECTED"
-              ? "Update your application."
-              : "Build trust from day one."}
+            {owned?.status === "REJECTED"
+              ? "Prepare your next submission"
+              : "Build your organization"}
           </h1>
           <p>
-            Tell us about the organization you represent. An administrator
-            reviews your application before organization permissions become
-            available.
+            Save your details, add supporting documents, then review and submit.
+            Submitted records remain unchanged.
           </p>
-        </div>
+        </header>
         {loading ? (
-          <p role="status">Loading your application…</p>
+          <p role="status">Loading application…</p>
+        ) : contextError ? (
+          <div className="sporg-alert" role="alert">
+            {contextError}
+            <Button onClick={() => void refresh()}>Retry</Button>
+          </div>
         ) : (
-          <>
-            {existing?.status === "REJECTED" && (
-              <div className="org-application-notice" role="status">
-                <strong>Previous review:</strong>{" "}
-                {existing.reviewReason ||
-                  "Please update the application and submit it again."}
-              </div>
-            )}
-            {error && (
-              <div className="org-error" role="alert">
-                {error}{" "}
-                <button type="button" onClick={() => window.location.reload()}>
-                  Retry loading
-                </button>
-              </div>
-            )}
-            {(!error || existing?.status === "REJECTED") && (
-              <form onSubmit={submit} className="org-application-form">
-                <section>
-                  <h2>
-                    <CheckCircle2 size={20} /> Organization details
-                  </h2>
-                  <div className="org-application-grid">
-                    {field("legalName", "Registered legal name", {
-                      required: true,
-                    })}
-                    {field("displayName", "Public display name", {
-                      required: true,
-                    })}
-                    {field("industry", "Industry", { required: true })}
-                    {field("country", "Country or jurisdiction", {
-                      required: true,
-                    })}
-                    {field(
-                      "registrationNumber",
-                      "Registration number (optional)",
-                    )}
-                    {field("website", "Website (optional)", { type: "url" })}
-                  </div>
-                </section>
-                <section>
-                  <h2>
-                    <ShieldCheck size={20} /> Review contact
-                  </h2>
-                  <p>
-                    These details are shared with platform administrators for
-                    application review.
-                  </p>
-                  <div className="org-application-grid">
-                    {field("contactName", "Contact person", { required: true })}
-                    {field("contactEmail", "Contact email", {
-                      required: true,
-                      type: "email",
-                    })}
-                    {field("contactPhone", "Contact phone (optional)", {
-                      type: "tel",
-                    })}
-                  </div>
-                </section>
-                <p className="org-application-footnote">
-                  Submit only information you are authorized to share. After
-                  submitting, you may attach supporting documents on the
-                  application status page. They remain private to your
-                  organization and platform administrators.
+          <div className="sporg-grid">
+            <section className="sporg-card">
+              <h2>1. Organization details</h2>
+              {owned?.reviewReason && (
+                <p className="sporg-alert">
+                  Previous review: {owned.reviewReason}
                 </p>
-                <Button type="submit" size="lg" disabled={busy}>
+              )}
+              {error && (
+                <p role="alert" className="sporg-alert">
+                  {error}
+                </p>
+              )}
+              <form className="sporg-form" onSubmit={(e) => void save(e)}>
+                <div className="sporg-fields">
+                  {field("legalName", "Legal name", true)}
+                  {field("displayName", "Display name", true)}
+                  {field("industry", "Industry", true)}
+                  {field("country", "Country / jurisdiction", true)}
+                  {field("registrationNumber", "Registration number")}
+                  {field("website", "Website", false, "url")}
+                  {field("contactName", "Contact person", true)}
+                  {field("contactEmail", "Contact email", true, "email")}
+                  {field("contactPhone", "Contact phone", false, "tel")}
+                </div>
+                <Button type="submit" disabled={busy}>
                   {busy
-                    ? "Submitting…"
-                    : existing?.status === "REJECTED"
-                      ? "Resubmit for review"
-                      : "Submit for review"}
+                    ? "Saving…"
+                    : owned?.status === "REJECTED"
+                      ? "Open and save new draft"
+                      : "Save draft"}
                 </Button>
               </form>
+            </section>
+            <section className="sporg-card">
+              <h2>2. Supporting documents</h2>
+              {owned?.status === "DRAFT" ? (
+                <MediaPanel
+                  scope="ORGANIZATION"
+                  target={owned.id}
+                  writable
+                  removable
+                  onChanged={() => setReview(false)}
+                />
+              ) : (
+                <p>Save a draft first to upload supporting documents.</p>
+              )}
+              <h2>3. Review and submit</h2>
+              <p>
+                Check your contact details and attachments. You will not be able
+                to change this submission while it is under review.
+              </p>
+              <Button
+                variant="outline"
+                disabled={!owned || owned.status !== "DRAFT" || dirty || busy}
+                onClick={() => setReview(true)}
+              >
+                Review saved application
+              </Button>
+              {review && owned && (
+                <>
+                  <dl>
+                    <dt>Legal name</dt>
+                    <dd>{owned.legalName}</dd>
+                    <dt>Display name</dt>
+                    <dd>{owned.displayName}</dd>
+                    <dt>Industry / country</dt>
+                    <dd>
+                      {owned.industry} / {owned.country}
+                    </dd>
+                    <dt>Contact</dt>
+                    <dd>
+                      {owned.contactName} · {owned.contactEmail}
+                    </dd>
+                  </dl>
+                  <MediaPanel scope="ORGANIZATION" target={owned.id} />
+                  <Button disabled={busy} onClick={() => void submit()}>
+                    {busy ? "Submitting…" : "Submit for review"}
+                  </Button>
+                </>
+              )}
+              {dirty && <p>Save your latest changes before reviewing.</p>}
+            </section>
+            {owned && (
+              <div className="sporg-full">
+                <ApplicationHistory organizationId={owned.id} />
+              </div>
             )}
-          </>
+          </div>
         )}
+        <div className="sporg-actions">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (!dirty || window.confirm("Leave without saving?"))
+                navigate("/organizer")
+            }}
+          >
+            Workspace
+          </Button>
+        </div>
       </main>
     </div>
   )

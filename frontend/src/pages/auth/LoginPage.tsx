@@ -1,3 +1,4 @@
+import { safeDestination } from "@/utils/authDestination"
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useAuth } from "@/features/auth/hooks/useAuth"
@@ -60,10 +61,7 @@ export default function LoginPage() {
     }
 
     if (searchParams.get("oauth") === "failed") {
-      toast(
-        "error",
-        "We couldn't complete Google sign-in. Please try again.",
-      )
+      toast("error", "We couldn't complete Google sign-in. Please try again.")
     }
   }, [searchParams, toast])
 
@@ -79,13 +77,17 @@ export default function LoginPage() {
 
       const next = getNextRouteAfterLogin(user)
       const intended = searchParams.get("returnTo")
+      const destination =
+        safeDestination(intended) ??
+        safeDestination(sessionStorage.getItem("skillproof.auth.returnTo"))
+      if (user.emailVerificationStatus === "UNVERIFIED" && destination)
+        sessionStorage.setItem("skillproof.auth.returnTo", destination)
+      else sessionStorage.removeItem("skillproof.auth.returnTo")
 
       navigate(
-        next === "/app" &&
-          intended?.startsWith("/learning-paths/") &&
-          !intended.startsWith("//")
-          ? intended
-          : next,
+        user.emailVerificationStatus === "UNVERIFIED"
+          ? next
+          : (destination ?? next),
       )
     } catch (err: unknown) {
       setError(
@@ -102,8 +104,16 @@ export default function LoginPage() {
     setError(null)
 
     try {
+      const destination = safeDestination(searchParams.get("returnTo"))
+      if (destination)
+        sessionStorage.setItem("skillproof.auth.returnTo", destination)
       const user = await loginWithGoogle()
-      navigate(getNextRouteAfterLogin(user))
+      const intended = searchParams.get("returnTo")
+      navigate(
+        user.emailVerificationStatus === "UNVERIFIED"
+          ? getNextRouteAfterLogin(user)
+          : (safeDestination(intended) ?? getNextRouteAfterLogin(user)),
+      )
     } catch {
       setError("We couldn't complete Google sign-in. Please try again.")
     }

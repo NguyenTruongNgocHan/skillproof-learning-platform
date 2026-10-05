@@ -21,61 +21,111 @@ import com.skillproof.backend.common.exception.NotFoundException;
 import com.skillproof.backend.learning.contract.LearningMediaDependency;
 import com.skillproof.backend.learning.contract.LearningResourceAccessQuery;
 import com.skillproof.backend.media.contract.MediaAvatarQuery;
+import com.skillproof.backend.organization.contract.OrganizationDocumentQuery;
 
 import jakarta.transaction.Transactional;
 
 @Service
-public class MediaService implements LearningMediaDependency, MediaAvatarQuery {
+public class MediaService
+    implements
+        LearningMediaDependency,
+        MediaAvatarQuery,
+        OrganizationDocumentQuery
+{
 
     private final MediaAssetRepository repo;
+    private final MediaCleanupRepository cleanup;
     private final MediaObjectStore objects;
     private final MediaAccessPolicy policy;
     private final LearningResourceAccessQuery resources;
     private static final long LIMIT = 100L * 1024 * 1024;
 
-    public MediaService(MediaAssetRepository r, MediaObjectStore o, MediaAccessPolicy p, LearningResourceAccessQuery q) {
+    public MediaService(
+        MediaAssetRepository r,
+        MediaObjectStore o,
+        MediaAccessPolicy p,
+        LearningResourceAccessQuery q,
+        MediaCleanupRepository cleanup
+    ) {
         repo = r;
+        this.cleanup = cleanup;
         objects = o;
         policy = p;
         resources = q;
     }
 
     private MediaAsset one(UUID id) {
-        return repo.findById(id).orElseThrow(() -> new NotFoundException("MEDIA_NOT_FOUND", "File not found"));
+        return repo
+            .findById(id)
+            .orElseThrow(() ->
+                new NotFoundException("MEDIA_NOT_FOUND", "File not found")
+            );
     }
 
     private Map<String, Object> meta(MediaAsset m) {
-        return Map.of("id", m.id, "name", m.originalName, "mimeType", m.mimeType, "size", m.sizeBytes, "createdAt", m.createdAt);
+        return Map.of(
+            "id",
+            m.id,
+            "name",
+            m.originalName,
+            "mimeType",
+            m.mimeType,
+            "size",
+            m.sizeBytes,
+            "createdAt",
+            m.createdAt
+        );
     }
 
-    public Map<String, Object> upload(UUID actor, String scope, UUID target, MultipartFile file) {
+    @Transactional
+    public Map<String, Object> upload(
+        UUID actor,
+        String scope,
+        UUID target,
+        MultipartFile file
+    ) {
         policy.active(actor);
         if (file == null || file.isEmpty() || file.getSize() > LIMIT) {
-            throw new BadRequestException("MEDIA_SIZE", "File must contain 1 to 100 MB");
+            throw new BadRequestException(
+                "MEDIA_SIZE",
+                "File must contain 1 to 100 MB"
+            );
         }
         if (scope.equals("AVATAR") && target != null) {
-            throw new BadRequestException("MEDIA_TARGET", "Avatar has no target");
+            throw new BadRequestException(
+                "MEDIA_TARGET",
+                "Avatar has no target"
+            );
         }
         if (scope.equals("ORGANIZATION")) {
             if (target == null) {
-                throw new BadRequestException("MEDIA_TARGET", "Organization required");
-            
-            }policy.adminOrOrganizer(actor, target);
+                throw new BadRequestException(
+                    "MEDIA_TARGET",
+                    "Organization required"
+                );
+            }
+            policy.writeOrganization(actor, target);
         }
         if (scope.equals("RESOURCE")) {
             if (target == null) {
-                throw new BadRequestException("MEDIA_TARGET", "Resource required");
-            
-            }policy.draftResource(actor, target);
+                throw new BadRequestException(
+                    "MEDIA_TARGET",
+                    "Resource required"
+                );
+            }
+            policy.draftResource(actor, target);
         }
         if (!Set.of("AVATAR", "ORGANIZATION", "RESOURCE").contains(scope)) {
             throw new BadRequestException("MEDIA_SCOPE", "Invalid media scope");
         }
-        String name = Optional.ofNullable(file.getOriginalFilename()).orElse("file").replaceAll("[\\p{Cntrl}/\\\\]", "_");
+        String name = Optional.ofNullable(file.getOriginalFilename())
+            .orElse("file")
+            .replaceAll("[\\p{Cntrl}/\\\\]", "_");
         if (name.isBlank() || name.length() > 180) {
             throw new BadRequestException("MEDIA_NAME", "Invalid filename");
         }
-        UUID id = UUID.randomUUID(), key = UUID.randomUUID();
+        UUID id = UUID.randomUUID(),
+            key = UUID.randomUUID();
         try {
             MessageDigest sha = MessageDigest.getInstance("SHA-256");
             byte[] head = new byte[16];
@@ -87,9 +137,12 @@ public class MediaService implements LearningMediaDependency, MediaAvatarQuery {
                 while ((n = in.read(buf)) != -1) {
                     count += n;
                     if (count > LIMIT) {
-                        throw new BadRequestException("MEDIA_SIZE", "File exceeds 100 MB");
-                    
-                    }if (h < head.length) {
+                        throw new BadRequestException(
+                            "MEDIA_SIZE",
+                            "File exceeds 100 MB"
+                        );
+                    }
+                    if (h < head.length) {
                         int x = Math.min(n, head.length - h);
                         System.arraycopy(buf, 0, head, h, x);
                         h += x;
@@ -99,18 +152,35 @@ public class MediaService implements LearningMediaDependency, MediaAvatarQuery {
             }
             if (count == 0) {
                 throw new BadRequestException("MEDIA_SIZE", "Empty file");
-            
-            }String mime = MediaSignature.detect(Arrays.copyOf(head, h));
+            }
+            String mime = MediaSignature.detect(Arrays.copyOf(head, h));
             if (scope.equals("AVATAR") && !mime.startsWith("image/")) {
-                throw new BadRequestException("MEDIA_TYPE", "Avatar must be JPEG, PNG or WebP");
-            
-            }if (scope.equals("ORGANIZATION") && !mime.equals("application/pdf") && !mime.startsWith("image/")) {
-                throw new BadRequestException("MEDIA_TYPE", "Organization document must be PDF or image");
-            
-            }if (scope.equals("RESOURCE") && "AUDIO".equals(resources.resourceKind(target)) && !mime.startsWith("audio/")) {
-                throw new BadRequestException("MEDIA_TYPE", "Audio lessons require an audio file");
-            
-            }try (InputStream in = file.getInputStream()) {
+                throw new BadRequestException(
+                    "MEDIA_TYPE",
+                    "Avatar must be JPEG, PNG or WebP"
+                );
+            }
+            if (
+                scope.equals("ORGANIZATION") &&
+                !mime.equals("application/pdf") &&
+                !mime.startsWith("image/")
+            ) {
+                throw new BadRequestException(
+                    "MEDIA_TYPE",
+                    "Organization document must be PDF or image"
+                );
+            }
+            if (
+                scope.equals("RESOURCE") &&
+                "AUDIO".equals(resources.resourceKind(target)) &&
+                !mime.startsWith("audio/")
+            ) {
+                throw new BadRequestException(
+                    "MEDIA_TYPE",
+                    "Audio lessons require an audio file"
+                );
+            }
+            try (InputStream in = file.getInputStream()) {
                 objects.put(key, in, count, mime);
             }
             var m = new MediaAsset();
@@ -126,12 +196,14 @@ public class MediaService implements LearningMediaDependency, MediaAvatarQuery {
             m.sha256 = HexFormat.of().formatHex(sha.digest());
             m.createdAt = Instant.now();
             try {
-                return meta(repo.save(m));
+                return meta(repo.saveAndFlush(m));
             } catch (RuntimeException e) {
                 objects.delete(key);
                 throw e;
             }
         } catch (BadRequestException e) {
+            throw e;
+        } catch (StorageException e) {
             throw e;
         } catch (Exception e) {
             throw new IllegalStateException("Could not store file", e);
@@ -141,39 +213,56 @@ public class MediaService implements LearningMediaDependency, MediaAvatarQuery {
     public void verifyAvatar(UUID actor, UUID id) {
         var m = one(id);
         if (!"AVATAR".equals(m.scope) || !actor.equals(m.ownerUserId)) {
-            throw new AccessDeniedException("Avatar must belong to your account");
-    
-        }}
+            throw new AccessDeniedException(
+                "Avatar must belong to your account"
+            );
+        }
+    }
 
     public Map<String, Object> metadata(UUID id) {
         return meta(one(id));
     }
 
-    public List<Map<String, Object>> list(UUID actor, String scope, UUID target) {
+    public List<Map<String, Object>> list(
+        UUID actor,
+        String scope,
+        UUID target
+    ) {
         List<MediaAsset> ms;
         if (scope.equals("AVATAR")) {
             policy.active(actor);
-            ms = repo.findByScopeAndOwnerUserIdOrderByCreatedAtDesc(scope, actor);
+            ms = repo.findByScopeAndOwnerUserIdOrderByCreatedAtDesc(
+                scope,
+                actor
+            );
         } else {
             if (target == null) {
-                throw new BadRequestException("MEDIA_TARGET", "Target required");
-            
-            }if (scope.equals("ORGANIZATION")) {
+                throw new BadRequestException(
+                    "MEDIA_TARGET",
+                    "Target required"
+                );
+            }
+            if (scope.equals("ORGANIZATION")) {
                 policy.adminOrOrganizer(actor, target);
-                ms = repo.findByScopeAndOrganizationIdOrderByCreatedAtDesc(scope, target);
+                ms =
+                    repo.findByScopeAndOrganizationIdAndApplicationAttachmentActiveTrueOrderByCreatedAtDesc(
+                        scope,
+                        target
+                    );
             } else if (scope.equals("RESOURCE")) {
                 policy.readResource(actor, target);
-                ms = repo.findByScopeAndResourceIdOrderByCreatedAtDesc(scope, target);
+                ms = repo.findByScopeAndResourceIdOrderByCreatedAtDesc(
+                    scope,
+                    target
+                );
             } else {
                 throw new BadRequestException("MEDIA_SCOPE", "Invalid scope");
-        
-            }}
+            }
+        }
         return ms.stream().map(this::meta).toList();
     }
 
-    public record Download(UUID key, String filename, String mime, long size) {
-
-    }
+    public record Download(UUID key, String filename, String mime, long size) {}
 
     public Download download(UUID actor, UUID id) {
         var m = one(id);
@@ -181,17 +270,53 @@ public class MediaService implements LearningMediaDependency, MediaAvatarQuery {
             case "AVATAR" -> {
                 if (!m.ownerUserId.equals(actor)) {
                     throw new AccessDeniedException("Avatar owner required");
-                
-                }policy.active(actor);
+                }
+                policy.active(actor);
             }
-            case "ORGANIZATION" ->
-                policy.adminOrOrganizer(actor, m.organizationId);
-            case "RESOURCE" ->
-                policy.readResource(actor, m.resourceId);
-            default ->
-                throw new AccessDeniedException("File unavailable");
+            case "ORGANIZATION" -> policy.adminOrOrganizer(
+                actor,
+                m.organizationId
+            );
+            case "RESOURCE" -> policy.readResource(actor, m.resourceId);
+            default -> throw new AccessDeniedException("File unavailable");
         }
-        return new Download(m.storageKey, m.originalName, m.mimeType, m.sizeBytes);
+        return new Download(
+            m.storageKey,
+            m.originalName,
+            m.mimeType,
+            m.sizeBytes
+        );
+    }
+
+    @Transactional
+    public void remove(UUID actor, UUID id) {
+        policy.active(actor);
+        var asset = one(id);
+        switch (asset.scope) {
+            case "ORGANIZATION" -> policy.removeOrganizationDocument(
+                actor,
+                asset.organizationId,
+                asset.id
+            );
+            case "RESOURCE" -> policy.draftResource(actor, asset.resourceId);
+            default -> throw new org.springframework.security.access.AccessDeniedException(
+                "Avatar removal is not supported here"
+            );
+        }
+        if (
+            "ORGANIZATION".equals(asset.scope) &&
+            policy.retainOrganizationDocument(asset.organizationId, asset.id)
+        ) {
+            // Remove from the editable attachment set, retaining historical snapshot bytes.
+            asset.applicationAttachmentActive = false;
+            repo.save(asset);
+            return;
+        }
+        repo.delete(asset);
+        repo.flush();
+        // Queue every reference removal. Counting inside concurrent delete transactions
+        // could make both transactions miss the final-reference cleanup.
+        cleanup.save(new MediaCleanupTask(asset.storageKey));
     }
 
     public InputStream open(UUID key) {
@@ -201,29 +326,52 @@ public class MediaService implements LearningMediaDependency, MediaAvatarQuery {
     @Transactional
     public void deleteForResources(Collection<UUID> ids) {
         if (ids != null) {
-            ids.forEach(id -> repo.deleteAll(repo.findByResourceId(id)));
-    
-        }}
+            ids.forEach(id ->
+                repo.findByResourceId(id).forEach(asset -> {
+                    repo.delete(asset);
+                    cleanup.save(new MediaCleanupTask(asset.storageKey));
+                })
+            );
+        }
+    }
 
     @Transactional
     public void cloneResourceAssets(Map<UUID, UUID> map) {
-        map.forEach((s, t) -> repo.findByResourceId(s).forEach(a -> {
-            var n = new MediaAsset();
-            n.id = UUID.randomUUID();
-            n.ownerUserId = a.ownerUserId;
-            n.scope = "RESOURCE";
-            n.resourceId = t;
-            n.originalName = a.originalName;
-            n.storageKey = a.storageKey;
-            n.mimeType = a.mimeType;
-            n.sizeBytes = a.sizeBytes;
-            n.sha256 = a.sha256;
-            n.createdAt = Instant.now();
-            repo.save(n);
-        }));
+        map.forEach((s, t) ->
+            repo.findByResourceId(s).forEach(a -> {
+                var n = new MediaAsset();
+                n.id = UUID.randomUUID();
+                n.ownerUserId = a.ownerUserId;
+                n.scope = "RESOURCE";
+                n.resourceId = t;
+                n.originalName = a.originalName;
+                n.storageKey = a.storageKey;
+                n.mimeType = a.mimeType;
+                n.sizeBytes = a.sizeBytes;
+                n.sha256 = a.sha256;
+                n.createdAt = Instant.now();
+                repo.save(n);
+            })
+        );
     }
 
     public boolean hasAssetsForAll(Collection<UUID> ids) {
-        return ids == null || ids.isEmpty() || ids.stream().allMatch(id -> repo.countByResourceId(id) > 0);
+        return (
+            ids == null ||
+            ids.isEmpty() ||
+            ids.stream().allMatch(id -> repo.countByResourceId(id) > 0)
+        );
+    }
+
+    @Override
+    public List<UUID> documentIds(UUID organizationId) {
+        return repo
+            .findByScopeAndOrganizationIdAndApplicationAttachmentActiveTrueOrderByCreatedAtDesc(
+                "ORGANIZATION",
+                organizationId
+            )
+            .stream()
+            .map(asset -> asset.id)
+            .toList();
     }
 }

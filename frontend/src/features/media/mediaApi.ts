@@ -59,6 +59,8 @@ export const mediaApi = {
       await mediaRequest("/media", { method: "POST", body: form })
     ).json() as Promise<MediaItem>
   },
+  remove: (id: string) =>
+    apiClient.delete<void>(`/media/${encodeURIComponent(id)}`),
   download: async (item: MediaItem): Promise<Blob> =>
     (await mediaRequest(`/media/${encodeURIComponent(item.id)}`, {})).blob(),
   save: async (item: MediaItem): Promise<void> => {

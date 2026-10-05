@@ -16,7 +16,7 @@ export interface Version {
   path_id: string
   version_no: number
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
-  published_at: string | null
+  published_at?: string | null
 }
 export interface Resource {
   id: string
@@ -64,8 +64,10 @@ export const learningApi = {
   detail: (id: string) => apiClient.get<Path>(`/learning/paths/${enc(id)}`),
   owned: (org: string) =>
     apiClient.get<Path[]>(`/learning/organizations/${enc(org)}/paths`),
-  create: (org: string, data: { slug: string; title: string; summary: string }) =>
-    apiClient.post<Path>(`/learning/organizations/${enc(org)}/paths`, data),
+  create: (
+    org: string,
+    data: { slug: string; title: string; summary: string },
+  ) => apiClient.post<Path>(`/learning/organizations/${enc(org)}/paths`, data),
   versions: (path: string) =>
     apiClient.get<Version[]>(`/learning/paths/${enc(path)}/versions`),
   clone: (path: string) =>
@@ -79,10 +81,29 @@ export const learningApi = {
         require_official_assessments: boolean
       }
     }>(`/learning/versions/${enc(version)}/outline`),
+  reorderModules: (version: string, ids: string[]) =>
+    apiClient.patch<void>(`/learning/versions/${enc(version)}/modules/order`, {
+      ids,
+    }),
+  reorderResources: (module: string, ids: string[]) =>
+    apiClient.patch<void>(`/learning/modules/${enc(module)}/resources/order`, {
+      ids,
+    }),
+  updatePath: (id: string, data: { title: string; summary: string }) =>
+    apiClient.patch<Pick<Path, "id" | "title" | "summary">>(
+      `/learning/paths/${enc(id)}`,
+      data,
+    ),
   module: (version: string, data: { position: number; title: string }) =>
-    apiClient.post<Module>(`/learning/versions/${enc(version)}/modules`, data),
+    apiClient.post<Omit<Module, "resources">>(
+      `/learning/versions/${enc(version)}/modules`,
+      data,
+    ),
   editModule: (id: string, data: { position: number; title: string }) =>
-    apiClient.patch<Module>(`/learning/modules/${enc(id)}`, data),
+    apiClient.patch<Pick<Module, "id" | "position" | "title">>(
+      `/learning/modules/${enc(id)}`,
+      data,
+    ),
   deleteModule: (id: string) =>
     apiClient.delete<void>(`/learning/modules/${enc(id)}`),
   resource: (
@@ -95,10 +116,9 @@ export const learningApi = {
       url?: string | null
     },
   ) =>
-    apiClient.post<Resource>(
-      `/learning/modules/${enc(module)}/resources`,
-      data,
-    ),
+    apiClient.post<
+      Pick<Resource, "id" | "module_id" | "position" | "kind" | "title">
+    >(`/learning/modules/${enc(module)}/resources`, data),
   editResource: (
     id: string,
     data: {
@@ -108,7 +128,11 @@ export const learningApi = {
       body?: string | null
       url?: string | null
     },
-  ) => apiClient.patch<Resource>(`/learning/resources/${enc(id)}`, data),
+  ) =>
+    apiClient.patch<Pick<Resource, "id" | "position" | "kind" | "title">>(
+      `/learning/resources/${enc(id)}`,
+      data,
+    ),
   deleteResource: (id: string) =>
     apiClient.delete<void>(`/learning/resources/${enc(id)}`),
   policy: (
@@ -116,7 +140,9 @@ export const learningApi = {
     data: { requireAllResources: boolean; requireOfficialAssessments: boolean },
   ) => apiClient.put(`/learning/versions/${enc(version)}/policy`, data),
   publish: (version: string) =>
-    apiClient.post<Version>(`/learning/versions/${enc(version)}/publish`),
+    apiClient.post<Pick<Version, "id" | "status">>(
+      `/learning/versions/${enc(version)}/publish`,
+    ),
   enroll: (path: string) =>
     apiClient.post<Enrollment>(`/learning/paths/${enc(path)}/enroll`),
   mine: () => apiClient.get<Enrollment[]>("/learning/me/enrollments"),

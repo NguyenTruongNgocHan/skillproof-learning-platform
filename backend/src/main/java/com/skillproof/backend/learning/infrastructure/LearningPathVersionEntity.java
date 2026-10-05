@@ -33,10 +33,15 @@ public class LearningPathVersionEntity {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    protected LearningPathVersionEntity() {
-    }
+    protected LearningPathVersionEntity() {}
 
-    public LearningPathVersionEntity(UUID id, UUID pathId, int number, String status, Instant created) {
+    public LearningPathVersionEntity(
+        UUID id,
+        UUID pathId,
+        int number,
+        String status,
+        Instant created
+    ) {
         this.id = id;
         this.pathId = pathId;
         this.versionNo = number;
@@ -61,9 +66,12 @@ public class LearningPathVersionEntity {
         return status;
     }
 
+    public void archive() {
+        status = "ARCHIVED";
+    }
+
     public void publish() {
         status = "PUBLISHED";
         publishedAt = Instant.now();
     }
-
 }

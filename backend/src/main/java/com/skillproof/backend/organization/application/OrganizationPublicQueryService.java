@@ -13,22 +13,22 @@ public class OrganizationPublicQueryService implements OrganizationPublicQuery {
 
     private final OrganizationRepository organizations;
 
-    public OrganizationPublicQueryService(OrganizationRepository organizations) {
+    public OrganizationPublicQueryService(
+        OrganizationRepository organizations
+    ) {
         this.organizations = organizations;
     }
 
     @Override
     public Optional<OrganizationView> find(UUID organizationId) {
-        return organizations.publicView(organizationId)
-                .map(organization -> new OrganizationView(
-                organization.id(), organization.displayName(), organization.status().name()));
-    }
-
-    @Override
-    public boolean canPrepareApplication(UUID organizationId, UUID actorId) {
-        return organizations.publicView(organizationId)
-                .filter(organization -> organization.ownerUserId().equals(actorId)
-                        && organization.status() != com.skillproof.backend.organization.domain.Organization.Status.APPROVED)
-                .isPresent();
+        return organizations
+            .publicView(organizationId)
+            .map(organization ->
+                new OrganizationView(
+                    organization.id(),
+                    organization.displayName(),
+                    organization.status().name()
+                )
+            );
     }
 }

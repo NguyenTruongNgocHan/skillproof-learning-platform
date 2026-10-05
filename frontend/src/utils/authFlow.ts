@@ -5,7 +5,7 @@ export function getDefaultRouteForRole(role: UserRole): string {
     case "ADMIN":
       return "/admin"
     case "ORGANIZER":
-      return "/organizer/verification-pending"
+      return "/organizer"
     case "LEARNER":
       return "/app"
   }
@@ -22,7 +22,7 @@ export function getNextRouteAfterVerification(user: User): string {
   }
 
   if (user.role === "ORGANIZER") {
-    return "/organizer/verification-pending"
+    return "/organizer"
   }
 
   return "/admin"

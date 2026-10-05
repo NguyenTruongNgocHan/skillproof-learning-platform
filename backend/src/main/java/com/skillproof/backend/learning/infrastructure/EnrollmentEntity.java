@@ -57,6 +57,10 @@ public class EnrollmentEntity {
         return versionId;
     }
 
+    public Instant getEnrolledAt() {
+        return enrolledAt;
+    }
+
     public String getStatus() {
         return status;
     }

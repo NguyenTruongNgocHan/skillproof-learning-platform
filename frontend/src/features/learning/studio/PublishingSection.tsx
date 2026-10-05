@@ -46,6 +46,12 @@ export default function PublishingSection() {
               />
               Pass every official assessment
             </label>
+            {assessments.some((a) => a.status === "DRAFT") && (
+              <p>
+                Publish or remove every draft assessment before publishing this
+                path version.
+              </p>
+            )}
             <div className="v7-inline">
               <Button
                 disabled={busy}
@@ -64,17 +70,24 @@ export default function PublishingSection() {
                 Save completion rules
               </Button>
               <Button
-                disabled={busy || modules.length === 0}
+                disabled={
+                  busy ||
+                  modules.length === 0 ||
+                  assessments.some((a) => a.status === "DRAFT")
+                }
                 onClick={() => {
                   if (
                     window.confirm(
                       "Publish this version? The content and assessments will become immutable.",
                     )
                   )
-                    void act(
-                      () => learningApi.publish(version.id),
-                      "Learning path published.",
-                    )
+                    void act(async () => {
+                      await learningApi.policy(version.id, {
+                        requireAllResources: requireResources,
+                        requireOfficialAssessments: requireOfficial,
+                      })
+                      return learningApi.publish(version.id)
+                    }, "Learning path published.")
                 }}
               >
                 Publish version

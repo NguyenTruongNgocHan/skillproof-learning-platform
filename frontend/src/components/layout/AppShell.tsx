@@ -17,7 +17,19 @@ export default function AppShell({ children }: AppShellProps) {
   const { user } = useAuth()
 
   const navItems = user ? getNavForRole(user.role) : []
-  const currentItem = navItems.find((item) => item.path === location.pathname)
+  const currentItem =
+    user?.role === "ORGANIZER"
+      ? [...navItems]
+          .sort((a, b) => b.path.length - a.path.length)
+          .find(
+            (item) =>
+              location.pathname === item.path ||
+              (item.path !== "/organizer" &&
+                location.pathname.startsWith(item.path + "/")) ||
+              (item.path === "/organizer/certifications" &&
+                location.pathname.startsWith("/organizer/certificates/")),
+          )
+      : navItems.find((item) => item.path === location.pathname)
   const pageTitle = currentItem?.label ?? "Dashboard"
 
   if (!user) return null

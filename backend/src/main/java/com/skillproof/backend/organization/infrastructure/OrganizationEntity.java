@@ -62,8 +62,7 @@ public class OrganizationEntity {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    protected OrganizationEntity() {
-    }
+    protected OrganizationEntity() {}
 
     OrganizationEntity(Organization organization) {
         this.id = organization.id();
@@ -84,9 +83,23 @@ public class OrganizationEntity {
     }
 
     Organization toDomain() {
-        return new Organization(id, ownerUserId, legalName, displayName, website, industry,
-                country, registrationNumber, contactName, contactEmail, contactPhone,
-                status, reviewReason, createdAt, updatedAt);
+        return new Organization(
+            id,
+            ownerUserId,
+            legalName,
+            displayName,
+            website,
+            industry,
+            country,
+            registrationNumber,
+            contactName,
+            contactEmail,
+            contactPhone,
+            status,
+            reviewReason,
+            createdAt,
+            updatedAt
+        );
     }
 
     void resubmit(Organization replacement, Instant now) {
@@ -99,7 +112,22 @@ public class OrganizationEntity {
         this.contactName = replacement.contactName();
         this.contactEmail = replacement.contactEmail();
         this.contactPhone = replacement.contactPhone();
-        this.status = Organization.Status.PENDING;
+        this.status = Organization.Status.DRAFT;
+        this.reviewReason = null;
+        this.updatedAt = now;
+    }
+
+    void saveDraft(Organization replacement, Instant now) {
+        this.legalName = replacement.legalName();
+        this.displayName = replacement.displayName();
+        this.website = replacement.website();
+        this.industry = replacement.industry();
+        this.country = replacement.country();
+        this.registrationNumber = replacement.registrationNumber();
+        this.contactName = replacement.contactName();
+        this.contactEmail = replacement.contactEmail();
+        this.contactPhone = replacement.contactPhone();
+        this.status = Organization.Status.DRAFT;
         this.reviewReason = null;
         this.updatedAt = now;
     }
@@ -110,7 +138,13 @@ public class OrganizationEntity {
         this.updatedAt = now;
     }
 
-    void updateProfile(String display, String website, String industry, String phone, Instant now) {
+    void updateProfile(
+        String display,
+        String website,
+        String industry,
+        String phone,
+        Instant now
+    ) {
         this.displayName = display;
         this.website = website;
         this.industry = industry;

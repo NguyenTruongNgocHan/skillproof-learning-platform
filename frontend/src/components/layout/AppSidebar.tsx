@@ -1,3 +1,4 @@
+import { useOrganizationContext } from "@/app/providers/OrganizationProvider"
 import { Link, useLocation } from "react-router-dom"
 import type { NavItem } from "@/config/navigation"
 import BrandLogo from "@/components/ui/BrandLogo"
@@ -9,6 +10,17 @@ interface AppSidebarProps {
 
 export default function AppSidebar({ items }: AppSidebarProps) {
   const location = useLocation()
+  const { grants } = useOrganizationContext()
+  const visible = items.filter((item) => {
+    if (
+      item.path === "/organizer/paths" ||
+      item.path === "/organizer/questions"
+    )
+      return grants.includes("MANAGE_CONTENT")
+    if (item.path === "/organizer/certifications")
+      return grants.includes("ISSUE_CERTIFICATES")
+    return true
+  })
 
   return (
     <div
@@ -33,8 +45,13 @@ export default function AppSidebar({ items }: AppSidebarProps) {
 
       {/* Nav items */}
       <nav style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
-        {items.map((item) => {
-          const isActive = location.pathname === item.path
+        {visible.map((item) => {
+          const isActive =
+            location.pathname === item.path ||
+            (item.path.startsWith("/organizer/") &&
+              location.pathname.startsWith(item.path + "/")) ||
+            (item.path === "/organizer/certifications" &&
+              location.pathname.startsWith("/organizer/certificates/"))
           const Icon = item.icon
           return (
             <Link

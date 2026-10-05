@@ -1,9 +1,11 @@
+import { organizerError } from "@/features/organizer/errorMessage"
 import { useEffect, useState } from "react"
-import AppShell from "@/components/layout/AppShell"
+import { OrganizerSurface } from "@/features/organizer/OrganizerSurface"
 import Button from "@/components/ui/Button"
-import { organizationApi } from "@/features/organization/organizationApi"
+import { useOrganizationContext } from "@/app/providers/OrganizationProvider"
 import { quizApi, type Bank, type Question } from "@/features/quiz/quizApi"
 export default function QuestionBankPage() {
+  const { organization: selectedContext, setDirty } = useOrganizationContext()
   const [org, setOrg] = useState(""),
     [banks, setBanks] = useState<Bank[]>([]),
     [selected, setSelected] = useState(""),
@@ -16,17 +18,25 @@ export default function QuestionBankPage() {
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false)
+  useEffect(() => {
+    setDirty("question-bank", Boolean(title || stem || choices.some(Boolean)))
+    return () => setDirty("question-bank", false)
+  }, [title, stem, choices, setDirty])
   async function load() {
     setLoading(true)
     try {
-      const o = await organizationApi.mine()
+      const o = selectedContext
+      if (!o)
+        throw new Error(
+          "No approved organization is available for this workspace.",
+        )
       setOrg(o.id)
       const data = await quizApi.banks(o.id)
       setBanks(data)
       setSelected((previous) => previous || data[0]?.id || "")
       setError("")
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to load question banks")
+      setError(organizerError(e, "Unable to load question banks"))
     } finally {
       setLoading(false)
     }
@@ -39,12 +49,19 @@ export default function QuestionBankPage() {
       setQuestions([])
       return
     }
+    let live = true
+    setQuestions([])
     quizApi
       .questions(selected)
-      .then(setQuestions)
-      .catch((e) =>
-        setError(e instanceof Error ? e.message : "Unable to load questions"),
+      .then((rows) => {
+        if (live) setQuestions(rows)
+      })
+      .catch(
+        (e) => live && setError(organizerError(e, "Unable to load questions")),
       )
+    return () => {
+      live = false
+    }
   }, [selected])
   async function createBank(e: React.FormEvent) {
     e.preventDefault()
@@ -56,21 +73,30 @@ export default function QuestionBankPage() {
       setBanks((prev) => [b, ...prev])
       setSelected(b.id)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to create bank")
+      setError(organizerError(e, "Unable to create bank"))
     } finally {
       setBusy(false)
     }
   }
   async function createQuestion(e: React.FormEvent) {
     e.preventDefault()
-    if (!selected) return
+    if (!selected || busy) return
+    if (
+      choices.filter((value) => value.trim()).length < 2 ||
+      !choices[correct]?.trim()
+    ) {
+      setError(
+        "Enter at least two options and select a nonempty correct answer.",
+      )
+      return
+    }
     setBusy(true)
     setError("")
     try {
       const data = {
-        stem,
+        stem: stem.trim(),
         options: choices
-          .map((body, i) => ({ body, correct: i === correct }))
+          .map((body, i) => ({ body: body.trim(), correct: i === correct }))
           .filter((c) => c.body.trim()),
       }
       if (editing) await quizApi.reviseQuestion(editing, data)
@@ -81,13 +107,13 @@ export default function QuestionBankPage() {
       setChoices(["", "", "", ""])
       setCorrect(0)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to save question")
+      setError(organizerError(e, "Unable to save question"))
     } finally {
       setBusy(false)
     }
   }
   return (
-    <AppShell>
+    <OrganizerSurface title="Content workspace" authority="MANAGE_CONTENT">
       <div className="v7-wrap">
         <header className="v7-hero">
           <span className="org-eyebrow">QUESTION BANK</span>
@@ -269,9 +295,7 @@ export default function QuestionBankPage() {
                               setError("")
                             } catch (e) {
                               setError(
-                                e instanceof Error
-                                  ? e.message
-                                  : "Could not load question",
+                                organizerError(e, "Could not load question"),
                               )
                             }
                           }}
@@ -287,6 +311,6 @@ export default function QuestionBankPage() {
           </div>
         )}
       </div>
-    </AppShell>
+    </OrganizerSurface>
   )
 }

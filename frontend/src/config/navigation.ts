@@ -4,6 +4,7 @@ import {
   BookOpen,
   LibraryBig,
   ListChecks,
+  Award,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { UserRole } from "@/features/auth/types/auth.types"
@@ -24,13 +25,24 @@ export const LEARNER_NAV: NavItem[] = [
 
 export const ORGANIZER_NAV: NavItem[] = [
   { label: "Overview", path: "/organizer", icon: LayoutDashboard },
+  {
+    label: "Organization & team",
+    path: "/organizer/organization",
+    icon: UserRound,
+  },
   { label: "Learning paths", path: "/organizer/paths", icon: BookOpen },
   { label: "Question banks", path: "/organizer/questions", icon: ListChecks },
+  { label: "Certifications", path: "/organizer/certifications", icon: Award },
   { label: "Identity & profile", path: "/profile", icon: UserRound },
 ]
 
 export const ADMIN_NAV: NavItem[] = [
   { label: "Overview", path: "/admin", icon: LayoutDashboard },
+  {
+    label: "Application review",
+    path: "/admin/organizations",
+    icon: ListChecks,
+  },
   { label: "Identity & profile", path: "/profile", icon: UserRound },
 ]
 

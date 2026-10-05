@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -38,23 +37,48 @@ public class MediaController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-
-    public Map<String, Object> upload(Authentication auth, @RequestParam String scope, @RequestParam(required = false) UUID target, @RequestPart("file") MultipartFile file) {
+    public Map<String, Object> upload(
+        Authentication auth,
+        @RequestParam String scope,
+        @RequestParam(required = false) UUID target,
+        @RequestPart("file") MultipartFile file
+    ) {
         return service.upload(actor(auth), scope, target, file);
     }
 
     @GetMapping
-    public List<Map<String, Object>> list(Authentication auth, @RequestParam String scope, @RequestParam(required = false) UUID target) {
+    public List<Map<String, Object>> list(
+        Authentication auth,
+        @RequestParam String scope,
+        @RequestParam(required = false) UUID target
+    ) {
         return service.list(actor(auth), scope, target);
     }
 
+    @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remove(Authentication auth, @PathVariable UUID id) {
+        service.remove(actor(auth), id);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<InputStreamResource> download(Authentication auth, @PathVariable UUID id) {
+    public ResponseEntity<InputStreamResource> download(
+        Authentication auth,
+        @PathVariable UUID id
+    ) {
         var d = service.download(actor(auth), id);
-        return ResponseEntity.ok().contentType(MediaType.parseMediaType(d.mime()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(d.filename(), StandardCharsets.UTF_8).build().toString())
-                .header("X-Content-Type-Options", "nosniff")
-                .header(HttpHeaders.CACHE_CONTROL, "private, no-store")
-                .contentLength(d.size()).body(new InputStreamResource(service.open(d.key())));
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(d.mime()))
+            .header(
+                HttpHeaders.CONTENT_DISPOSITION,
+                ContentDisposition.attachment()
+                    .filename(d.filename(), StandardCharsets.UTF_8)
+                    .build()
+                    .toString()
+            )
+            .header("X-Content-Type-Options", "nosniff")
+            .header(HttpHeaders.CACHE_CONTROL, "private, no-store")
+            .contentLength(d.size())
+            .body(new InputStreamResource(service.open(d.key())));
     }
 }

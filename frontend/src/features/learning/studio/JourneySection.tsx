@@ -29,6 +29,14 @@ export default function JourneySection() {
     setResourceTitle,
     setResourceBody,
   } = useStudioState()
+  function moved(ids: string[], index: number, direction: number) {
+    const next = [...ids]
+    ;[next[index], next[index + direction]] = [
+      next[index + direction],
+      next[index],
+    ]
+    return next
+  }
   if (!version) return null
   const draft = version.status === "DRAFT"
   return (
@@ -67,12 +75,56 @@ export default function JourneySection() {
           Start with a module. Publish needs at least one learning resource.
         </p>
       ) : (
-        modules.map((m) => (
+        modules.map((m, moduleIndex) => (
           <article className="v7-card" key={m.id}>
             <div className="v7-inline">
               <h3>
                 {m.position}. {m.title}
               </h3>
+              {draft && (
+                <>
+                  <Button
+                    variant="outline"
+                    disabled={busy || moduleIndex === 0}
+                    onClick={() =>
+                      void act(
+                        () =>
+                          learningApi.reorderModules(
+                            version.id,
+                            moved(
+                              modules.map((x) => x.id),
+                              moduleIndex,
+                              -1,
+                            ),
+                          ),
+                        "Module order saved.",
+                      )
+                    }
+                  >
+                    Move up
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={busy || moduleIndex === modules.length - 1}
+                    onClick={() =>
+                      void act(
+                        () =>
+                          learningApi.reorderModules(
+                            version.id,
+                            moved(
+                              modules.map((x) => x.id),
+                              moduleIndex,
+                              1,
+                            ),
+                          ),
+                        "Module order saved.",
+                      )
+                    }
+                  >
+                    Move down
+                  </Button>
+                </>
+              )}
               {draft && (
                 <Button
                   variant="outline"
@@ -108,14 +160,61 @@ export default function JourneySection() {
             {m.resources.length === 0 ? (
               <p>No resources in this module.</p>
             ) : (
-              m.resources.map((r) => (
+              m.resources.map((r, resourceIndex) => (
                 <div className="v7-row" key={r.id}>
                   <span>
                     {r.position}. {r.title} · {r.kind}
                   </span>
-                  <MediaPanel scope="RESOURCE" target={r.id} writable={draft} />
+                  <MediaPanel
+                    scope="RESOURCE"
+                    target={r.id}
+                    writable={draft}
+                    removable
+                  />
                   {draft && (
                     <div className="v7-inline">
+                      <Button
+                        variant="outline"
+                        disabled={busy || resourceIndex === 0}
+                        onClick={() =>
+                          void act(
+                            () =>
+                              learningApi.reorderResources(
+                                m.id,
+                                moved(
+                                  m.resources.map((x) => x.id),
+                                  resourceIndex,
+                                  -1,
+                                ),
+                              ),
+                            "Resource order saved.",
+                          )
+                        }
+                      >
+                        Move up
+                      </Button>
+                      <Button
+                        variant="outline"
+                        disabled={
+                          busy || resourceIndex === m.resources.length - 1
+                        }
+                        onClick={() =>
+                          void act(
+                            () =>
+                              learningApi.reorderResources(
+                                m.id,
+                                moved(
+                                  m.resources.map((x) => x.id),
+                                  resourceIndex,
+                                  1,
+                                ),
+                              ),
+                            "Resource order saved.",
+                          )
+                        }
+                      >
+                        Move down
+                      </Button>
                       <Button
                         variant="outline"
                         disabled={busy}
@@ -168,7 +267,7 @@ export default function JourneySection() {
               onChange={(e) => setResourceModule(e.target.value)}
             >
               <option value="">Choose a module</option>
-              {modules.map((m) => (
+              {modules.map((m, moduleIndex) => (
                 <option value={m.id} key={m.id}>
                   {m.title}
                 </option>

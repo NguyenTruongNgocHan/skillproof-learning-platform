@@ -1,3 +1,4 @@
+import { safeDestination } from "@/utils/authDestination"
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/features/auth/hooks/useAuth"
@@ -16,7 +17,17 @@ export default function OAuthCallbackPage() {
       .then((user) => {
         if (!user) throw new Error("OAuth session was not created.")
         toast("success", "Google sign-in completed successfully.")
-        navigate(getNextRouteAfterLogin(user), { replace: true })
+        const destination = safeDestination(
+          sessionStorage.getItem("skillproof.auth.returnTo"),
+        )
+        if (user.emailVerificationStatus !== "UNVERIFIED")
+          sessionStorage.removeItem("skillproof.auth.returnTo")
+        navigate(
+          user.emailVerificationStatus === "UNVERIFIED"
+            ? getNextRouteAfterLogin(user)
+            : (destination ?? getNextRouteAfterLogin(user)),
+          { replace: true },
+        )
       })
       .catch(() => navigate("/login?oauth=failed", { replace: true }))
   }, [navigate, refreshSession, toast])

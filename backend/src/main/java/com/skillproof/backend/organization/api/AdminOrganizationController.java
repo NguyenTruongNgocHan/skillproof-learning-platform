@@ -56,8 +56,21 @@ public class AdminOrganizationController {
         return service.reviews(id).stream().map(ReviewResponse::from).toList();
     }
 
+    @GetMapping("/{id}/application-revisions")
+    public List<com.skillproof.backend.organization.domain.ApplicationRevisionView> revisions(
+            @PathVariable UUID id) {
+        return service.applicationRevisionsForAdmin(id);
+    }
+
     @PostMapping("/{id}/review")
     public Organization review(Authentication auth, @PathVariable UUID id, @Valid @RequestBody ReviewRequest r) {
         return service.review(id, (UUID) auth.getPrincipal(), new OrganizationService.Review(r.decision(), r.reason()));
+    }
+
+    @PostMapping("/application-revisions/{revisionId}/review")
+    public Organization reviewRevision(Authentication auth, @PathVariable UUID revisionId,
+            @Valid @RequestBody ReviewRequest r) {
+        return service.reviewRevision(revisionId, (UUID) auth.getPrincipal(),
+                new OrganizationService.Review(r.decision(), r.reason()));
     }
 }

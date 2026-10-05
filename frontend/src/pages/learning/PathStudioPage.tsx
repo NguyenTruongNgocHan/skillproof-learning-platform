@@ -1,5 +1,6 @@
+import { PathMetadataPanel } from "@/features/learning/studio/PathMetadataPanel"
 import { Link } from "react-router-dom"
-import AppShell from "@/components/layout/AppShell"
+import { OrganizerSurface } from "@/features/organizer/OrganizerSurface"
 import Button from "@/components/ui/Button"
 import { learningApi } from "@/features/learning/learningApi"
 import { usePathStudio } from "@/features/learning/usePathStudio"
@@ -14,6 +15,7 @@ export default function PathStudioPage() {
     id,
     path,
     version,
+    versions,
     modules,
     assessments,
     error,
@@ -26,7 +28,7 @@ export default function PathStudioPage() {
   const draft = version?.status === "DRAFT"
   return (
     <PathStudioProvider value={studio}>
-      <AppShell>
+      <OrganizerSurface title="Path studio" authority="MANAGE_CONTENT">
         <div className="v7-wrap">
           <Link className="profile-back" to="/organizer/paths">
             ← All paths
@@ -52,6 +54,36 @@ export default function PathStudioPage() {
                   Build modules, add learning resources, define assessments and
                   completion rules, then publish a version learners can trust.
                 </p>
+                <label>
+                  Version
+                  <select
+                    aria-label="Select learning path version"
+                    value={version?.id ?? ""}
+                    disabled={busy || loading}
+                    onChange={(e) => {
+                      if (
+                        (studio.moduleTitle ||
+                          studio.resourceTitle ||
+                          studio.assessmentTitle) &&
+                        !window.confirm(
+                          "Discard unsaved authoring changes and switch version?",
+                        )
+                      )
+                        return
+                      studio.setModuleTitle("")
+                      studio.setResourceTitle("")
+                      studio.setResourceBody("")
+                      studio.setAssessmentTitle("")
+                      void load(e.target.value)
+                    }}
+                  >
+                    {versions.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        Version {v.version_no} · {v.status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 <div className="v7-inline">
                   <span>
                     {version &&
@@ -73,6 +105,13 @@ export default function PathStudioPage() {
                   )}
                 </div>
               </header>
+              {path && (
+                <PathMetadataPanel
+                  key={path.title + path.summary}
+                  path={path}
+                  onSaved={() => load()}
+                />
+              )}
               {error && (
                 <p role="alert" className="org-error">
                   {error}
@@ -95,7 +134,7 @@ export default function PathStudioPage() {
             </>
           )}
         </div>
-      </AppShell>
+      </OrganizerSurface>
     </PathStudioProvider>
   )
 }

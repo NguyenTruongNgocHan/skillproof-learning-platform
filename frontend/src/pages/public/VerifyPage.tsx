@@ -1,32 +1,124 @@
+import { useEffect, useState } from "react"
+import { useNavigate, useParams } from "react-router-dom"
 import PublicHeader from "@/components/layout/PublicHeader"
 import PublicFooter from "@/components/layout/PublicFooter"
-import VerificationSection from "@/features/marketing/components/VerificationSection"
-import { useParams } from "react-router-dom"
-import { useEffect, useState } from "react"
-import { organizationApi, type Certificate } from "@/features/organization/organizationApi"
-
+import Button from "@/components/ui/Button"
+import Input from "@/components/ui/Input"
+import {
+  certificationApi,
+  type PublicCertificate,
+} from "@/features/certification/certificationApi"
+import "@/styles/organizer.css"
 export default function VerifyPage() {
   const { certificateId } = useParams()
-  const [certificate, setCertificate] = useState<Certificate | null>(null)
-  const [error, setError] = useState("")
+  const navigate = useNavigate()
+  const [serial, setSerial] = useState(certificateId ?? ""),
+    [certificate, setCertificate] = useState<PublicCertificate | null>(null),
+    [error, setError] = useState(""),
+    [loading, setLoading] = useState(false),
+    [retry, setRetry] = useState(0)
   useEffect(() => {
-    if (!certificateId) return
-    organizationApi.verifyCertificate(certificateId).then(setCertificate).catch((reason) => {
-      setError(reason instanceof Error ? reason.message : "Certificate not found")
-    })
-  }, [certificateId])
+    let active = true
+    setCertificate(null)
+    setError("")
+    setSerial(certificateId ?? "")
+    setLoading(Boolean(certificateId))
+    if (certificateId)
+      certificationApi
+        .verify(certificateId)
+        .then((value) => {
+          if (active) setCertificate(value)
+        })
+        .catch((e) => {
+          if (active)
+            setError(e instanceof Error ? e.message : "Certificate not found")
+        })
+        .finally(() => {
+          if (active) setLoading(false)
+        })
+    return () => {
+      active = false
+    }
+  }, [certificateId, retry])
   return (
     <div className="min-h-full flex flex-col">
       <PublicHeader />
       <main className="flex-1">
-        <VerificationSection />
-        {certificateId && (
-          <section className="mx-auto max-w-3xl px-6 pb-16" aria-live="polite">
-            {error ? <p role="alert">{error}</p> : certificate ? (
-              <p>Certificate <strong>{certificate.serialNumber}</strong> is {certificate.status.toLowerCase()}.</p>
-            ) : <p>Checking certificate…</p>}
+        <div className="sporg">
+          <header className="sporg-heading">
+            <p className="sporg-eyebrow">Public certificate verification</p>
+            <h1>Check a credential.</h1>
+            <p>
+              Check the issuer's recorded certificate status without signing in.
+              Personal learner information is kept private.
+            </p>
+          </header>
+          <section className="sporg-card">
+            <form
+              className="sporg-form"
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (serial.trim() === certificateId) setRetry((r) => r + 1)
+                else navigate(`/verify/${encodeURIComponent(serial.trim())}`)
+              }}
+            >
+              <Input
+                label="Certificate serial number"
+                value={serial}
+                required
+                maxLength={80}
+                onChange={(e) => setSerial(e.target.value)}
+                placeholder="SP-…"
+              />
+              <Button type="submit" disabled={loading || !serial.trim()}>
+                {loading ? "Checking…" : "Verify certificate"}
+              </Button>
+            </form>
           </section>
-        )}
+          {loading && (
+            <p role="status">Loading the issuer's certificate record…</p>
+          )}
+          {error && (
+            <section className="sporg-alert" role="alert">
+              <p>{error}</p>
+              <Button variant="outline" onClick={() => setRetry((r) => r + 1)}>
+                Retry lookup
+              </Button>
+            </section>
+          )}
+          {certificate && (
+            <section className="sporg-card" aria-live="polite">
+              <p className="sporg-eyebrow">{certificate.status}</p>
+              <h2>{certificate.programName ?? "Certificate record"}</h2>
+              <dl>
+                <dt>Serial number</dt>
+                <dd>{certificate.serialNumber}</dd>
+                <dt>Issuer snapshot</dt>
+                <dd>
+                  {certificate.issuerName ??
+                    "Historical issuer snapshot unavailable"}
+                </dd>
+                <dt>Issued</dt>
+                <dd>{new Date(certificate.issuedAt).toLocaleString()}</dd>
+                {certificate.revokedAt && (
+                  <>
+                    <dt>Revoked</dt>
+                    <dd>{new Date(certificate.revokedAt).toLocaleString()}</dd>
+                  </>
+                )}
+              </dl>
+              <p>
+                {certificate.status === "REVOKED"
+                  ? "This certificate has been revoked by its issuer."
+                  : "The issuer's record marks this certificate as issued."}
+              </p>
+              <p>
+                Blockchain proof: not anchored. This lookup reports the
+                platform's business record.
+              </p>
+            </section>
+          )}
+        </div>
       </main>
       <PublicFooter />
     </div>

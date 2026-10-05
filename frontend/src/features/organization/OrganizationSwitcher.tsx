@@ -1,40 +1,34 @@
-import { useEffect, useState } from "react"
-import { organizationApi, type Organization } from "./organizationApi"
-
-const STORAGE_KEY = "skillproof.organizer.organization"
-
-export function selectedOrganizationId() {
-  return localStorage.getItem(STORAGE_KEY)
-}
-
+import "@/styles/organizer.css"
+import { useOrganizationContext } from "@/app/providers/OrganizationProvider"
 export default function OrganizationSwitcher() {
-  const [organizations, setOrganizations] = useState<Organization[]>([])
-  const [selected, setSelected] = useState("")
-  useEffect(() => {
-    organizationApi.memberships().then((items) => {
-      setOrganizations(items)
-      const saved = selectedOrganizationId()
-      setSelected(items.some((item) => item.id === saved) ? saved! : items[0]?.id ?? "")
-      if (!saved && items[0]) localStorage.setItem(STORAGE_KEY, items[0].id)
-    }).catch(() => setOrganizations([]))
-  }, [])
-  if (organizations.length < 2) return null
+  const { organizations, organization, select, loading, refresh } =
+    useOrganizationContext()
+  if (!organizations.length) return null
   return (
-    <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      <span className="sr-only">Working organization</span>
-      <select
-        aria-label="Working organization"
-        value={selected}
-        onChange={(event) => {
-          localStorage.setItem(STORAGE_KEY, event.target.value)
-          setSelected(event.target.value)
-          window.location.reload()
-        }}
+    <div className="sp-org-switcher">
+      <label>
+        <span className="sr-only">Working organization</span>
+        <select
+          aria-label="Working organization"
+          disabled={loading}
+          value={organization?.id ?? ""}
+          onChange={(e) => select(e.target.value)}
+        >
+          {organizations.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.displayName}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button
+        type="button"
+        disabled={loading}
+        aria-label="Refresh organization membership and permissions"
+        onClick={() => void refresh()}
       >
-        {organizations.map((organization) => (
-          <option key={organization.id} value={organization.id}>{organization.displayName}</option>
-        ))}
-      </select>
-    </label>
+        ↻
+      </button>
+    </div>
   )
 }

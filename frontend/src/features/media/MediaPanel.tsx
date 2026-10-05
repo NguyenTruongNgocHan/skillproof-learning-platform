@@ -76,13 +76,17 @@ export default function MediaPanel({
   scope,
   target,
   writable = false,
+  removable = false,
   onUploaded,
+  onChanged,
   preferredId,
 }: {
   scope: MediaScope
   target?: string
   writable?: boolean
+  removable?: boolean
   onUploaded?: (item: MediaItem) => void
+  onChanged?: () => void
   preferredId?: string
 }) {
   const [items, setItems] = useState<MediaItem[]>([]),
@@ -114,6 +118,7 @@ export default function MediaPanel({
       const item = await mediaApi.upload(scope, target, file)
       setItems((prev) => [item, ...prev])
       onUploaded?.(item)
+      onChanged?.()
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed")
     } finally {
@@ -194,6 +199,37 @@ export default function MediaPanel({
               >
                 {item.name} · {(item.size / 1024 / 1024).toFixed(1)} MB ↓
               </Button>
+              {writable && removable && (
+                <Button
+                  variant="destructive"
+                  disabled={busy}
+                  onClick={() => {
+                    if (
+                      !window.confirm(
+                        `Remove ${item.name}? Previously submitted evidence will remain in submission history.`,
+                      )
+                    )
+                      return
+                    setBusy(true)
+                    void mediaApi
+                      .remove(item.id)
+                      .then(() =>
+                        setItems((rows) =>
+                          rows.filter((row) => row.id !== item.id),
+                        ),
+                      )
+                      .catch((e) =>
+                        setError(
+                          e instanceof Error ? e.message : "Remove failed",
+                        ),
+                      )
+                      .then(() => onChanged?.())
+                      .finally(() => setBusy(false))
+                  }}
+                >
+                  Remove
+                </Button>
+              )}
             </li>
           ))}
         </ul>

@@ -24,9 +24,7 @@ describe("getDefaultRouteForRole", () => {
     expect(getDefaultRouteForRole("LEARNER")).toBe("/app")
   })
   it("routes ORGANIZER through server review status", () => {
-    expect(getDefaultRouteForRole("ORGANIZER")).toBe(
-      "/organizer/verification-pending",
-    )
+    expect(getDefaultRouteForRole("ORGANIZER")).toBe("/organizer")
   })
   it("returns /admin for ADMIN", () => {
     expect(getDefaultRouteForRole("ADMIN")).toBe("/admin")
@@ -54,12 +52,12 @@ describe("getNextRouteAfterLogin", () => {
       role: "ORGANIZER",
       onboardingStatus: "NOT_STARTED",
     })
-    expect(getNextRouteAfterLogin(user)).toBe("/organizer/verification-pending")
+    expect(getNextRouteAfterLogin(user)).toBe("/organizer")
   })
 
   it("routes completed organizer to server status check", () => {
     const user = makeUser({ role: "ORGANIZER" })
-    expect(getNextRouteAfterLogin(user)).toBe("/organizer/verification-pending")
+    expect(getNextRouteAfterLogin(user)).toBe("/organizer")
   })
 
   it("redirects admin to /admin", () => {
@@ -84,9 +82,7 @@ describe("getNextRouteAfterVerification", () => {
       role: "ORGANIZER",
       onboardingStatus: "NOT_STARTED",
     })
-    expect(getNextRouteAfterVerification(user)).toBe(
-      "/organizer/verification-pending",
-    )
+    expect(getNextRouteAfterVerification(user)).toBe("/organizer")
   })
 })
 

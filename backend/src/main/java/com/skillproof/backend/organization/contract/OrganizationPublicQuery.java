@@ -8,15 +8,11 @@ import java.util.UUID;
  * checks.
  */
 public interface OrganizationPublicQuery {
-
     record OrganizationView(UUID id, String displayName, String status) {
-
         public boolean approved() {
             return "APPROVED".equals(status);
         }
     }
 
     Optional<OrganizationView> find(UUID organizationId);
-
-    boolean canPrepareApplication(UUID organizationId, UUID actorId);
 }

@@ -9,6 +9,6 @@ public record Organization(UUID id, UUID ownerUserId, String legalName, String d
         String reviewReason, Instant createdAt, Instant updatedAt) {
 
     public enum Status {
-        PENDING, APPROVED, REJECTED
+        DRAFT, PENDING, APPROVED, REJECTED
     }
 }

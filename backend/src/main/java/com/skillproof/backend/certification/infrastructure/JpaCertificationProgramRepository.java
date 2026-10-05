@@ -2,6 +2,7 @@ package com.skillproof.backend.certification.infrastructure;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
@@ -23,5 +24,17 @@ public class JpaCertificationProgramRepository implements CertificationProgramRe
 
     public Optional<CertificationProgram> findById(UUID id) {
         return repository.findById(id).map(CertificationProgramEntity::domain);
+    }
+
+    @Override
+    public Optional<CertificationProgram> findForIssue(UUID id) {
+        return repository.findForIssue(id).map(CertificationProgramEntity::domain);
+    }
+
+    @Override
+    public List<CertificationProgram> findByOrganizationId(UUID organizationId) {
+        return repository.findByOrganizationIdOrderByCreatedAtDesc(organizationId).stream()
+                .map(CertificationProgramEntity::domain)
+                .toList();
     }
 }
