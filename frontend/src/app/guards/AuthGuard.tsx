@@ -1,6 +1,6 @@
-import { Navigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { ReactNode } from "react"
+import { Navigate, useLocation } from "react-router-dom"
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading, user } = useAuth()

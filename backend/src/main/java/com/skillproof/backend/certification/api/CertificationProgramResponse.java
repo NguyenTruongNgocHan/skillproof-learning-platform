@@ -7,7 +7,7 @@ import java.util.UUID;
 public record CertificationProgramResponse(
         UUID id,
         UUID organizationId,
-        UUID learningPathVersionId,
+        UUID courseVersionId,
         UUID completionPolicyId,
         String name,
         String status,
@@ -15,7 +15,7 @@ public record CertificationProgramResponse(
 
     static CertificationProgramResponse from(CertificationProgram program) {
         return new CertificationProgramResponse(
-                program.id(), program.organizationId(), program.learningPathVersionId(),
+                program.id(), program.organizationId(), program.courseVersionId(),
                 program.completionPolicyId(), program.name(), program.status().name(), program.createdAt());
     }
 }

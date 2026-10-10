@@ -1,13 +1,9 @@
-import { Navigate } from "react-router-dom"
 import type { ReactNode } from "react"
+import { Navigate } from "react-router-dom"
 
 import { useAuth } from "@/features/auth/hooks/useAuth"
 
-export function OnboardingGuard({
-  children,
-}: {
-  children: ReactNode
-}) {
+export function OnboardingGuard({ children }: { children: ReactNode }) {
   const { user } = useAuth()
 
   if (!user) {
@@ -18,10 +14,7 @@ export function OnboardingGuard({
     return <Navigate to="/verify-email" replace />
   }
 
-  if (
-    user.role === "ORGANIZER" &&
-    user.onboardingStatus !== "COMPLETED"
-  ) {
+  if (user.role === "ORGANIZER" && user.onboardingStatus !== "COMPLETED") {
     return <Navigate to="/onboarding/organizer" replace />
   }
 

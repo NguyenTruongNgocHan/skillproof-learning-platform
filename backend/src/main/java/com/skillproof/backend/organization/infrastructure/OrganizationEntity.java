@@ -62,7 +62,8 @@ public class OrganizationEntity {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    protected OrganizationEntity() {}
+    protected OrganizationEntity() {
+    }
 
     OrganizationEntity(Organization organization) {
         this.id = organization.id();
@@ -84,21 +85,21 @@ public class OrganizationEntity {
 
     Organization toDomain() {
         return new Organization(
-            id,
-            ownerUserId,
-            legalName,
-            displayName,
-            website,
-            industry,
-            country,
-            registrationNumber,
-            contactName,
-            contactEmail,
-            contactPhone,
-            status,
-            reviewReason,
-            createdAt,
-            updatedAt
+                id,
+                ownerUserId,
+                legalName,
+                displayName,
+                website,
+                industry,
+                country,
+                registrationNumber,
+                contactName,
+                contactEmail,
+                contactPhone,
+                status,
+                reviewReason,
+                createdAt,
+                updatedAt
         );
     }
 
@@ -139,11 +140,11 @@ public class OrganizationEntity {
     }
 
     void updateProfile(
-        String display,
-        String website,
-        String industry,
-        String phone,
-        Instant now
+            String display,
+            String website,
+            String industry,
+            String phone,
+            Instant now
     ) {
         this.displayName = display;
         this.website = website;

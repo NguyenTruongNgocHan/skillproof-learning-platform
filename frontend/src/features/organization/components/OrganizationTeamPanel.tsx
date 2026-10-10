@@ -1,30 +1,32 @@
-import { organizerError } from "@/features/organizer/errorMessage"
-import { useEffect, useState } from "react"
-import { useOrganizationContext } from "@/app/providers/OrganizationProvider"
-import {
-  organizationApi,
-  type Member,
-  type Invitation,
-  type Authority,
-} from "../organizationApi"
-import Button from "@/components/ui/Button"
-import Input from "@/components/ui/Input"
-import { useToast } from "@/components/ui/Toast"
+import { organizationApi } from "@/features/organization/api/organizationApi";
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
+import type {
+  Authority,
+  Invitation,
+  Member,
+} from "@/features/organization/types/organization.types";
+import { organizerError } from "@/features/organization/utils/errorMessage";
+import Button from "@/shared/ui/Button";
+import Input from "@/shared/ui/Input";
+import { useToast } from "@/shared/ui/Toast";
+import { useEffect, useState } from "react";
 const authorities: Authority[] = [
   "MANAGE_PROFILE",
   "MANAGE_MEMBERS",
   "MANAGE_CONTENT",
   "ISSUE_CERTIFICATES",
-]
+];
 const labels: Record<Authority, string> = {
   MANAGE_PROFILE: "Manage profile",
   MANAGE_MEMBERS: "Manage team",
   MANAGE_CONTENT: "Author content",
   ISSUE_CERTIFICATES: "Issue certificates",
-}
-export function OrganizationTeamPanel() {
-  const { organization, refresh, setDirty } = useOrganizationContext()
-  const { toast } = useToast()
+};
+export function OrganizationTeamPanel({
+  onDirtyChange,
+}: { onDirtyChange?: (dirty: boolean) => void } = {}) {
+  const { organization, refresh, setDirty } = useOrganizationContext();
+  const { toast } = useToast();
   const [members, setMembers] = useState<Member[]>([]),
     [invitations, setInvitations] = useState<Invitation[]>([]),
     [email, setEmail] = useState(""),
@@ -32,56 +34,60 @@ export function OrganizationTeamPanel() {
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
-    [reload, setReload] = useState(0)
+    [reload, setReload] = useState(0);
   useEffect(() => {
-    setDirty("invitation", Boolean(email))
-    return () => setDirty("invitation", false)
-  }, [email, setDirty])
+    onDirtyChange?.(Boolean(email));
+    return () => onDirtyChange?.(false);
+  }, [email, onDirtyChange]);
   useEffect(() => {
-    let live = true
-    if (!organization) return
-    setLoading(true)
+    setDirty("invitation", Boolean(email));
+    return () => setDirty("invitation", false);
+  }, [email, setDirty]);
+  useEffect(() => {
+    let live = true;
+    if (!organization) return;
+    setLoading(true);
     Promise.all([
       organizationApi.members(organization.id),
       organizationApi.invitations(organization.id),
     ])
       .then(([m, i]) => {
         if (live) {
-          setMembers(m)
-          setInvitations(i)
-          setError("")
+          setMembers(m);
+          setInvitations(i);
+          setError("");
         }
       })
       .catch((e) => {
-        if (live) setError(e.message)
+        if (live) setError(e.message);
       })
       .finally(() => {
-        if (live) setLoading(false)
-      })
+        if (live) setLoading(false);
+      });
     return () => {
-      live = false
-    }
-  }, [organization?.id, reload])
+      live = false;
+    };
+  }, [organization, reload]);
   async function run(
     action: () => Promise<unknown>,
     message: string,
     permissions = false,
   ) {
-    if (busy) return
-    setBusy(true)
-    setError("")
+    if (busy) return;
+    setBusy(true);
+    setError("");
     try {
-      await action()
-      setReload((x) => x + 1)
-      toast("success", message)
-      if (permissions) await refresh()
+      await action();
+      setReload((x) => x + 1);
+      toast("success", message);
+      if (permissions) await refresh();
     } catch (e) {
-      setError(organizerError(e, "Action failed"))
+      setError(organizerError(e, "Action failed"));
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
-  if (!organization) return null
+  if (!organization) return null;
   return (
     <section className="sporg-card">
       <h2>Team and access</h2>
@@ -100,12 +106,12 @@ export function OrganizationTeamPanel() {
       <form
         className="sporg-form"
         onSubmit={(e) => {
-          e.preventDefault()
+          e.preventDefault();
           void run(async () => {
-            await organizationApi.invite(organization.id, email.trim())
-            setEmail("")
-            setDirty("invitation", false)
-          }, "Invitation sent.")
+            await organizationApi.invite(organization.id, email.trim());
+            setEmail("");
+            setDirty("invitation", false);
+          }, "Invitation sent.");
         }}
       >
         <Input
@@ -164,7 +170,7 @@ export function OrganizationTeamPanel() {
                             ),
                           "Member removed.",
                           true,
-                        )
+                        );
                     }}
                   >
                     Remove
@@ -223,7 +229,7 @@ export function OrganizationTeamPanel() {
                     void run(
                       () => organizationApi.revokeInvitation(i.id),
                       "Invitation revoked.",
-                    )
+                    );
                 }}
               >
                 Revoke
@@ -247,5 +253,5 @@ export function OrganizationTeamPanel() {
         </div>
       ))}
     </section>
-  )
+  );
 }

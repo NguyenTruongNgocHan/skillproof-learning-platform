@@ -1,7 +1,9 @@
 package com.skillproof.backend.quiz.application;
 
+import com.skillproof.backend.quiz.infrastructure.persistence.*;
+
 import com.skillproof.backend.common.exception.*;
-import com.skillproof.backend.learning.contract.LearningQuizAccess;
+import com.skillproof.backend.course.contract.CourseQuizAccess;
 import java.time.Instant;
 import java.util.*;
 import org.springframework.stereotype.Service;
@@ -15,16 +17,18 @@ public class AssessmentAuthoringService {
     private final QuizQuestionVersionRepository versions;
     private final QuizQuestionRootRepository questions;
     private final QuizBankRepository banks;
-    private final LearningQuizAccess learning;
+    private final CourseQuizAccess learning;
+    private final com.skillproof.backend.course.contract.CourseStructureQuery structure;
 
     public AssessmentAuthoringService(QuizAssessmentRepository a, QuizAssessmentQuestionRepository l,
-            QuizQuestionVersionRepository v, QuizQuestionRootRepository q, QuizBankRepository b, LearningQuizAccess learning) {
+            QuizQuestionVersionRepository v, QuizQuestionRootRepository q, QuizBankRepository b, CourseQuizAccess learning, com.skillproof.backend.course.contract.CourseStructureQuery structure) {
         assessments = a;
         links = l;
         versions = v;
         questions = q;
         banks = b;
         this.learning = learning;
+        this.structure = structure;
     }
 
     private QuizAssessment assessmentEntity(UUID id) {
@@ -34,60 +38,70 @@ public class AssessmentAuthoringService {
     private Map<String, Object> assessment(UUID id) {
         var a = assessmentEntity(id);
         var out = new LinkedHashMap<String, Object>();
-        out.put("id", a.id);
-        out.put("organization_id", a.organizationId);
-        out.put("version_id", a.versionId);
-        out.put("kind", a.kind.name());
-        out.put("status", a.status.name());
-        out.put("title", a.title);
-        out.put("duration_seconds", a.durationSeconds);
-        out.put("pass_percent", a.passPercent);
-        out.put("max_attempts", a.maxAttempts);
-        out.put("created_at", a.createdAt);
-        out.put("version_status", learning.version(a.versionId).status());
+        out.put("id", a.getId());
+        out.put("organization_id", a.getOrganizationId());
+        out.put("version_id", a.getVersionId());
+        out.put("ownerScope", a.getOwnerScope());
+        out.put("ownerId", a.getOwnerId());
+        out.put("required", a.isRequiredForCompletion());
+        out.put("kind", a.getKind().name());
+        out.put("status", a.getStatus().name());
+        out.put("title", a.getTitle());
+        out.put("duration_seconds", a.getDurationSeconds());
+        out.put("pass_percent", a.getPassPercent());
+        out.put("max_attempts", a.getMaxAttempts());
+        out.put("created_at", a.getCreatedAt());
+        out.put("version_status", learning.version(a.getVersionId()).status());
         return out;
     }
 
     private QuizAssessment editable(UUID actor, UUID id) {
-        var a = assessmentEntity(id);
-        learning.requireOrganizer(actor, a.organizationId);
-        if (a.status != QuizAssessment.Status.DRAFT || !"DRAFT".equals(learning.version(a.versionId).status())) {
+        var versionId = assessments.findVersionId(id).orElseThrow(()
+                -> new NotFoundException("QUIZ_NOT_FOUND", "Quiz record not found"));
+        var version = learning.lockVersion(versionId);
+        var assessment = assessmentEntity(id);
+        structure.requireDraftAuthor(actor, versionId);
+        if (assessment.getStatus() != QuizAssessment.Status.DRAFT || !"DRAFT".equals(version.status())) {
             throw new ConflictException("ASSESSMENT_IMMUTABLE", "Published assessment cannot be edited");
-        
-        }return a;
+        }
+        return assessment;
     }
 
     public List<Map<String, Object>> assessments(UUID actor, UUID versionId) {
         var v = learning.version(versionId);
-        learning.requireOrganizer(actor, v.organizationId());
-        return assessments.findByVersionIdOrderByCreatedAtDesc(versionId).stream().map(a -> assessment(a.id)).toList();
+        learning.requireVersionAuthor(actor, versionId);
+        return assessments.findByVersionIdOrderByCreatedAtDesc(versionId).stream().map(a -> assessment(a.getId())).toList();
     }
 
     public List<Map<String, Object>> assessmentQuestions(UUID actor, UUID id) {
         var a = assessmentEntity(id);
-        learning.requireOrganizer(actor, a.organizationId);
-        return links.findByAssessmentIdOrderByPosition(id).stream().map(x -> Map.<String, Object>of("question_version_id", x.questionVersion.id, "position", x.position, "points", x.points, "stem", x.questionVersion.stem)).toList();
+        learning.requireVersionAuthor(actor, a.getVersionId());
+        return links.findByAssessmentIdOrderByPosition(id).stream().map(x -> Map.<String, Object>of("question_version_id", x.getQuestionVersion().getId(), "position", x.getPosition(), "points", x.getPoints(), "stem", x.getQuestionVersion().getStem())).toList();
     }
 
     @Transactional
     public Map<String, Object> createAssessment(UUID actor, UUID versionId, String kind, String title, int duration, int pass, int max) {
-        var v = learning.version(versionId);
-        learning.requireOrganizer(actor, v.organizationId());
+        var v = learning.lockVersion(versionId);
+        learning.requireVersionAuthor(actor, versionId);
         if (!"DRAFT".equals(v.status()) || !List.of("PRACTICE", "MOCK", "OFFICIAL").contains(kind) || duration < 60 || duration > 14400 || pass < 1 || pass > 100 || max < 1 || max > 20) {
             throw new BadRequestException("ASSESSMENT_INVALID", "Invalid assessment policy");
         }
+        structure.requireDraftAuthor(actor, versionId);
         var a = new QuizAssessment();
-        a.id = UUID.randomUUID();
-        a.organizationId = v.organizationId();
-        a.versionId = versionId;
-        a.kind = QuizAssessment.Kind.valueOf(kind);
-        a.status = QuizAssessment.Status.DRAFT;
-        a.title = title.trim();
-        a.durationSeconds = duration;
-        a.passPercent = pass;
-        a.maxAttempts = max;
-        a.createdAt = Instant.now();
-        return assessment(assessments.save(a).id);
+        a.setId(UUID.randomUUID());
+        a.setOrganizationId(v.organizationId());
+        a.setVersionId(versionId);
+        a.setOwnerScope("COURSE");
+        a.setOwnerId(versionId);
+        a.setRequiredForCompletion("OFFICIAL".equals(kind));
+        a.setKind(QuizAssessment.Kind.valueOf(kind));
+        a.setStatus(QuizAssessment.Status.DRAFT);
+        a.setTitle(title.trim());
+        a.setDurationSeconds(duration);
+        a.setPassPercent(pass);
+        a.setMaxAttempts(max);
+        a.setCreatedAt(Instant.now());
+        return assessment(assessments.save(a).getId());
     }
 
     @Transactional
@@ -95,11 +109,12 @@ public class AssessmentAuthoringService {
         var a = editable(actor, id);
         if (duration < 60 || duration > 14400 || pass < 1 || pass > 100 || max < 1 || max > 20) {
             throw new BadRequestException("ASSESSMENT_INVALID", "Invalid assessment policy");
-        
-        }a.title = title.trim();
-        a.durationSeconds = duration;
-        a.passPercent = pass;
-        a.maxAttempts = max;
+
+        }
+        a.setTitle(title.trim());
+        a.setDurationSeconds(duration);
+        a.setPassPercent(pass);
+        a.setMaxAttempts(max);
         assessments.save(a);
         return assessment(id);
     }
@@ -108,20 +123,23 @@ public class AssessmentAuthoringService {
     public void attach(UUID actor, UUID aid, UUID qid, int position, int points) {
         var a = editable(actor, aid);
         var qv = versions.findById(qid).orElseThrow(() -> new NotFoundException("QUIZ_NOT_FOUND", "Question not found"));
-        var q = questions.findById(qv.questionId).orElseThrow();
-        var b = banks.findById(q.bankId).orElseThrow();
-        if (!b.organizationId.equals(a.organizationId)) {
+        var q = questions.findById(qv.getQuestionId()).orElseThrow();
+        var b = banks.findById(q.getBankId()).orElseThrow();
+        if (!Objects.equals(b.getOrganizationId(), a.getOrganizationId())
+                || a.getOrganizationId() == null && !b.getCreatedBy().equals(learning.versionAuthor(a.getVersionId()))) {
             throw new BadRequestException("QUESTION_OWNERSHIP", "Question belongs to another organization");
-        
-        }if (position < 1 || points < 1 || points > 100) {
+
+        }
+        if (position < 1 || points < 1 || points > 100) {
             throw new BadRequestException("QUESTION_WEIGHT", "Invalid question position or points");
-        
-        }var x = new QuizAssessmentQuestion();
-        x.id = new QuizAssessmentQuestionId(aid, qid);
-        x.assessment = a;
-        x.questionVersion = qv;
-        x.position = position;
-        x.points = points;
+
+        }
+        var x = new QuizAssessmentQuestion();
+        x.setId(new QuizAssessmentQuestionId(aid, qid));
+        x.setAssessment(a);
+        x.setQuestionVersion(qv);
+        x.setPosition(position);
+        x.setPoints(points);
         links.save(x);
     }
 
@@ -143,9 +161,24 @@ public class AssessmentAuthoringService {
         var a = editable(actor, id);
         if (links.findByAssessmentIdOrderByPosition(id).isEmpty()) {
             throw new BadRequestException("ASSESSMENT_EMPTY", "Add questions before publishing");
-        
-        }a.status = QuizAssessment.Status.PUBLISHED;
+
+        }
+        a.setStatus(QuizAssessment.Status.PUBLISHED);
         assessments.save(a);
         return assessment(id);
     }
+
+    @Transactional
+    public Map<String, Object> configureOwner(UUID actor, UUID id, String scope, UUID owner, boolean required) {
+        var assessment = editable(actor, id);
+        structure.validateOwner(assessment.getVersionId(), scope, owner);
+        if (required && assessment.getKind() != QuizAssessment.Kind.OFFICIAL) {
+            throw new BadRequestException("PRACTICE_OPTIONAL", "Practice and mock assessments are optional");
+        }
+        assessment.setOwnerScope(scope);
+        assessment.setOwnerId(owner);
+        assessment.setRequiredForCompletion(required);
+        return assessment(id);
+    }
+
 }

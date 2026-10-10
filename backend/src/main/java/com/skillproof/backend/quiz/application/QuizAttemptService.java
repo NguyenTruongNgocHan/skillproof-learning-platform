@@ -1,5 +1,7 @@
 package com.skillproof.backend.quiz.application;
 
+import com.skillproof.backend.quiz.infrastructure.persistence.*;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -11,11 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.skillproof.backend.common.exception.BadRequestException;
 import com.skillproof.backend.common.exception.ConflictException;
 import com.skillproof.backend.common.exception.NotFoundException;
-import com.skillproof.backend.learning.contract.LearningQuizAccess;
+import com.skillproof.backend.course.contract.CourseQuizAccess;
 import com.skillproof.backend.quiz.contract.QuizCompletionEvidenceQuery;
 
 @Service
 public class QuizAttemptService {
+
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
 
     private final QuizAssessmentRepository assessments;
     private final QuizAttemptRepository attempts;
@@ -23,11 +28,11 @@ public class QuizAttemptService {
     private final QuizAssessmentQuestionRepository assessmentQuestions;
     private final QuizOptionRepository options;
     private final QuizQuestionRepository questionVersions;
-    private final LearningQuizAccess learning;
+    private final CourseQuizAccess learning;
     private final QuizCompletionEvidenceQuery evidence;
 
     public QuizAttemptService(QuizAssessmentRepository a, QuizAttemptRepository t, QuizAttemptQuestionRepository q,
-            LearningQuizAccess l, QuizCompletionEvidenceQuery e, QuizAssessmentQuestionRepository aq,
+            CourseQuizAccess l, QuizCompletionEvidenceQuery e, QuizAssessmentQuestionRepository aq,
             QuizOptionRepository o, QuizQuestionRepository qv) {
         assessments = a;
         attempts = t;
@@ -41,125 +46,170 @@ public class QuizAttemptService {
 
     private QuizAttempt attempt(UUID learner, UUID id) {
         var a = attempts.findById(id).orElseThrow(() -> new NotFoundException("QUIZ_NOT_FOUND", "Quiz record not found"));
-        if (!learner.equals(a.learnerId)) {
+        if (!learner.equals(a.getLearnerId())) {
             throw new NotFoundException("QUIZ_NOT_FOUND", "Quiz record not found");
-        
-        }return a;
+
+        }
+        return a;
+    }
+
+    private QuizAttempt attemptForUpdate(UUID learner, UUID id) {
+        var snapshot = attempt(learner, id);
+        learning.enrollment(learner, snapshot.getEnrollmentId(), true);
+        var a = attempts.findForUpdate(id).orElseThrow(()
+                -> new NotFoundException("QUIZ_NOT_FOUND", "Quiz record not found"));
+        if (!learner.equals(a.getLearnerId())) {
+            throw new NotFoundException("QUIZ_NOT_FOUND", "Quiz record not found");
+        }
+        entityManager.refresh(a, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        return a;
     }
 
     public List<Map<String, Object>> forEnrollment(UUID learner, UUID enrollmentId) {
         var e = learning.enrollment(learner, enrollmentId, false);
-        return assessments.findByVersionIdAndStatus(e.versionId(), QuizAssessment.Status.PUBLISHED).stream().map(a -> Map.<String, Object>of("id", a.id, "version_id", a.versionId, "kind", a.kind.name(), "title", a.title, "duration_seconds", a.durationSeconds, "pass_percent", a.passPercent, "max_attempts", a.maxAttempts)).toList();
+        return assessments.findByVersionIdAndStatus(e.versionId(), QuizAssessment.Status.PUBLISHED).stream().map(a -> Map.<String, Object>of("id", a.getId(), "version_id", a.getVersionId(), "kind", a.getKind().name(), "title", a.getTitle(), "duration_seconds", a.getDurationSeconds(), "pass_percent", a.getPassPercent(), "max_attempts", a.getMaxAttempts())).toList();
     }
 
     public List<Map<String, Object>> attemptHistory(UUID learner, UUID enrollmentId) {
         learning.enrollment(learner, enrollmentId, false);
-        return attempts.findByEnrollmentIdAndLearnerIdOrderByStartedAtDesc(enrollmentId, learner).stream().map(a -> Map.<String, Object>of("id", a.id, "assessment_id", a.assessmentId, "status", a.status.name(), "score_percent", a.scorePercent, "passed", a.passed, "started_at", a.startedAt, "deadline_at", a.deadlineAt, "submitted_at", a.submittedAt)).toList();
+        return attempts.findByEnrollmentIdAndLearnerIdOrderByStartedAtDesc(enrollmentId, learner).stream().map(a -> {
+            Map<String, Object> item = new java.util.LinkedHashMap<>();
+            item.put("id", a.getId());
+            item.put("assessment_id", a.getAssessmentId());
+            item.put("status", a.getStatus().name());
+            item.put("score_percent", a.getScorePercent());
+            item.put("passed", a.getPassed());
+            item.put("started_at", a.getStartedAt());
+            item.put("deadline_at", a.getDeadlineAt());
+            item.put("submitted_at", a.getSubmittedAt());
+            return item;
+        }).toList();
     }
 
     @Transactional
     public Map<String, Object> start(UUID learner, UUID assessmentId, UUID enrollmentId) {
         var e = learning.enrollment(learner, enrollmentId, true);
         var a = assessments.findById(assessmentId).orElseThrow(() -> new NotFoundException("ASSESSMENT_UNAVAILABLE", "Assessment is not available in this enrollment"));
-        if (a.status != QuizAssessment.Status.PUBLISHED || !a.versionId.equals(e.versionId())) {
+        if (a.getStatus() != QuizAssessment.Status.PUBLISHED || !a.getVersionId().equals(e.versionId())) {
             throw new NotFoundException("ASSESSMENT_UNAVAILABLE", "Assessment is not available in this enrollment");
         }
         var active = attempts.findByAssessmentIdAndEnrollmentIdAndStatus(assessmentId, enrollmentId, QuizAttempt.AttemptStatus.IN_PROGRESS).stream().findFirst();
-        if (active.isPresent() && active.get().deadlineAt.isAfter(Instant.now())) {
-            return view(active.get());
+        if (active.isPresent()) {
+            var existing = attemptForUpdate(learner, active.get().getId());
+            if (existing.getDeadlineAt().isAfter(Instant.now())) {
+                return view(existing);
+            }
+            finalizeAttempt(existing, learner);
         }
-        if (attempts.countByAssessmentIdAndEnrollmentId(assessmentId, enrollmentId) >= a.maxAttempts) {
+        if (attempts.countByAssessmentIdAndEnrollmentId(assessmentId, enrollmentId) >= a.getMaxAttempts()) {
             throw new ConflictException("ATTEMPT_LIMIT", "No attempts remaining");
         }
         var t = new QuizAttempt();
-        t.id = UUID.randomUUID();
-        t.assessmentId = assessmentId;
-        t.enrollmentId = enrollmentId;
-        t.learnerId = learner;
-        t.status = QuizAttempt.AttemptStatus.IN_PROGRESS;
-        t.startedAt = Instant.now();
-        t.deadlineAt = t.startedAt.plusSeconds(a.durationSeconds);
+        t.setId(UUID.randomUUID());
+        t.setAssessmentId(assessmentId);
+        t.setEnrollmentId(enrollmentId);
+        t.setLearnerId(learner);
+        t.setStatus(QuizAttempt.AttemptStatus.IN_PROGRESS);
+        t.setStartedAt(Instant.now());
+        t.setDeadlineAt(t.getStartedAt().plusSeconds(a.getDurationSeconds()));
         attempts.save(t);
         for (var aq : assessmentQuestions.findByAssessmentIdOrderByPosition(assessmentId)) {
             var x = new QuizAttemptQuestion();
-            x.id = new QuizAttemptQuestionId(t.id, aq.questionVersion.id);
-            x.position = aq.position;
-            x.points = aq.points;
+            x.setId(new QuizAttemptQuestionId(t.getId(), aq.getQuestionVersion().getId()));
+            x.setPosition(aq.getPosition());
+            x.setPoints(aq.getPoints());
             questions.save(x);
         }
         return view(t);
     }
 
     private Map<String, Object> view(QuizAttempt t) {
-        var items = questions.findByIdAttemptIdOrderByPosition(t.id).stream().map(x -> {
-            var q = questionVersions.findById(x.id.questionVersionId).orElseThrow();
+        var items = questions.findByIdAttemptIdOrderByPosition(t.getId()).stream().map(x -> {
+            var q = questionVersions.findById(x.getId().getQuestionVersionId()).orElseThrow();
             var item = new java.util.LinkedHashMap<String, Object>();
-            item.put("question_version_id", q.id);
-            item.put("position", x.position);
-            item.put("points", x.points);
-            item.put("selected_option_id", x.selectedOptionId);
-            item.put("stem", q.stem);
-            item.put("options", options.findByQuestionVersionIdOrderByPosition(q.id).stream()
-                    .map(o -> Map.<String, Object>of("id", o.id, "position", o.position, "body", o.body)).toList());
+            item.put("question_version_id", q.getId());
+            item.put("position", x.getPosition());
+            item.put("points", x.getPoints());
+            item.put("selected_option_id", x.getSelectedOptionId());
+            item.put("stem", q.getStem());
+            item.put("options", options.findByQuestionVersionIdOrderByPosition(q.getId()).stream()
+                    .map(o -> Map.<String, Object>of("id", o.getId(), "position", o.getPosition(), "body", o.getBody())).toList());
             return item;
         }).toList();
-        return Map.of("attempt", Map.of("id", t.id, "assessment_id", t.assessmentId, "status", t.status.name(), "started_at", t.startedAt, "deadline_at", t.deadlineAt), "questions", items);
+        return Map.of("attempt", Map.of("id", t.getId(), "assessment_id", t.getAssessmentId(), "status", t.getStatus().name(), "started_at", t.getStartedAt(), "deadline_at", t.getDeadlineAt()), "questions", items);
     }
 
     @Transactional
     public Map<String, Object> answer(UUID learner, UUID id, UUID question, UUID option) {
-        var t = attempt(learner, id);
-        if (t.status != QuizAttempt.AttemptStatus.IN_PROGRESS) {
+        var t = attemptForUpdate(learner, id);
+        if (t.getStatus() != QuizAttempt.AttemptStatus.IN_PROGRESS) {
             throw new ConflictException("ATTEMPT_FINAL", "Attempt already finalized");
-        
-        }if (!t.deadlineAt.isAfter(Instant.now())) {
-            return submit(learner, id);
-        
-        }var x = questions.findById(new QuizAttemptQuestionId(id, question)).orElseThrow(() -> new BadRequestException("ANSWER_INVALID", "Question or option does not belong to this attempt"));
-        if (options.findByQuestionVersionIdOrderByPosition(question).stream().noneMatch(o -> o.id.equals(option))) {
+
+        }
+        if (!t.getDeadlineAt().isAfter(Instant.now())) {
+            return finalizeAttempt(t, learner);
+
+        }
+        var x = questions.findById(new QuizAttemptQuestionId(id, question)).orElseThrow(() -> new BadRequestException("ANSWER_INVALID", "Question or option does not belong to this attempt"));
+        if (options.findByQuestionVersionIdOrderByPosition(question).stream().noneMatch(o -> o.getId().equals(option))) {
             throw new BadRequestException("ANSWER_INVALID", "Question or option does not belong to this attempt");
-        
-        }x.selectedOptionId = option;
+
+        }
+        x.setSelectedOptionId(option);
         questions.save(x);
         return view(t);
     }
 
     @Transactional
     public Map<String, Object> submit(UUID learner, UUID id) {
-        var t = attempt(learner, id);
-        if (t.status == QuizAttempt.AttemptStatus.SCORED) {
+        var t = attemptForUpdate(learner, id);
+        if (t.getStatus() == QuizAttempt.AttemptStatus.SCORED
+                || t.getStatus() == QuizAttempt.AttemptStatus.TIMED_OUT) {
             return result(learner, id);
-        
-        }int total = 0, earned = 0;
-        for (var x : questions.findByIdAttemptIdOrderByPosition(id)) {
-            total += x.points;
-            if (x.selectedOptionId != null && options.findById(x.selectedOptionId).map(o -> o.correct).orElse(false)) {
-                earned += x.points;
-        
-            }}
-        var a = assessments.findById(t.assessmentId).orElseThrow();
-        t.status = QuizAttempt.AttemptStatus.SCORED;
-        t.submittedAt = Instant.now();
-        t.scorePercent = total == 0 ? 0 : earned * 100 / total;
-        t.passed = t.scorePercent >= a.passPercent;
-        attempts.save(t);
-        if (t.passed && a.kind == QuizAssessment.Kind.OFFICIAL) {
-            var ev = evidence.evidence(a.versionId, t.enrollmentId);
-            learning.evaluateCompletion(t.enrollmentId, ev.requiredOfficialAssessments(), ev.passedOfficialAssessments());
         }
-        return result(learner, id);
+        return finalizeAttempt(t, learner);
+    }
+
+    private Map<String, Object> finalizeAttempt(QuizAttempt t, UUID learner) {
+        boolean timedOut = !t.getDeadlineAt().isAfter(Instant.now());
+        int total = 0, earned = 0;
+        for (var x : questions.findByIdAttemptIdOrderByPosition(t.getId())) {
+            total += x.getPoints();
+            if (x.getSelectedOptionId() != null && options.findById(x.getSelectedOptionId()).map(o -> o.getCorrect()).orElse(false)) {
+                earned += x.getPoints();
+            }
+        }
+        var a = assessments.findById(t.getAssessmentId()).orElseThrow();
+        t.setStatus(timedOut ? QuizAttempt.AttemptStatus.TIMED_OUT : QuizAttempt.AttemptStatus.SCORED);
+        t.setSubmittedAt(Instant.now());
+        t.setScorePercent(total == 0 ? 0 : earned * 100 / total);
+        t.setPassed(t.getScorePercent() >= a.getPassPercent());
+        attempts.saveAndFlush(t);
+        if (t.getPassed() && a.getKind() == QuizAssessment.Kind.OFFICIAL) {
+            var ev = evidence.evidence(a.getVersionId(), t.getEnrollmentId());
+            learning.evaluateCompletion(t.getEnrollmentId(), ev.requiredOfficialAssessments(), ev.passedOfficialAssessments());
+        }
+        return result(learner, t.getId());
     }
 
     public Map<String, Object> result(UUID learner, UUID id) {
         var t = attempt(learner, id);
-        if (t.status != QuizAttempt.AttemptStatus.SCORED) {
+        if (t.getStatus() != QuizAttempt.AttemptStatus.SCORED
+                && t.getStatus() != QuizAttempt.AttemptStatus.TIMED_OUT) {
             throw new ConflictException("RESULT_NOT_READY", "Submit the attempt to see its result");
-        
-        }return Map.of("attemptId", t.id, "assessmentId", t.assessmentId, "scorePercent", t.scorePercent, "passed", t.passed, "timedOut", t.submittedAt == null);
+
+        }
+        return Map.of("attemptId", t.getId(), "assessmentId", t.getAssessmentId(), "scorePercent", t.getScorePercent(), "passed", t.getPassed(), "timedOut", t.getStatus() == QuizAttempt.AttemptStatus.TIMED_OUT);
     }
 
+    @Transactional
     public Map<String, Object> resume(UUID learner, UUID id) {
-        var t = attempt(learner, id);
-        return t.status == QuizAttempt.AttemptStatus.SCORED ? result(learner, id) : view(t);
+        var t = attemptForUpdate(learner, id);
+        if (t.getStatus() == QuizAttempt.AttemptStatus.IN_PROGRESS && !t.getDeadlineAt().isAfter(Instant.now())) {
+            return finalizeAttempt(t, learner);
+        }
+        return t.getStatus() == QuizAttempt.AttemptStatus.SCORED
+                || t.getStatus() == QuizAttempt.AttemptStatus.TIMED_OUT
+                ? result(learner, id) : view(t);
     }
 }

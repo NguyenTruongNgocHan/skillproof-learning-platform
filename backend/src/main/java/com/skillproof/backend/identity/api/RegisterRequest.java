@@ -25,4 +25,7 @@ public record RegisterRequest(
         UserRole role
         ) {
 
+    public com.skillproof.backend.identity.application.model.RegisterCommand toCommand() {
+        return new com.skillproof.backend.identity.application.model.RegisterCommand(email, displayName, password, role);
+    }
 }

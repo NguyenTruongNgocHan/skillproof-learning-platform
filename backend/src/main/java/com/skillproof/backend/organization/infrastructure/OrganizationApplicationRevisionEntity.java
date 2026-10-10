@@ -1,8 +1,8 @@
 package com.skillproof.backend.organization.infrastructure;
 
 import java.time.Instant;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.Column;
@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "organization_application_revision")
 public class OrganizationApplicationRevisionEntity {
+
     @Id
     private UUID id;
     @Column(name = "organization_id", nullable = false)
@@ -49,7 +50,8 @@ public class OrganizationApplicationRevisionEntity {
     @Column(name = "reviewed_at")
     private Instant reviewedAt;
 
-    protected OrganizationApplicationRevisionEntity() {}
+    protected OrganizationApplicationRevisionEntity() {
+    }
 
     public OrganizationApplicationRevisionEntity(UUID id, UUID organizationId, int revisionNo,
             String legalName, String displayName, String website, String industry, String country,
@@ -80,25 +82,78 @@ public class OrganizationApplicationRevisionEntity {
         this.submittedAt = submittedAt;
     }
 
-    public UUID getId() { return id; }
-    public UUID getOrganizationId() { return organizationId; }
-    public int getRevisionNo() { return revisionNo; }
-    public String getLegalName() { return legalName; }
-    public String getDisplayName() { return displayName; }
-    public String getWebsite() { return website; }
-    public String getIndustry() { return industry; }
-    public String getCountry() { return country; }
-    public String getRegistrationNumber() { return registrationNumber; }
-    public String getContactName() { return contactName; }
-    public String getContactEmail() { return contactEmail; }
-    public String getContactPhone() { return contactPhone; }
-    public String getStatus() { return status; }
-    public UUID getReviewerUserId() { return reviewerUserId; }
-    public String getReviewReason() { return reviewReason; }
-    public Instant getSubmittedAt() { return submittedAt; }
-    public Instant getReviewedAt() { return reviewedAt; }
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getOrganizationId() {
+        return organizationId;
+    }
+
+    public int getRevisionNo() {
+        return revisionNo;
+    }
+
+    public String getLegalName() {
+        return legalName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public String getIndustry() {
+        return industry;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public String getRegistrationNumber() {
+        return registrationNumber;
+    }
+
+    public String getContactName() {
+        return contactName;
+    }
+
+    public String getContactEmail() {
+        return contactEmail;
+    }
+
+    public String getContactPhone() {
+        return contactPhone;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public UUID getReviewerUserId() {
+        return reviewerUserId;
+    }
+
+    public String getReviewReason() {
+        return reviewReason;
+    }
+
+    public Instant getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public Instant getReviewedAt() {
+        return reviewedAt;
+    }
+
     public List<UUID> getDocumentMediaIds() {
-        if (documentMediaIds == null || documentMediaIds.isBlank()) return List.of();
+        if (documentMediaIds == null || documentMediaIds.isBlank()) {
+            return List.of();
+        }
         return java.util.Arrays.stream(documentMediaIds.split(",")).map(UUID::fromString).toList();
     }
 

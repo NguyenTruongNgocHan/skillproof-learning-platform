@@ -30,10 +30,11 @@ public class TokenCodec {
         this.algorithm = Algorithm.HMAC256(properties.getSecret());
     }
 
-    public String accessToken(UserAccount user, Instant now) {
+    public String accessToken(UserAccount user, UUID sessionId, Instant now) {
         return JWT.create()
                 .withIssuer(properties.getIssuer())
                 .withSubject(user.getId().toString())
+                .withClaim("sessionId", sessionId.toString())
                 .withClaim("role", user.getRole().name())
                 .withIssuedAt(now)
                 .withExpiresAt(now.plus(properties.getAccessTtl()))

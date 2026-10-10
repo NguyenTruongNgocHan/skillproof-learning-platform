@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
 import { ArrowRight, Sparkles } from "lucide-react"
+import { useEffect, useState } from "react"
 
 import mascot from "@/imports/logo_dark.png"
 
@@ -9,26 +9,18 @@ const prompts = [
   "I want to improve my communication...",
 ]
 
-const examples = [
-  "Speak Japanese",
-  "Become a backend developer",
-  "Improve communication",
-]
+const examples = ["Speak Japanese", "Become a backend developer", "Improve communication"]
 
 interface GoalDiscoveryCardProps {
   onStart: (goal?: string) => void
 }
 
-export default function GoalDiscoveryCard({
-  onStart,
-}: GoalDiscoveryCardProps) {
+export default function GoalDiscoveryCard({ onStart }: GoalDiscoveryCardProps) {
   const [goal, setGoal] = useState("")
   const [promptIndex, setPromptIndex] = useState(0)
 
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
     if (prefersReducedMotion) return
 
@@ -54,8 +46,8 @@ export default function GoalDiscoveryCard({
         <h3>Tell us where you want to go.</h3>
 
         <p>
-          You do not need to know the course, path, or exact skill yet.
-          A goal is enough to start exploring.
+          You do not need to know the course, path, or exact skill yet. A goal is enough to start
+          exploring.
         </p>
 
         <div className="goal-experience__input-wrap">
@@ -73,11 +65,7 @@ export default function GoalDiscoveryCard({
             aria-label="Learning goal"
           />
 
-          <button
-            type="button"
-            onClick={submit}
-            aria-label="Explore this learning goal"
-          >
+          <button type="button" onClick={submit} aria-label="Explore this learning goal">
             <ArrowRight size={18} />
           </button>
         </div>
@@ -86,11 +74,7 @@ export default function GoalDiscoveryCard({
           <span>Try</span>
 
           {examples.map((example) => (
-            <button
-              key={example}
-              type="button"
-              onClick={() => setGoal(example)}
-            >
+            <button key={example} type="button" onClick={() => setGoal(example)}>
               {example}
             </button>
           ))}
@@ -104,10 +88,7 @@ export default function GoalDiscoveryCard({
         onClick={openGuide}
         aria-label="Ask SkillProof Guide for help with your learning goal"
       >
-        <span
-          className="goal-experience__guide-glow"
-          aria-hidden="true"
-        />
+        <span className="goal-experience__guide-glow" aria-hidden="true" />
 
         <div
           aria-hidden="true"
@@ -137,8 +118,7 @@ export default function GoalDiscoveryCard({
               right: "auto",
               transform: "translate(-50%, -50%)",
 
-              filter:
-                "drop-shadow(0 12px 22px rgba(30, 20, 35, 0.14))",
+              filter: "drop-shadow(0 12px 22px rgba(30, 20, 35, 0.14))",
             }}
           />
         </div>
@@ -155,8 +135,8 @@ export default function GoalDiscoveryCard({
           <strong>Not sure where to start?</strong>
 
           <span>
-            Tell SkillProof what you have in mind.
-            We&apos;ll help you shape it into a learning direction.
+            Tell SkillProof what you have in mind. We&apos;ll help you shape it into a learning
+            direction.
           </span>
 
           <em>

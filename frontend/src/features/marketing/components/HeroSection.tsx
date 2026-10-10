@@ -1,15 +1,9 @@
-import {
-  ArrowRight,
-  CheckCircle2,
-  Play,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react"
-import { Link } from "react-router-dom"
-import Button from "@/components/ui/Button"
-import Container from "@/components/ui/Container"
 import { useAuth } from "@/features/auth/hooks/useAuth"
-import { getNextRouteForUserState } from "@/utils/authFlow"
+import { getNextRouteForUserState } from "@/features/auth/utils/authFlow"
+import Button from "@/shared/ui/Button"
+import Container from "@/shared/ui/Container"
+import { ArrowRight, CheckCircle2, Play, ShieldCheck, Sparkles } from "lucide-react"
+import { Link } from "react-router-dom"
 
 export default function HeroSection() {
   const { user } = useAuth()
@@ -29,15 +23,13 @@ export default function HeroSection() {
               <span>Make them undeniable.</span>
             </h1>
             <p>
-              SkillProof connects structured learning, meaningful assessment,
-              and credentials designed for independent verification in one
-              trusted journey.
+              SkillProof connects structured learning, meaningful assessment, and credentials
+              designed for independent verification in one trusted journey.
             </p>
             <div className="hero-actions">
               <Button asChild variant="primary" size="lg">
                 <Link to={user ? getNextRouteForUserState(user) : "/register"}>
-                  {user ? "My workspace" : "Create an account"}{" "}
-                  <ArrowRight size={17} />
+                  {user ? "My workspace" : "Create an account"} <ArrowRight size={17} />
                 </Link>
               </Button>
               <a href="#how-it-works" className="hero-text-action">
@@ -48,22 +40,17 @@ export default function HeroSection() {
               </a>
             </div>
             <div className="hero-proof">
-              {[
-                "Role-aware experience",
-                "Secure identity flow",
-                "Credential roadmap",
-              ].map((item) => (
-                <span key={item}>
-                  <CheckCircle2 size={15} />
-                  {item}
-                </span>
-              ))}
+              {["Role-aware experience", "Secure identity flow", "Credential roadmap"].map(
+                (item) => (
+                  <span key={item}>
+                    <CheckCircle2 size={15} />
+                    {item}
+                  </span>
+                ),
+              )}
             </div>
           </div>
-          <div
-            className="hero-product"
-            aria-label="SkillProof learning progress preview"
-          >
+          <div className="hero-product" aria-label="SkillProof learning progress preview">
             <div className="hero-product__top">
               <div>
                 <span>LEARNING PATH PREVIEW</span>

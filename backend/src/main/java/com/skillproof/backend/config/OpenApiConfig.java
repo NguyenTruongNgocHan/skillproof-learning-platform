@@ -19,14 +19,13 @@ public class OpenApiConfig {
                         new Info()
                                 .title("SkillProof API")
                                 .description("""
-                                        REST API for the SkillProof Learning Platform.
+                                        REST API for the SkillProof Course Platform.
 
                                         Main domains:
                                         - Identity
                                         - Organization
-                                        - Learning
+                                        - Course
                                         - Quiz & Assessment
-                                        - Recommendation
                                         - Realtime Challenge
                                         - Certification
                                         - Verification

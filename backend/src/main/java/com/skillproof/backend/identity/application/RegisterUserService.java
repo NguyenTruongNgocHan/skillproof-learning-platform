@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.skillproof.backend.common.exception.ConflictException;
-import com.skillproof.backend.identity.api.RegisterRequest;
-import com.skillproof.backend.identity.api.RegisterResponse;
+import com.skillproof.backend.identity.application.model.RegisterCommand;
+import com.skillproof.backend.identity.application.model.RegisterResponse;
 import com.skillproof.backend.identity.domain.UserAccount;
 import com.skillproof.backend.identity.domain.UserRole;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
@@ -54,7 +54,7 @@ public class RegisterUserService {
 
     @Transactional
     public RegisterResponse register(
-            RegisterRequest request
+            RegisterCommand request
     ) {
 
         String normalizedEmail

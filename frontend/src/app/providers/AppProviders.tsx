@@ -1,8 +1,8 @@
+import { ThemeProvider } from "@/app/providers/ThemeProvider"
+import { AuthProvider } from "@/features/auth/providers/AuthProvider"
+import { OrganizationProvider } from "@/features/organization/providers/OrganizationProvider"
+import { ToastProvider } from "@/shared/ui/Toast"
 import { ReactNode } from "react"
-import { ThemeProvider } from "./ThemeProvider"
-import { AuthProvider } from "./AuthProvider"
-import { ToastProvider } from "@/components/ui/Toast"
-import { OrganizationProvider } from "./OrganizationProvider"
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (

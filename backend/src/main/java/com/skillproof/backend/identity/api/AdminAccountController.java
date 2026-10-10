@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skillproof.backend.identity.application.AdminAccountService;
 import com.skillproof.backend.identity.application.RequestMetadata;
+import com.skillproof.backend.identity.application.model.AdminAccountResponse;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;

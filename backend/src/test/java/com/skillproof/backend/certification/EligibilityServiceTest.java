@@ -1,84 +1,30 @@
 package com.skillproof.backend.certification;
-
 import java.time.Instant;
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.springframework.security.access.AccessDeniedException;
-
-import com.skillproof.backend.certification.application.CertificationProgramRepository;
-import com.skillproof.backend.certification.domain.CertificationProgram;
-import com.skillproof.backend.learning.contract.CertificationContextQuery;
-import com.skillproof.backend.learning.contract.EnrollmentLookupQuery;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import com.skillproof.backend.certification.application.*;
+import com.skillproof.backend.certification.domain.*;
+import com.skillproof.backend.course.contract.*;
 import com.skillproof.backend.organization.contract.OrganizationAuthorityQuery;
-
+import com.skillproof.backend.quiz.contract.QuizCompletionEvidenceQuery;
+import tools.jackson.databind.ObjectMapper;
 class EligibilityServiceTest {
-
-    private final CertificationProgramRepository programs = mock(
-        CertificationProgramRepository.class
-    );
-    private final OrganizationAuthorityQuery authority = mock(
-        OrganizationAuthorityQuery.class
-    );
-    private final com.skillproof.backend.certification.application.CertificationProgramService service =
-        new com.skillproof.backend.certification.application.CertificationProgramService(
-            programs,
-            authority,
-            mock(CertificationContextQuery.class),
-            mock(EnrollmentLookupQuery.class)
-        );
-
-    private final UUID actorId = UUID.randomUUID();
-    private final UUID organizationId = UUID.randomUUID();
-
-    @Test
-    void listsProgramsForAuthorizedOrganization() {
-        var program = new CertificationProgram(
-            UUID.randomUUID(),
-            organizationId,
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            "Program",
-            CertificationProgram.Status.ACTIVE,
-            actorId,
-            Instant.now()
-        );
-        when(
-            authority.hasAuthority(
-                organizationId,
-                actorId,
-                "ISSUE_CERTIFICATES"
-            )
-        ).thenReturn(true);
-        when(programs.findByOrganizationId(organizationId)).thenReturn(
-            List.of(program)
-        );
-
-        assertEquals(
-            List.of(program),
-            service.listPrograms(actorId, organizationId)
-        );
-        verify(programs).findByOrganizationId(organizationId);
-    }
-
-    @Test
-    void doesNotListProgramsWithoutCertificateAuthority() {
-        when(
-            authority.hasAuthority(
-                organizationId,
-                actorId,
-                "ISSUE_CERTIFICATES"
-            )
-        ).thenReturn(false);
-
-        assertThrows(AccessDeniedException.class, () ->
-            service.listPrograms(actorId, organizationId)
-        );
+    private final CertificationProgramRepository programs=mock(CertificationProgramRepository.class);
+    private final CertificateEligibilityRepository evaluations=mock(CertificateEligibilityRepository.class);
+    private final CompletionEvidenceQuery completion=mock(CompletionEvidenceQuery.class);
+    private final QuizCompletionEvidenceQuery quiz=mock(QuizCompletionEvidenceQuery.class);
+    private final OrganizationAuthorityQuery authority=mock(OrganizationAuthorityQuery.class);
+    private final EligibilityService service=new EligibilityService(programs,evaluations,mock(CertificationContextQuery.class),completion,authority,quiz,new ObjectMapper(),mock(com.skillproof.backend.access.contract.AccessEntitlementQuery.class));
+    @Test void completedLearnerIsEligible() {
+        UUID learner=UUID.randomUUID(),version=UUID.randomUUID(),policy=UUID.randomUUID(),enrollment=UUID.randomUUID(),program=UUID.randomUUID();
+        var value=new CertificationProgram(program,UUID.randomUUID(),version,policy,"Program",CertificationProgram.Status.ACTIVE,UUID.randomUUID(),Instant.now());
+        when(programs.findById(program)).thenReturn(Optional.of(value));
+        when(quiz.evidence(version,enrollment)).thenReturn(new QuizCompletionEvidenceQuery.AssessmentEvidence(1,1));
+        when(completion.evaluate(enrollment,1,1)).thenReturn(new CompletionEvidenceQuery.Evidence(UUID.randomUUID(),enrollment,learner,version,policy,1,1,1,1,0,0,1,1,true));
+        when(evaluations.save(any())).thenAnswer(call -> call.getArgument(0));
+        assertThat(service.evaluate(learner,program,enrollment).status()).isEqualTo(CertificateEligibility.Status.ELIGIBLE);
     }
 }

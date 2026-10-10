@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.skillproof.backend.identity.api.ResendVerificationRequest;
+import com.skillproof.backend.identity.application.model.ResendVerificationCommand;
 import com.skillproof.backend.identity.domain.AccountStatus;
 import com.skillproof.backend.identity.domain.UserAccount;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
@@ -39,7 +39,7 @@ public class ResendEmailVerificationService {
 
     @Transactional
     public void resend(
-            ResendVerificationRequest request
+            ResendVerificationCommand request
     ) {
 
         String normalizedEmail

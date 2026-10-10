@@ -1,8 +1,8 @@
 package com.skillproof.backend.certification.infrastructure;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +16,16 @@ public class JpaCertificationProgramRepository implements CertificationProgramRe
 
     public JpaCertificationProgramRepository(CertificationProgramJpaRepository repository) {
         this.repository = repository;
+    }
+
+    @Override
+    public boolean activeForVersion(UUID version) {
+        return repository.existsByCourseVersionIdAndStatus(version, CertificationProgram.Status.ACTIVE);
+    }
+
+    @Override
+    public Optional<CertificationProgram> findActiveForVersion(UUID version) {
+        return repository.findByCourseVersionIdAndStatus(version, CertificationProgram.Status.ACTIVE).map(CertificationProgramEntity::domain);
     }
 
     public CertificationProgram save(CertificationProgram p) {

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-import com.skillproof.backend.media.StorageException;
+import com.skillproof.backend.media.application.exception.StorageException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -195,6 +195,39 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(ApiError.of(HttpStatus.SERVICE_UNAVAILABLE, exception.code(),
                         exception.getMessage(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler({org.springframework.http.converter.HttpMessageNotReadableException.class,
+        org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+        org.springframework.web.bind.MissingServletRequestParameterException.class,
+        org.springframework.web.multipart.support.MissingServletRequestPartException.class})
+    public ResponseEntity<ApiError> handleMalformedRequest(Exception exception, HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(ApiError.of(HttpStatus.BAD_REQUEST,
+                "REQUEST_INVALID", "Malformed request or invalid parameter.", request.getRequestURI()));
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> handleUploadSize(Exception exception, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(ApiError.of(HttpStatus.PAYLOAD_TOO_LARGE,
+                "MEDIA_SIZE", "Upload exceeds the configured limit.", request.getRequestURI()));
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiError> handleMethod(Exception exception, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(ApiError.of(HttpStatus.METHOD_NOT_ALLOWED,
+                "METHOD_NOT_ALLOWED", "HTTP method is not supported.", request.getRequestURI()));
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiError> handleContentType(Exception exception, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(ApiError.of(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+                "CONTENT_TYPE_INVALID", "Content type is not supported.", request.getRequestURI()));
+    }
+
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleMissingRoute(Exception exception, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.of(HttpStatus.NOT_FOUND,
+                "ROUTE_NOT_FOUND", "Route not found.", request.getRequestURI()));
     }
 
     @ExceptionHandler(Exception.class)

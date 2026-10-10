@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skillproof.backend.quiz.application.AssessmentAuthoringService;
 import com.skillproof.backend.quiz.application.QuizAttemptService;
-import com.skillproof.backend.quiz.application.QuizService;
+import com.skillproof.backend.quiz.application.QuizAuthoringService;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -33,13 +33,13 @@ import jakarta.validation.constraints.Size;
 @RequestMapping("/api/v1/quiz")
 public class QuizController {
 
-    private final QuizService service;
+    private final QuizAuthoringService service;
 
     private final QuizAttemptService attempts;
 
     private final AssessmentAuthoringService authoring;
 
-    public QuizController(QuizService service, QuizAttemptService attempts, AssessmentAuthoringService authoring) {
+    public QuizController(QuizAuthoringService service, QuizAttemptService attempts, AssessmentAuthoringService authoring) {
         this.service = service;
         this.attempts = attempts;
         this.authoring = authoring;
@@ -56,7 +56,7 @@ public class QuizController {
 
     public record QuestionInput(@NotBlank
             @Size(max = 2000) String stem, @NotNull
-            @Size(min = 2, max = 8) List<QuizService.Option> options) {
+            @Size(min = 2, max = 8) List<QuizAuthoringService.Option> options) {
 
     }
 
@@ -94,14 +94,14 @@ public class QuizController {
     }
 
     @GetMapping("/organizations/{org}/banks")
-    public List<Map<String, Object>> banks(Authentication auth, @PathVariable UUID org) {
+    public List<com.skillproof.backend.quiz.application.model.BankView> banks(Authentication auth, @PathVariable UUID org) {
         return service.banks(user(auth), org);
     }
 
     @PostMapping("/organizations/{org}/banks")
     @ResponseStatus(HttpStatus.CREATED)
 
-    public Map<String, Object> bank(Authentication auth, @PathVariable UUID org, @Valid @RequestBody Title input) {
+    public com.skillproof.backend.quiz.application.model.BankView bank(Authentication auth, @PathVariable UUID org, @Valid @RequestBody Title input) {
         return service.createBank(user(auth), org, input.title());
     }
 
@@ -211,4 +211,25 @@ public class QuizController {
     public Map<String, Object> result(Authentication auth, @PathVariable UUID id) {
         return attempts.result(user(auth), id);
     }
+
+    @GetMapping("/me/banks")
+    public List<com.skillproof.backend.quiz.application.model.BankView> personalBanks(Authentication auth) {
+        return service.personalBanks(user(auth));
+    }
+
+    @PostMapping("/me/banks")
+    public com.skillproof.backend.quiz.application.model.BankView personalBank(Authentication auth, @Valid @RequestBody Title input) {
+        return service.createBank(user(auth), null, input.title());
+    }
+
+    public record ActivityOwner(@NotBlank
+            @Pattern(regexp = "COURSE|MODULE|LESSON") String scope, @NotNull UUID ownerId, boolean required) {
+
+    }
+
+    @PutMapping("/assessments/{id}/owner")
+    public Map<String, Object> owner(Authentication auth, @PathVariable UUID id, @Valid @RequestBody ActivityOwner input) {
+        return authoring.configureOwner(user(auth), id, input.scope(), input.ownerId(), input.required());
+    }
+
 }

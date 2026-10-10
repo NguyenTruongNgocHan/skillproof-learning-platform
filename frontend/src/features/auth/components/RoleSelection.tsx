@@ -1,12 +1,7 @@
-import { Link } from "react-router-dom"
-import {
-  ArrowRight,
-  Building2,
-  Check,
-  GraduationCap,
-} from "lucide-react"
 import AuthShell from "@/features/auth/components/AuthShell"
-import Button from "@/components/ui/Button"
+import Button from "@/shared/ui/Button"
+import { ArrowRight, Building2, Check, GraduationCap } from "lucide-react"
+import { Link } from "react-router-dom"
 
 type Role = "LEARNER" | "ORGANIZER"
 
@@ -16,11 +11,7 @@ interface RoleSelectionProps {
   onContinue: () => void
 }
 
-export default function RoleSelection({
-  selected,
-  onSelect,
-  onContinue,
-}: RoleSelectionProps) {
+export default function RoleSelection({ selected, onSelect, onContinue }: RoleSelectionProps) {
   return (
     <AuthShell mode="register">
       <div className="auth-intro">
@@ -29,17 +20,15 @@ export default function RoleSelection({
         <h1>How will you use SkillProof?</h1>
 
         <p>
-          Choose the experience that fits you now. This helps us take you to
-          the right place after you join.
+          Choose the experience that fits you now. This helps us take you to the right place after
+          you join.
         </p>
       </div>
 
       <div className="auth-role-grid">
         <button
           type="button"
-          className={`auth-role-card ${
-            selected === "LEARNER" ? "auth-role-card--selected" : ""
-          }`}
+          className={`auth-role-card ${selected === "LEARNER" ? "auth-role-card--selected" : ""}`}
           onClick={() => onSelect("LEARNER")}
           aria-pressed={selected === "LEARNER"}
         >
@@ -57,17 +46,12 @@ export default function RoleSelection({
 
           <strong>I'm here to learn</strong>
 
-          <p>
-            Follow learning paths, practice your skills and build evidence of
-            what you can do.
-          </p>
+          <p>Follow learning paths, practice your skills and build evidence of what you can do.</p>
         </button>
 
         <button
           type="button"
-          className={`auth-role-card ${
-            selected === "ORGANIZER" ? "auth-role-card--selected" : ""
-          }`}
+          className={`auth-role-card ${selected === "ORGANIZER" ? "auth-role-card--selected" : ""}`}
           onClick={() => onSelect("ORGANIZER")}
           aria-pressed={selected === "ORGANIZER"}
         >
@@ -85,10 +69,7 @@ export default function RoleSelection({
 
           <strong>I'm here to organize</strong>
 
-          <p>
-            Create trusted learning experiences for your organization and its
-            learners.
-          </p>
+          <p>Create trusted learning experiences for your organization and its learners.</p>
         </button>
       </div>
 

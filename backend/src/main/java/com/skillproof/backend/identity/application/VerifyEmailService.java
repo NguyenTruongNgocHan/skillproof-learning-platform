@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.skillproof.backend.common.exception.BadRequestException;
 import com.skillproof.backend.common.exception.ConflictException;
-import com.skillproof.backend.identity.api.VerifyEmailRequest;
-import com.skillproof.backend.identity.api.VerifyEmailResponse;
+import com.skillproof.backend.identity.application.model.VerifyEmailCommand;
+import com.skillproof.backend.identity.application.model.VerifyEmailResponse;
 import com.skillproof.backend.identity.domain.AccountStatus;
 import com.skillproof.backend.identity.domain.EmailVerificationToken;
 import com.skillproof.backend.identity.domain.UserAccount;
@@ -41,7 +41,7 @@ public class VerifyEmailService {
 
     @Transactional
     public VerifyEmailResponse verify(
-            VerifyEmailRequest request
+            VerifyEmailCommand request
     ) {
 
         Instant now = Instant.now();

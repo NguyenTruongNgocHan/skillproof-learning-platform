@@ -20,9 +20,7 @@ export default function DiscoveryIntentCard({
     <button
       type="button"
       onClick={onClick}
-      className={`discovery-intent ${
-        featured ? "discovery-intent--featured" : ""
-      }`}
+      className={`discovery-intent ${featured ? "discovery-intent--featured" : ""}`}
     >
       <span className="discovery-intent__icon">
         <Icon size={21} strokeWidth={1.8} />
@@ -30,15 +28,10 @@ export default function DiscoveryIntentCard({
 
       <span className="min-w-0 text-left">
         <strong className="discovery-intent__title">{title}</strong>
-        <span className="discovery-intent__description">
-          {description}
-        </span>
+        <span className="discovery-intent__description">{description}</span>
       </span>
 
-      <ArrowUpRight
-        className="discovery-intent__arrow"
-        size={18}
-      />
+      <ArrowUpRight className="discovery-intent__arrow" size={18} />
     </button>
   )
 }

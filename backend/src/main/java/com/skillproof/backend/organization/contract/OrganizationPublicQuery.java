@@ -8,11 +8,19 @@ import java.util.UUID;
  * checks.
  */
 public interface OrganizationPublicQuery {
+
     record OrganizationView(UUID id, String displayName, String status) {
+
         public boolean approved() {
             return "APPROVED".equals(status);
         }
     }
 
     Optional<OrganizationView> find(UUID organizationId);
+
+    /**
+     * Requires an existing write transaction; locks the organization until
+     * commit.
+     */
+    void requireApprovedForUpdate(UUID organizationId);
 }

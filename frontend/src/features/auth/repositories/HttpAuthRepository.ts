@@ -1,17 +1,17 @@
-import type { AuthRepository } from "./AuthRepository"
+import type { AuthRepository } from "@/features/auth/repositories/AuthRepository"
 import type {
   AuthResult,
   LearnerPreferences,
   LoginCredentials,
   RegisterLearnerData,
   User,
-} from "../types/auth.types"
+} from "@/features/auth/types/auth.types"
 import {
   apiClient,
   refreshAccessToken,
   setAccessToken,
   type SessionResponse,
-} from "@/services/api/apiClient"
+} from "@/shared/api/apiClient"
 
 async function toUser(session: SessionResponse): Promise<User> {
   return {
@@ -20,9 +20,7 @@ async function toUser(session: SessionResponse): Promise<User> {
     fullName: session.user.displayName,
     role: session.user.role,
     emailVerificationStatus:
-      session.user.status === "PENDING_VERIFICATION"
-        ? "UNVERIFIED"
-        : "VERIFIED",
+      session.user.status === "PENDING_VERIFICATION" ? "UNVERIFIED" : "VERIFIED",
     onboardingStatus: "COMPLETED",
   }
 }
@@ -32,10 +30,7 @@ export const httpAuthRepository: AuthRepository = {
     await apiClient.put("/me/learning-preferences", data)
   },
   async login(credentials: LoginCredentials): Promise<AuthResult> {
-    const session = await apiClient.post<SessionResponse>(
-      "/auth/login",
-      credentials,
-    )
+    const session = await apiClient.post<SessionResponse>("/auth/login", credentials)
     setAccessToken(session.accessToken)
     return { user: await toUser(session) }
   },
@@ -58,8 +53,7 @@ export const httpAuthRepository: AuthRepository = {
         fullName: account.displayName,
         role: account.role,
         emailVerificationStatus: "UNVERIFIED",
-        onboardingStatus:
-          account.role === "LEARNER" ? "NOT_STARTED" : "COMPLETED",
+        onboardingStatus: account.role === "LEARNER" ? "NOT_STARTED" : "COMPLETED",
       },
     }
   },

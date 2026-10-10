@@ -1,10 +1,10 @@
+import { landingLearningPaths } from "@/features/marketing/data/landingLearningPaths"
+import type { LearningPath } from "@/features/marketing/types/marketing.types"
+import Badge from "@/shared/ui/Badge"
+import Container from "@/shared/ui/Container"
+import SectionHeading from "@/shared/ui/SectionHeading"
+import { Award, BookOpen, Clock } from "lucide-react"
 import { Link } from "react-router-dom"
-import { Clock, BookOpen, Award } from "lucide-react"
-import Container from "@/components/ui/Container"
-import SectionHeading from "@/components/ui/SectionHeading"
-import Badge from "@/components/ui/Badge"
-import { landingLearningPaths } from "@/data/landingLearningPaths"
-import type { LearningPath } from "@/types"
 
 function PathCard({ path }: { path: LearningPath }) {
   return (
@@ -39,12 +39,10 @@ export default function LearningPathsSection() {
       <Container>
         <SectionHeading
           title="Structured learning that leads somewhere."
-          subtitle="Illustrative learning paths. Each future path connects curated resources, practice assessments, and certification milestones into a coherent progression — not a random collection of videos."
+          subtitle="Illustrative learning paths. Each future path connects curated resources, practice assessments, and certification milestones into a coherent progression Ã¢â‚¬â€ not a random collection of videos."
         />
 
-        <p className="eyebrow mb-5">
-          CONCEPT EXAMPLES — NOT OPEN FOR ENROLLMENT
-        </p>
+        <p className="eyebrow mb-5">CONCEPT EXAMPLES Ã¢â‚¬â€ NOT OPEN FOR ENROLLMENT</p>
         <div className="grid md:grid-cols-3 gap-6 mb-10">
           {landingLearningPaths.map((path) => (
             <PathCard key={path.id} path={path} />

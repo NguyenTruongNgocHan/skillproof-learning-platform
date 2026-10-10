@@ -5,11 +5,12 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.skillproof.backend.common.exception.BadRequestException;
-import com.skillproof.backend.identity.application.OrganizationRoleTransitionPolicy;
+import com.skillproof.backend.identity.contract.OrganizationRoleTransitionPolicy;
 import com.skillproof.backend.identity.domain.UserRole;
 
 /**
- * Keeps organization membership consistent when an administrator changes an account role.
+ * Keeps organization membership consistent when an administrator changes an
+ * account role.
  */
 @Component
 public class OrganizationRoleTransitionPolicyAdapter implements OrganizationRoleTransitionPolicy {

@@ -21,6 +21,11 @@ public class JpaCertificateRepository implements CertificateRepository {
     }
 
     @Override
+    public List<Certificate> findByLearner(UUID learner) {
+        return repository.findByLearnerUserIdOrderByIssuedAtDesc(learner).stream().map(CertificateEntity::domain).toList();
+    }
+
+    @Override
     public Certificate save(Certificate value) {
         return repository.save(new CertificateEntity(value)).domain();
     }
@@ -32,41 +37,43 @@ public class JpaCertificateRepository implements CertificateRepository {
 
     @Override
     public Optional<Certificate> findByProgramAndLearner(
-        UUID programId,
-        UUID learnerId
+            UUID programId,
+            UUID learnerId
     ) {
         return repository
-            .findByCertificationProgramIdAndLearnerUserId(programId, learnerId)
-            .map(CertificateEntity::domain);
+                .findByCertificationProgramIdAndLearnerUserId(programId, learnerId)
+                .map(CertificateEntity::domain);
     }
 
     @Override
     public Optional<Certificate> findBySerial(String serialNumber) {
         return repository
-            .findBySerialNumber(serialNumber)
-            .map(CertificateEntity::domain);
+                .findBySerialNumber(serialNumber)
+                .map(CertificateEntity::domain);
     }
 
     @Override
     public List<Certificate> findByProgramIds(List<UUID> programIds) {
-        if (programIds.isEmpty()) return List.of();
+        if (programIds.isEmpty()) {
+            return List.of();
+        }
         return repository
-            .findByCertificationProgramIdInOrderByIssuedAtDesc(programIds)
-            .stream()
-            .map(CertificateEntity::domain)
-            .toList();
+                .findByCertificationProgramIdInOrderByIssuedAtDesc(programIds)
+                .stream()
+                .map(CertificateEntity::domain)
+                .toList();
     }
 
     @Override
     public Page<Certificate> searchByProgramIds(
-        List<UUID> programIds,
-        Certificate.Status status,
-        UUID learnerId,
-        String pattern,
-        Pageable pageable
+            List<UUID> programIds,
+            Certificate.Status status,
+            UUID learnerId,
+            String pattern,
+            Pageable pageable
     ) {
         return repository
-            .search(programIds, status, learnerId, pattern, pageable)
-            .map(CertificateEntity::domain);
+                .search(programIds, status, learnerId, pattern, pageable)
+                .map(CertificateEntity::domain);
     }
 }

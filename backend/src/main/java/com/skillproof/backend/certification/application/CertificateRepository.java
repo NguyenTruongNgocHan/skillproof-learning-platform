@@ -10,19 +10,27 @@ import org.springframework.data.domain.Pageable;
 import com.skillproof.backend.certification.domain.Certificate;
 
 public interface CertificateRepository {
+
+    List<Certificate> findByLearner(UUID learner);
+
     Certificate save(Certificate certificate);
+
     Optional<Certificate> findById(UUID id);
+
     Optional<Certificate> findByProgramAndLearner(
-        UUID programId,
-        UUID learnerId
+            UUID programId,
+            UUID learnerId
     );
+
     Optional<Certificate> findBySerial(String serialNumber);
+
     List<Certificate> findByProgramIds(List<UUID> programIds);
+
     Page<Certificate> searchByProgramIds(
-        List<UUID> programIds,
-        Certificate.Status status,
-        UUID learnerId,
-        String pattern,
-        Pageable pageable
+            List<UUID> programIds,
+            Certificate.Status status,
+            UUID learnerId,
+            String pattern,
+            Pageable pageable
     );
 }

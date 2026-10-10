@@ -1,0 +1,64 @@
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px;
+}
+.app-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+.app-topbar__menu {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg);
+  padding: 4px;
+  flex: 0 0 auto;
+}
+.app-topbar__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  flex: 0 0 auto;
+}
+.app-shell-content {
+  min-width: 0;
+}
+@media (max-width: 430px) {
+  .app-topbar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .app-topbar__left {
+    gap: 6px;
+  }
+  .app-topbar__actions {
+    gap: 6px;
+  }
+  .app-topbar .sp-org-switcher {
+    gap: 5px;
+  }
+  .app-topbar .sp-org-switcher select {
+    max-width: 100px;
+  }
+}

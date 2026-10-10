@@ -1,8 +1,8 @@
-import { CheckCircle, Circle } from "lucide-react"
 import type {
   PasswordCheckResult,
   PasswordStrength,
 } from "@/features/auth/validation/passwordPolicy"
+import { CheckCircle, Circle } from "lucide-react"
 
 const requirements = [
   { key: "minLength" as const, label: "At least 12 characters" },
@@ -59,19 +59,13 @@ export default function PasswordRequirements({
       }}
     >
       <div className="flex flex-col gap-1">
-        <div
-          className="flex justify-between text-xs mb-0.5"
-          style={{ color: "var(--fg-muted)" }}
-        >
+        <div className="flex justify-between text-xs mb-0.5" style={{ color: "var(--fg-muted)" }}>
           <span>Password strength</span>
           <span style={{ color: strengthColors[strength], fontWeight: 600 }}>
             {strengthLabels[strength]}
           </span>
         </div>
-        <div
-          className="h-1.5 rounded-full overflow-hidden"
-          style={{ background: "var(--border)" }}
-        >
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
           <div
             className="h-full rounded-full transition-all duration-300"
             style={{

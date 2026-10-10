@@ -15,6 +15,9 @@ import com.skillproof.backend.identity.application.ResendEmailVerificationServic
 import com.skillproof.backend.identity.application.ResetPasswordService;
 import com.skillproof.backend.identity.application.TokenProperties;
 import com.skillproof.backend.identity.application.VerifyEmailService;
+import com.skillproof.backend.identity.application.model.AuthResponse;
+import com.skillproof.backend.identity.application.model.RegisterResponse;
+import com.skillproof.backend.identity.application.model.VerifyEmailResponse;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -66,7 +69,7 @@ public class IdentityController {
 
         RegisterResponse response
                 = registerUserService.register(
-                        request
+                        request.toCommand()
                 );
 
         return ResponseEntity
@@ -83,7 +86,7 @@ public class IdentityController {
 
         return ResponseEntity.ok(
                 verifyEmailService.verify(
-                        request
+                        request.toCommand()
                 )
         );
     }
@@ -96,7 +99,7 @@ public class IdentityController {
             ) {
 
         resendEmailVerificationService.resend(
-                request
+                request.toCommand()
         );
 
         return ResponseEntity
@@ -108,7 +111,7 @@ public class IdentityController {
     public AuthResponse login(@Valid @RequestBody LoginRequest request,
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) {
-        var issued = authenticationService.login(request, metadata(servletRequest));
+        var issued = authenticationService.login(request.toCommand(), metadata(servletRequest));
         setRefreshCookie(servletResponse, issued.refreshToken());
         return issued.response();
     }
@@ -122,7 +125,10 @@ public class IdentityController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        authenticationService.logout(refreshCookie(request));
+        authenticationService.logout(
+                refreshCookie(request),
+                bearerToken(request)
+        );
         clearRefreshCookie(response);
         return ResponseEntity.noContent().build();
     }
@@ -132,7 +138,7 @@ public class IdentityController {
             @Valid @RequestBody ForgotPasswordRequest request,
             HttpServletRequest servletRequest
     ) {
-        forgotPasswordService.request(request, metadata(servletRequest));
+        forgotPasswordService.request(request.toCommand(), metadata(servletRequest));
         return ResponseEntity.accepted().build();
     }
 
@@ -142,7 +148,7 @@ public class IdentityController {
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse
     ) {
-        resetPasswordService.reset(request, metadata(servletRequest));
+        resetPasswordService.reset(request.toCommand(), metadata(servletRequest));
         clearRefreshCookie(servletResponse);
         return ResponseEntity.noContent().build();
     }
@@ -155,12 +161,20 @@ public class IdentityController {
         if (request.getCookies() == null) {
             return null;
         }
+
         for (Cookie cookie : request.getCookies()) {
             if ("skillproof_refresh".equals(cookie.getName())) {
                 return cookie.getValue();
             }
         }
         return null;
+    }
+
+    private String bearerToken(HttpServletRequest request) {
+        String authorization = request.getHeader("Authorization");
+        return authorization != null && authorization.startsWith("Bearer ")
+                ? authorization.substring(7)
+                : null;
     }
 
     private void setRefreshCookie(HttpServletResponse response, String token) {

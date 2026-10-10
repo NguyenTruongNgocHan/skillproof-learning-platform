@@ -1,0 +1,30 @@
+/* =========================================================
+   SkillProof application typography foundation
+   Landing/Auth are the visual source of truth. Authenticated
+   surfaces opt into this shared frame with .skillproof-app-theme.
+   ========================================================= */
+.skillproof-app-theme h1,
+.skillproof-app-theme h2,
+.skillproof-app-theme h3 {
+  color: var(--fg);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.skillproof-app-theme h1 {
+  font-weight: 800;
+  letter-spacing: -0.055em;
+}
+
+.skillproof-app-theme h2 {
+  font-weight: 760;
+  letter-spacing: -0.04em;
+}
+
+.skillproof-app-theme h3 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.skillproof-app-theme p {
+  color: var(--fg-muted);
+}

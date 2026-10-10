@@ -39,7 +39,7 @@ export interface RegisterLearnerData {
   role?: "LEARNER" | "ORGANIZER"
 }
 
-export interface RegisterOrganizerData extends RegisterLearnerData {}
+export type RegisterOrganizerData = RegisterLearnerData
 export interface LearnerPreferences {
   careerGoal: string
   targetRole: string

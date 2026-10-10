@@ -7,7 +7,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.skillproof.backend.identity.api.ForgotPasswordRequest;
+import com.skillproof.backend.identity.application.model.ForgotPasswordCommand;
 import com.skillproof.backend.identity.domain.AccountStatus;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
 
@@ -32,7 +32,7 @@ public class ForgotPasswordService {
     }
 
     @Transactional
-    public void request(ForgotPasswordRequest request, RequestMetadata metadata) {
+    public void request(ForgotPasswordCommand request, RequestMetadata metadata) {
         String email = request.email().trim().toLowerCase(Locale.ROOT);
         users.findByEmailForUpdate(email)
                 .filter(user -> user.getStatus() == AccountStatus.ACTIVE)

@@ -1,43 +1,65 @@
-import { organizerError } from "@/features/organizer/errorMessage"
-import { useEffect, useState } from "react"
-import { useOrganizationContext } from "@/app/providers/OrganizationProvider"
-import { organizationApi } from "../organizationApi"
-import Input from "@/components/ui/Input"
-import Button from "@/components/ui/Button"
-import MediaPanel from "@/features/media/MediaPanel"
-import { useToast } from "@/components/ui/Toast"
-export function OrganizationProfilePanel() {
-  const { organization, grants, refresh, setDirty } = useOrganizationContext()
+import { organizationApi } from "@/features/organization/api/organizationApi";
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
+import { organizerError } from "@/features/organization/utils/errorMessage";
+import Button from "@/shared/ui/Button";
+import Input from "@/shared/ui/Input";
+import { useToast } from "@/shared/ui/Toast";
+import { useEffect, useState } from "react";
+export function OrganizationProfilePanel({
+  onDirtyChange,
+}: { onDirtyChange?: (dirty: boolean) => void } = {}) {
+  const { organization, grants, refresh, setDirty } = useOrganizationContext();
   const [form, setForm] = useState({
     displayName: organization?.displayName ?? "",
     website: organization?.website ?? "",
     industry: organization?.industry ?? "",
     contactPhone: organization?.contactPhone ?? "",
-  })
+  });
   const [dirty, markDirty] = useState(false),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState("")
-  const { toast } = useToast()
+    [error, setError] = useState("");
+  const { toast } = useToast();
   useEffect(() => {
-    setDirty("organization-profile", dirty)
-    return () => setDirty("organization-profile", false)
-  }, [dirty, setDirty])
-  if (!organization) return null
-  const canEdit = grants.includes("MANAGE_PROFILE")
+    onDirtyChange?.(dirty);
+    return () => onDirtyChange?.(false);
+  }, [dirty, onDirtyChange]);
+  useEffect(() => {
+    setDirty("organization-profile", dirty);
+    return () => setDirty("organization-profile", false);
+  }, [dirty, setDirty]);
+  useEffect(() => {
+    if (!organization) return;
+    setForm({
+      displayName: organization.displayName,
+      website: organization.website ?? "",
+      industry: organization.industry,
+      contactPhone: organization.contactPhone ?? "",
+    });
+    markDirty(false);
+    setError("");
+  }, [organization]);
+  if (!organization) return null;
+  const canEdit = grants.includes("MANAGE_PROFILE");
   async function save() {
-    if (!organization || busy) return
-    setBusy(true)
-    setError("")
+    if (
+      !organization ||
+      busy ||
+      !grants.includes("MANAGE_PROFILE") ||
+      organization.status !== "APPROVED"
+    )
+      return;
+    setBusy(true);
+    setError("");
     try {
-      await organizationApi.update(organization.id, form)
-      markDirty(false)
-      setDirty("organization-profile", false)
-      await refresh()
-      toast("success", "Organization profile saved.")
+      await organizationApi.update(organization.id, form);
+      markDirty(false);
+      setDirty("organization-profile", false);
+      await refresh();
+      toast("success", "Organization profile saved.");
     } catch (e) {
-      setError(organizerError(e, "Unable to save profile"))
+      setError(organizerError(e, "Unable to save profile"));
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
   return (
@@ -70,8 +92,8 @@ export function OrganizationProfilePanel() {
         <form
           className="sporg-form"
           onSubmit={(e) => {
-            e.preventDefault()
-            void save()
+            e.preventDefault();
+            void save();
           }}
         >
           <div className="sporg-fields">
@@ -105,8 +127,8 @@ export function OrganizationProfilePanel() {
                 disabled={busy}
                 value={form[key]}
                 onChange={(e) => {
-                  setForm((f) => ({ ...f, [key]: e.target.value }))
-                  markDirty(true)
+                  setForm((f) => ({ ...f, [key]: e.target.value }));
+                  markDirty(true);
                 }}
               />
             ))}
@@ -121,7 +143,6 @@ export function OrganizationProfilePanel() {
           permission to edit.
         </p>
       )}
-      {canEdit && <MediaPanel scope="ORGANIZATION" target={organization.id} />}
     </section>
-  )
+  );
 }

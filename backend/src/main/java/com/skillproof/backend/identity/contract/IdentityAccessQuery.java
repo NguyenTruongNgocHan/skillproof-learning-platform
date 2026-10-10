@@ -14,10 +14,14 @@ public interface IdentityAccessQuery {
 
     Optional<Account> find(UUID userId);
 
+    void lockActiveAccount(UUID userId);
+
     Optional<Account> findByEmail(String email);
 
+    java.util.List<UUID> findAccountIdsByEmailFragment(String query);
+
     default boolean isActiveLearner(UUID userId) {
-        return find(userId).filter(Account::active).map(a -> "LEARNER".equals(a.role())).orElse(false);
+        return find(userId).filter(Account::active).map(a -> "LEARNER".equals(a.role()) || "ORGANIZER".equals(a.role())).orElse(false);
     }
 
     default boolean isActiveOrganizer(UUID userId) {

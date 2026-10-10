@@ -7,11 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "oxfmt",
-    "typecheck": "tsc --noEmit",
+    "format": "prettier --write src public *.ts *.json *.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "format:check": "prettier --check src public *.ts *.json *.js",
+    "lint": "eslint src public",
+    "check:architecture": "node scripts/check-architecture.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.41.0",
@@ -20,6 +23,7 @@
     "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.0.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
@@ -28,10 +32,14 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.0.0",
     "@vitest/ui": "^5.0.0",
+    "eslint": "^10.12.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
     "jsdom": "^30.0.1",
-    "oxfmt": "^0.2.0",
+    "prettier": "^3.9.10",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",
+    "typescript-eslint": "^8.71.1",
     "vite": "^8.0.5",
     "vitest": "^5.0.0"
   }

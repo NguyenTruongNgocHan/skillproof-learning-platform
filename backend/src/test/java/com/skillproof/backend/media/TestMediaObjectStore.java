@@ -1,4 +1,5 @@
 package com.skillproof.backend.media;
+import com.skillproof.backend.media.application.port.MediaObjectStore;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -35,8 +36,8 @@ public class TestMediaObjectStore implements MediaObjectStore {
         byte[] data = bytes.get(key);
         if (data == null) {
             throw new NoSuchElementException();
-        
-        }return new ByteArrayInputStream(data);
+        }
+        return new ByteArrayInputStream(data);
     }
 
     @Override

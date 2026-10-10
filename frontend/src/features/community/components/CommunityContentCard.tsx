@@ -1,9 +1,9 @@
-import Button from "@/components/ui/Button"
-import type { CommunityContentItem } from "@/mocks/community/communityContent"
-
-function difficultyStyle(
-  difficulty: CommunityContentItem["difficulty"],
-): { background: string; color: string } {
+import type { CommunityContentItem } from "@/features/community/data/communityContent"
+import Button from "@/shared/ui/Button"
+function difficultyStyle(difficulty: CommunityContentItem["difficulty"]): {
+  background: string
+  color: string
+} {
   switch (difficulty) {
     case "Beginner":
       return { background: "var(--success-bg)", color: "var(--success)" }
@@ -13,25 +13,21 @@ function difficultyStyle(
       return { background: "#FEF2F2", color: "#DC2626" }
   }
 }
-
 interface CommunityContentCardProps {
   item: CommunityContentItem
   isAuthenticated: boolean
   onProtectedAction: (item: CommunityContentItem) => void
 }
-
 export default function CommunityContentCard({
   item,
-  isAuthenticated,
+
   onProtectedAction,
 }: CommunityContentCardProps) {
   const typeBadge =
     item.type === "Quiz"
       ? { background: "#EFF6FF", color: "#2563EB" }
       : { background: "#F5F3FF", color: "#7C3AED" }
-
   const diffStyle = difficultyStyle(item.difficulty)
-
   return (
     <div
       style={{
@@ -86,9 +82,7 @@ export default function CommunityContentCard({
       </p>
 
       {/* Creator */}
-      <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)", margin: 0 }}>
-        by {item.creator}
-      </p>
+      <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)", margin: 0 }}>by {item.creator}</p>
 
       {/* Topic + Difficulty */}
       <div
@@ -126,8 +120,7 @@ export default function CommunityContentCard({
 
       {/* Stats */}
       <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)", margin: 0 }}>
-        {item.questions} questions&nbsp;&middot;&nbsp;&#9733; {item.rating} (
-        {item.reviewCount})
+        {item.questions} questions&nbsp;&middot;&nbsp;&#9733; {item.rating} ({item.reviewCount})
       </p>
 
       {/* CTA */}

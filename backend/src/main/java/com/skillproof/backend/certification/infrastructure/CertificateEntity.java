@@ -50,8 +50,8 @@ class CertificateEntity {
     @Column(name = "program_name")
     String programName;
 
-    @Column(name = "learning_path_version_id")
-    UUID learningPathVersionId;
+    @Column(name = "course_version_id")
+    UUID courseVersionId;
 
     @Column(name = "issuer_name")
     String issuerName;
@@ -59,7 +59,8 @@ class CertificateEntity {
     @Column(name = "learner_email")
     String learnerEmail;
 
-    protected CertificateEntity() {}
+    protected CertificateEntity() {
+    }
 
     CertificateEntity(Certificate c) {
         id = c.id();
@@ -73,27 +74,27 @@ class CertificateEntity {
         revocationReason = c.revocationReason();
         organizationId = c.organizationId();
         programName = c.programName();
-        learningPathVersionId = c.learningPathVersionId();
+        courseVersionId = c.courseVersionId();
         issuerName = c.issuerName();
         learnerEmail = c.learnerEmail();
     }
 
     Certificate domain() {
         return new Certificate(
-            id,
-            certificationProgramId,
-            eligibilityId,
-            learnerUserId,
-            serialNumber,
-            status,
-            issuedAt,
-            revokedAt,
-            revocationReason,
-            organizationId,
-            programName,
-            learningPathVersionId,
-            issuerName,
-            learnerEmail
+                id,
+                certificationProgramId,
+                eligibilityId,
+                learnerUserId,
+                serialNumber,
+                status,
+                issuedAt,
+                revokedAt,
+                revocationReason,
+                organizationId,
+                programName,
+                courseVersionId,
+                issuerName,
+                learnerEmail
         );
     }
 

@@ -1,0 +1,197 @@
+/* User-facing toast notifications */
+.toast-viewport {
+  position: fixed;
+  z-index: 100;
+  top: 20px;
+  right: 20px;
+  width: min(390px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.sp-toast {
+  --toast-accent: var(--brand);
+
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 14px 14px 14px 15px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--fg);
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, var(--toast-accent) 7%, transparent),
+      transparent 52%
+    ),
+    color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  pointer-events: auto;
+  animation: toast-enter 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sp-toast::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--toast-accent);
+}
+
+.sp-toast--success {
+  --toast-accent: var(--success);
+}
+
+.sp-toast--error {
+  --toast-accent: var(--error);
+}
+
+.sp-toast--warning {
+  --toast-accent: var(--warning);
+}
+
+.sp-toast--info {
+  --toast-accent: var(--brand);
+}
+
+.sp-toast__icon {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: var(--toast-accent);
+  background: color-mix(in srgb, var(--toast-accent) 11%, transparent);
+}
+
+.sp-toast__content {
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.sp-toast__content strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--fg);
+  font-size: 0.81rem;
+  font-weight: 750;
+}
+
+.sp-toast__content p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.81rem;
+  line-height: 1.48;
+  overflow-wrap: anywhere;
+}
+
+.sp-toast__close {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--fg-muted);
+  transition:
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.sp-toast__close:hover {
+  color: var(--fg);
+  background: var(--bg-subtle);
+}
+
+.auth-layout :is(a, button, input):focus-visible,
+.sp-toast button:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 3px;
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(18px, -5px, 0) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (max-width: 800px) {
+  .auth-layout {
+    display: block;
+  }
+
+  .auth-story {
+    display: none;
+  }
+
+  .auth-main {
+    min-height: 100vh;
+    align-items: flex-start;
+    padding: 22px 22px 48px;
+  }
+
+  .auth-main__inner {
+    width: min(100%, 500px);
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .auth-main__mobile-logo {
+    display: block;
+    margin-bottom: 28px;
+  }
+
+  .auth-main__nav {
+    margin-bottom: 28px;
+  }
+}
+
+@media (max-width: 520px) {
+  .auth-role-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-role-card {
+    min-height: 0;
+  }
+
+  .auth-password-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .toast-viewport {
+    top: 14px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-role-card,
+  .auth-layout *,
+  .sp-toast {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

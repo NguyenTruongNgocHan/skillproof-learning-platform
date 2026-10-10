@@ -1,17 +1,10 @@
-import {
-  BookOpen,
-  Database,
-  ClipboardList,
-  Settings,
-  Award,
-  CheckCircle,
-} from "lucide-react"
-import { Link } from "react-router-dom"
-import Container from "@/components/ui/Container"
-import SectionHeading from "@/components/ui/SectionHeading"
-import Button from "@/components/ui/Button"
 import { useAuth } from "@/features/auth/hooks/useAuth"
-import { getNextRouteForUserState } from "@/utils/authFlow"
+import { getNextRouteForUserState } from "@/features/auth/utils/authFlow"
+import Button from "@/shared/ui/Button"
+import Container from "@/shared/ui/Container"
+import SectionHeading from "@/shared/ui/SectionHeading"
+import { Award, BookOpen, CheckCircle, ClipboardList, Database, Settings } from "lucide-react"
+import { Link } from "react-router-dom"
 
 const capabilities = [
   {
@@ -32,8 +25,7 @@ const capabilities = [
   {
     icon: Settings,
     title: "Define Completion Policies",
-    description:
-      "Set pass marks, attempt limits, and certification requirements",
+    description: "Set pass marks, attempt limits, and certification requirements",
   },
   {
     icon: Award,
@@ -73,31 +65,27 @@ function DashboardPreview() {
           className="w-40 border-r flex flex-col gap-1 p-3"
           style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}
         >
-          {["Learning Paths", "Question Bank", "Certificates", "Analytics"].map(
-            (item, i) => (
-              <div
-                key={item}
-                className="px-3 py-2 rounded-lg text-xs font-medium"
-                style={
-                  i === 0
-                    ? {
-                        backgroundColor: "var(--brand-soft)",
-                        color: "var(--brand)",
-                      }
-                    : { color: "var(--fg-muted)" }
-                }
-              >
-                {item}
-              </div>
-            ),
-          )}
+          {["Learning Paths", "Question Bank", "Certificates", "Analytics"].map((item, i) => (
+            <div
+              key={item}
+              className="px-3 py-2 rounded-lg text-xs font-medium"
+              style={
+                i === 0
+                  ? {
+                      backgroundColor: "var(--brand-soft)",
+                      color: "var(--brand)",
+                    }
+                  : { color: "var(--fg-muted)" }
+              }
+            >
+              {item}
+            </div>
+          ))}
         </div>
 
         {/* Main content */}
         <div className="flex-1 p-4 overflow-hidden">
-          <p className="text-xs font-semibold text-skin mb-3">
-            Planned organizer workspace
-          </p>
+          <p className="text-xs font-semibold text-skin mb-3">Planned organizer workspace</p>
           <div className="space-y-2">
             {fakePaths.map((path) => (
               <div
@@ -106,12 +94,8 @@ function DashboardPreview() {
                 style={{ backgroundColor: "var(--bg-subtle)" }}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-skin truncate">
-                    {path.name}
-                  </p>
-                  <p className="text-xs text-muted-skin">
-                    Illustrative program
-                  </p>
+                  <p className="text-xs font-medium text-skin truncate">{path.name}</p>
+                  <p className="text-xs text-muted-skin">Illustrative program</p>
                 </div>
                 <span
                   className="text-xs font-medium px-2 py-0.5 rounded flex-shrink-0"
@@ -154,9 +138,7 @@ export default function OrganizerSection() {
                     <cap.icon size={15} color="var(--brand)" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-skin mb-0.5">
-                      {cap.title}
-                    </h3>
+                    <h3 className="text-sm font-semibold text-skin mb-0.5">{cap.title}</h3>
                     <p className="text-xs text-muted-skin">{cap.description}</p>
                   </div>
                 </div>
@@ -181,7 +163,7 @@ export default function OrganizerSection() {
             <div className="mt-5 space-y-2">
               {[
                 "Role-based access for instructors and admins",
-                "Official programs remain under the organization’s authority",
+                "Official programs remain under the organizationâ€™s authority",
                 "Only authorized organizers may issue or revoke certificates",
               ].map((item) => (
                 <div key={item} className="flex items-center gap-2">

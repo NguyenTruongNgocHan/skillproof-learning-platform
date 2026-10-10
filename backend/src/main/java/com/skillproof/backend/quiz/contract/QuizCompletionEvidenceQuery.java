@@ -12,5 +12,5 @@ public interface QuizCompletionEvidenceQuery {
 
     }
 
-    AssessmentEvidence evidence(UUID learningPathVersionId, UUID enrollmentId);
+    AssessmentEvidence evidence(UUID courseVersionId, UUID enrollmentId);
 }

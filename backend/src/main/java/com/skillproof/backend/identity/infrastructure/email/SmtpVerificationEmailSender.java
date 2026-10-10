@@ -9,6 +9,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import com.skillproof.backend.identity.application.EmailVerificationProperties;
+import com.skillproof.backend.identity.application.port.VerificationEmailSender;
 
 @Component
 public class SmtpVerificationEmailSender

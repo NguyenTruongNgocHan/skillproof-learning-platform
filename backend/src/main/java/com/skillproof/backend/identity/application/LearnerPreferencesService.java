@@ -11,7 +11,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.skillproof.backend.identity.api.LearnerPreferencesController.DiscoveryPreferences;
+import com.skillproof.backend.identity.application.model.DiscoveryPreferences;
 import com.skillproof.backend.identity.domain.AccountStatus;
 import com.skillproof.backend.identity.domain.UserRole;
 import com.skillproof.backend.identity.infrastructure.LearnerInterestEntity;
@@ -31,6 +31,7 @@ public class LearnerPreferencesService {
     public record Interest(
             String label,
             InterestSource source) {
+
     }
 
     public record State(
@@ -41,6 +42,7 @@ public class LearnerPreferencesService {
             String experienceLevel,
             List<Interest> interests,
             Instant updatedAt) {
+
     }
 
     private final LearnerPreferencesRepository preferences;
@@ -61,7 +63,7 @@ public class LearnerPreferencesService {
         var user = users.findById(id)
                 .orElseThrow(() -> new AccessDeniedException("Account unavailable"));
 
-        if (user.getRole() != UserRole.LEARNER
+        if ((user.getRole() != UserRole.LEARNER && user.getRole() != UserRole.ORGANIZER)
                 || user.getStatus() != AccountStatus.ACTIVE) {
             throw new AccessDeniedException("Active learner required");
         }
@@ -77,8 +79,8 @@ public class LearnerPreferencesService {
                 .findAllByUserIdOrderByCreatedAtAsc(id)
                 .stream()
                 .map(value -> new Interest(
-                        value.getLabel(),
-                        InterestSource.valueOf(value.getSource())))
+                value.getLabel(),
+                InterestSource.valueOf(value.getSource())))
                 .toList();
 
         if (profile.isEmpty()) {
@@ -94,11 +96,11 @@ public class LearnerPreferencesService {
 
         LearnerPreferencesEntity value = profile.get();
 
-        boolean configured =
-                value.getGoalText() != null
-                        || value.getExperienceLevel() != null
-                        || !learnerInterests.isEmpty()
-                        || !value.isExplorationMode();
+        boolean configured
+                = value.getGoalText() != null
+                || value.getExperienceLevel() != null
+                || !learnerInterests.isEmpty()
+                || !value.isExplorationMode();
 
         return new State(
                 configured,
@@ -122,15 +124,15 @@ public class LearnerPreferencesService {
                 .findById(id)
                 .orElseGet(() -> new LearnerPreferencesEntity(id));
 
-        boolean personalizationEnabled =
-                input.personalizationEnabled() == null
-                        ? profile.isPersonalizationEnabled()
-                        : input.personalizationEnabled();
+        boolean personalizationEnabled
+                = input.personalizationEnabled() == null
+                ? profile.isPersonalizationEnabled()
+                : input.personalizationEnabled();
 
-        boolean explorationMode =
-                input.explorationMode() == null
-                        ? profile.isExplorationMode()
-                        : input.explorationMode();
+        boolean explorationMode
+                = input.explorationMode() == null
+                ? profile.isExplorationMode()
+                : input.explorationMode();
 
         Instant now = Instant.now();
 
@@ -177,11 +179,11 @@ public class LearnerPreferencesService {
 
         List<LearnerInterestEntity> entities = normalized.stream()
                 .map(label -> new LearnerInterestEntity(
-                        UUID.randomUUID(),
-                        userId,
-                        label,
-                        source.name(),
-                        now))
+                UUID.randomUUID(),
+                userId,
+                label,
+                source.name(),
+                now))
                 .toList();
 
         interests.saveAll(entities);

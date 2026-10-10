@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.skillproof.backend.identity.infrastructure.email.VerificationEmailSender;
+import com.skillproof.backend.identity.application.port.VerificationEmailSender;
 
 class CapturingVerificationEmailSender
         implements VerificationEmailSender {

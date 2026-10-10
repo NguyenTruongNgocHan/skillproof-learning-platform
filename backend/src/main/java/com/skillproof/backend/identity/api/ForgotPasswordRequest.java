@@ -11,4 +11,5 @@ public record ForgotPasswordRequest(
         String email
         ) {
 
+    public com.skillproof.backend.identity.application.model.ForgotPasswordCommand toCommand() { return new com.skillproof.backend.identity.application.model.ForgotPasswordCommand(email); }
 }

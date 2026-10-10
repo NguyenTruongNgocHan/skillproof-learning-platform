@@ -1,8 +1,8 @@
-import { safeDestination } from "@/utils/authDestination"
-import { Navigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/features/auth/hooks/useAuth"
-import { getNextRouteAfterLogin } from "@/utils/authFlow"
+import { safeDestination } from "@/features/auth/utils/authDestination"
+import { getNextRouteAfterLogin } from "@/features/auth/utils/authFlow"
 import { ReactNode } from "react"
+import { Navigate, useLocation } from "react-router-dom"
 
 export function GuestGuard({ children }: { children: ReactNode }) {
   const location = useLocation()

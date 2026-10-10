@@ -1,19 +1,21 @@
 package com.skillproof.backend.identity.application;
 
-import com.skillproof.backend.common.exception.BadRequestException;
-import com.skillproof.backend.common.exception.NotFoundException;
-import com.skillproof.backend.identity.api.AdminAccountResponse;
-import com.skillproof.backend.identity.domain.AccountStatus;
-import com.skillproof.backend.identity.domain.UserRole;
-import com.skillproof.backend.identity.infrastructure.AuthSessionRepository;
-import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
+import java.time.Instant;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.UUID;
+import com.skillproof.backend.common.exception.BadRequestException;
+import com.skillproof.backend.common.exception.NotFoundException;
+import com.skillproof.backend.identity.application.model.AdminAccountResponse;
+import com.skillproof.backend.identity.contract.OrganizationRoleTransitionPolicy;
+import com.skillproof.backend.identity.domain.AccountStatus;
+import com.skillproof.backend.identity.domain.UserRole;
+import com.skillproof.backend.identity.infrastructure.AuthSessionRepository;
+import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
 
 @Service
 public class AdminAccountService {
@@ -61,6 +63,10 @@ public class AdminAccountService {
             account.disable();
             revokeSessions(accountId);
         } else if (status == AccountStatus.ACTIVE) {
+            if (account.getEmailVerifiedAt() == null) {
+                throw new com.skillproof.backend.common.exception.ConflictException(
+                        "IDENTITY_EMAIL_NOT_VERIFIED", "Verify email before activating the account.");
+            }
             account.activate();
         } else {
             throw new BadRequestException(

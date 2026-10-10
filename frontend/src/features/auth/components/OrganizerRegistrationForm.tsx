@@ -1,19 +1,19 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
-import { ArrowRight, ChevronLeft } from "lucide-react"
+import AuthShell from "@/features/auth/components/AuthShell"
+import PasswordRequirements from "@/features/auth/components/PasswordRequirements"
+import type { RegisterOrganizerData } from "@/features/auth/types/auth.types"
 import {
   checkPassword,
   getPasswordStrength,
   isPasswordValid,
 } from "@/features/auth/validation/passwordPolicy"
-import AuthShell from "@/features/auth/components/AuthShell"
-import PasswordRequirements from "@/features/auth/components/PasswordRequirements"
-import Input from "@/components/ui/Input"
-import PasswordInput from "@/components/ui/PasswordInput"
-import Button from "@/components/ui/Button"
-import Checkbox from "@/components/ui/Checkbox"
-import LoadingSpinner from "@/components/feedback/LoadingSpinner"
-import type { RegisterOrganizerData } from "@/features/auth/types/auth.types"
+import LoadingSpinner from "@/shared/components/feedback/LoadingSpinner"
+import Button from "@/shared/ui/Button"
+import Checkbox from "@/shared/ui/Checkbox"
+import Input from "@/shared/ui/Input"
+import PasswordInput from "@/shared/ui/PasswordInput"
+import { ArrowRight } from "lucide-react"
+import { useState } from "react"
+import { Link } from "react-router-dom"
 
 interface OrganizerRegistrationFormProps {
   onSubmit: (data: RegisterOrganizerData) => Promise<void>
@@ -37,15 +37,10 @@ export default function OrganizerRegistrationForm({
   const passwordValid = isPasswordValid(passwordChecks)
   const passwordStrength = getPasswordStrength(password)
 
-  const passwordsMatch =
-    password !== "" &&
-    confirmPassword !== "" &&
-    password === confirmPassword
+  const passwordsMatch = password !== "" && confirmPassword !== "" && password === confirmPassword
 
   const confirmError =
-    confirmPassword !== "" && !passwordsMatch
-      ? "Those passwords don't match yet."
-      : null
+    confirmPassword !== "" && !passwordsMatch ? "Those passwords don't match yet." : null
 
   const formValid =
     fullName.trim() !== "" &&
@@ -69,9 +64,7 @@ export default function OrganizerRegistrationForm({
       })
     } catch (err: unknown) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "We couldn't create your account. Please try again.",
+        err instanceof Error ? err.message : "We couldn't create your account. Please try again.",
       )
     }
   }
@@ -80,17 +73,15 @@ export default function OrganizerRegistrationForm({
     <AuthShell
       mode="register"
       backTo="/register"
+      backAction={onBack}
       backLabel="Choose another path"
     >
-
-
       <div className="auth-intro auth-intro--compact">
-
         <h1>Start with your account</h1>
 
         <p>
-          Create your personal sign-in first. After verifying your email,
-          you'll be guided through your organization application.
+          Create your personal sign-in first. After verifying your email, you'll be guided through
+          your organization application.
         </p>
       </div>
 
@@ -141,8 +132,8 @@ export default function OrganizerRegistrationForm({
         />
 
         <div className="auth-context-note">
-          After verifying your email, you'll tell us about your organization
-          before it is submitted for review.
+          After verifying your email, you'll tell us about your organization before it is submitted
+          for review.
         </div>
 
         <Checkbox

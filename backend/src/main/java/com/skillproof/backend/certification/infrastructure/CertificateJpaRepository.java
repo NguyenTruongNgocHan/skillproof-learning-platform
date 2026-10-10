@@ -12,19 +12,21 @@ import org.springframework.data.jpa.repository.Query;
 import com.skillproof.backend.certification.domain.Certificate;
 
 interface CertificateJpaRepository
-    extends JpaRepository<CertificateEntity, UUID>
-{
+        extends JpaRepository<CertificateEntity, UUID> {
+
     Optional<CertificateEntity> findByCertificationProgramIdAndLearnerUserId(
-        UUID programId,
-        UUID learnerId
+            UUID programId,
+            UUID learnerId
     );
+
     Optional<CertificateEntity> findBySerialNumber(String serialNumber);
+
     List<CertificateEntity> findByCertificationProgramIdInOrderByIssuedAtDesc(
-        List<UUID> programIds
+            List<UUID> programIds
     );
 
     @Query(
-        """
+            """
         select certificate from CertificateEntity certificate
         where certificate.certificationProgramId in :programIds
           and (:status is null or certificate.status = :status)
@@ -36,10 +38,12 @@ interface CertificateJpaRepository
         """
     )
     Page<CertificateEntity> search(
-        List<UUID> programIds,
-        Certificate.Status status,
-        UUID learnerId,
-        String pattern,
-        Pageable pageable
+            List<UUID> programIds,
+            Certificate.Status status,
+            UUID learnerId,
+            String pattern,
+            Pageable pageable
     );
+
+    List<CertificateEntity> findByLearnerUserIdOrderByIssuedAtDesc(UUID learnerId);
 }

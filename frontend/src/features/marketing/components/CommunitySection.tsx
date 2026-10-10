@@ -1,6 +1,6 @@
-import { Shield, Users, CheckCircle, Star, BookOpen, Award } from "lucide-react"
-import Container from "@/components/ui/Container"
-import SectionHeading from "@/components/ui/SectionHeading"
+import Container from "@/shared/ui/Container"
+import SectionHeading from "@/shared/ui/SectionHeading"
+import { Award, BookOpen, CheckCircle, Shield, Star, Users } from "lucide-react"
 
 export default function CommunitySection() {
   return (
@@ -18,17 +18,12 @@ export default function CommunitySection() {
             <div className="flex items-center gap-2 mb-4">
               <div className="flex items-center gap-2 bg-ink-skin px-3 py-1.5 rounded-lg">
                 <Shield size={14} />
-                <span className="text-xs font-semibold uppercase tracking-wide">
-                  Official
-                </span>
+                <span className="text-xs font-semibold uppercase tracking-wide">Official</span>
               </div>
             </div>
-            <h3 className="font-semibold text-skin mb-1">
-              Organization-verified learning paths
-            </h3>
+            <h3 className="font-semibold text-skin mb-1">Organization-verified learning paths</h3>
             <p className="text-sm text-muted-skin mb-5">
-              Curricula authored and maintained by approved training
-              organizations.
+              Curricula authored and maintained by approved training organizations.
             </p>
 
             <div className="space-y-3">
@@ -43,15 +38,11 @@ export default function CommunitySection() {
                 },
                 {
                   icon: CheckCircle,
-                  text: "Completion follows the organization’s published policy",
+                  text: "Completion follows the organizationâ€™s published policy",
                 },
               ].map((item) => (
                 <div key={item.text} className="flex items-start gap-2.5">
-                  <item.icon
-                    size={15}
-                    color="var(--brand)"
-                    className="mt-0.5 flex-shrink-0"
-                  />
+                  <item.icon size={15} color="var(--brand)" className="mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-skin">{item.text}</span>
                 </div>
               ))}
@@ -63,17 +54,12 @@ export default function CommunitySection() {
             <div className="flex items-center gap-2 mb-4">
               <div className="flex items-center gap-2 bg-subtle-skin text-muted-skin px-3 py-1.5 rounded-lg">
                 <Users size={14} />
-                <span className="text-xs font-semibold uppercase tracking-wide">
-                  Community
-                </span>
+                <span className="text-xs font-semibold uppercase tracking-wide">Community</span>
               </div>
             </div>
-            <h3 className="font-semibold text-skin mb-1">
-              Learner-created practice content
-            </h3>
+            <h3 className="font-semibold text-skin mb-1">Learner-created practice content</h3>
             <p className="text-sm text-muted-skin mb-5">
-              Quizzes, mock tests, and flashcards shared by the SkillProof
-              community.
+              Quizzes, mock tests, and flashcards shared by the SkillProof community.
             </p>
 
             <div className="space-y-3">
@@ -85,15 +71,11 @@ export default function CommunitySection() {
                 },
                 {
                   icon: CheckCircle,
-                  text: "Access will follow the content’s published policy",
+                  text: "Access will follow the contentâ€™s published policy",
                 },
               ].map((item) => (
                 <div key={item.text} className="flex items-start gap-2.5">
-                  <item.icon
-                    size={15}
-                    color="var(--fg-muted)"
-                    className="mt-0.5 flex-shrink-0"
-                  />
+                  <item.icon size={15} color="var(--fg-muted)" className="mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-skin">{item.text}</span>
                 </div>
               ))}
@@ -102,8 +84,8 @@ export default function CommunitySection() {
         </div>
 
         <div className="rounded-lg border border-skin bg-subtle-skin px-5 py-3 text-sm text-muted-skin text-center">
-          Concept preview. Community practice does not automatically count
-          toward an official program or certificate.
+          Concept preview. Community practice does not automatically count toward an official
+          program or certificate.
         </div>
       </Container>
     </section>

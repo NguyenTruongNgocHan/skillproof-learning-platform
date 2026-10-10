@@ -11,4 +11,7 @@ public record ResendVerificationRequest(
         String email
         ) {
 
+    public com.skillproof.backend.identity.application.model.ResendVerificationCommand toCommand() {
+        return new com.skillproof.backend.identity.application.model.ResendVerificationCommand(email);
+    }
 }

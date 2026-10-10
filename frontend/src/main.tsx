@@ -1,8 +1,8 @@
+import App from "@/app/App"
+import "@/features/discovery/styles/learner-flow.css"
+import "@/shared/styles/global.css"
 import React from "react"
 import ReactDOM from "react-dom/client"
-import App from "./app/App"
-import "./index.css"
-import "./styles/learner-flow.css"
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

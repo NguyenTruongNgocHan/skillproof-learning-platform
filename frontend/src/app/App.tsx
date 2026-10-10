@@ -1,6 +1,6 @@
+import { AppProviders } from "@/app/providers/AppProviders"
+import { AppRouter } from "@/app/router"
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import { AppProviders } from "./providers/AppProviders"
-import { AppRouter } from "./router"
 
 // Keep the existing route tree while providing the data-router navigation blocker.
 const router = createBrowserRouter([

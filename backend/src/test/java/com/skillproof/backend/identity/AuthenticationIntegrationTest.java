@@ -168,6 +168,31 @@ class AuthenticationIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void logoutRevokesOnlyTheAccessTokenSession() throws Exception {
+        registerAndVerify();
+        MvcResult firstLogin = login(PASSWORD).andExpect(status().isOk()).andReturn();
+        MvcResult secondLogin = login(PASSWORD).andExpect(status().isOk()).andReturn();
+        String firstAccessToken = accessToken(firstLogin);
+        String secondAccessToken = accessToken(secondLogin);
+
+        mockMvc.perform(post("/api/v1/auth/logout")
+                .header("Authorization", "Bearer " + firstAccessToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/v1/me")
+                .header("Authorization", "Bearer " + firstAccessToken))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/me")
+                .header("Authorization", "Bearer " + secondAccessToken))
+                .andExpect(status().isOk());
+    }
+
+    private String accessToken(MvcResult login) throws Exception {
+        return objectMapper.readTree(login.getResponse().getContentAsString())
+                .get("accessToken").asText();
+    }
+
     private void registerAndVerify() throws Exception {
         register();
         String token = emailSender.latestToken(EMAIL).orElseThrow();

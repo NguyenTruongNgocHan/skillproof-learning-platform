@@ -1,5 +1,5 @@
-import { GraduationCap, Building2, ScanLine } from "lucide-react"
-import Container from "@/components/ui/Container"
+import Container from "@/shared/ui/Container"
+import { Building2, GraduationCap, ScanLine } from "lucide-react"
 
 const audiences = [
   { icon: GraduationCap, label: "Learn with a clear goal" },

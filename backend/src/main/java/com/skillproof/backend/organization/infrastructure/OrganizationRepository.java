@@ -14,6 +14,9 @@ import com.skillproof.backend.organization.domain.OrganizationReviewView;
 @Repository
 public class OrganizationRepository {
 
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
+
     private final OrganizationJpaRepository organizations;
     private final OrganizationReviewJpaRepository reviews;
     private final OrganizationMembershipJpaRepository memberships;
@@ -21,11 +24,11 @@ public class OrganizationRepository {
     private final OrganizationApplicationRevisionJpaRepository revisions;
 
     public OrganizationRepository(
-        OrganizationJpaRepository organizations,
-        OrganizationReviewJpaRepository reviews,
-        OrganizationMembershipJpaRepository memberships,
-        OrganizationAuthorityGrantJpaRepository grants,
-        OrganizationApplicationRevisionJpaRepository revisions
+            OrganizationJpaRepository organizations,
+            OrganizationReviewJpaRepository reviews,
+            OrganizationMembershipJpaRepository memberships,
+            OrganizationAuthorityGrantJpaRepository grants,
+            OrganizationApplicationRevisionJpaRepository revisions
     ) {
         this.organizations = organizations;
         this.reviews = reviews;
@@ -44,32 +47,32 @@ public class OrganizationRepository {
 
     public Optional<Organization> owned(UUID user) {
         return organizations
-            .findByOwnerUserId(user)
-            .map(OrganizationEntity::toDomain);
+                .findByOwnerUserId(user)
+                .map(OrganizationEntity::toDomain);
     }
 
     public Optional<Organization> memberOrganization(UUID user) {
         return organizations
-            .findMembershipOrganizations(user)
-            .stream()
-            .findFirst()
-            .map(OrganizationEntity::toDomain);
+                .findMembershipOrganizations(user)
+                .stream()
+                .findFirst()
+                .map(OrganizationEntity::toDomain);
     }
 
     public List<Organization> memberships(UUID user) {
         return organizations
-            .findMembershipOrganizations(user)
-            .stream()
-            .map(OrganizationEntity::toDomain)
-            .toList();
+                .findMembershipOrganizations(user)
+                .stream()
+                .map(OrganizationEntity::toDomain)
+                .toList();
     }
 
     public List<Organization> pending() {
         return organizations
-            .findByStatusOrderByCreatedAtAsc(Organization.Status.PENDING)
-            .stream()
-            .map(OrganizationEntity::toDomain)
-            .toList();
+                .findByStatusOrderByCreatedAtAsc(Organization.Status.PENDING)
+                .stream()
+                .map(OrganizationEntity::toDomain)
+                .toList();
     }
 
     public void create(Organization organization) {
@@ -77,73 +80,74 @@ public class OrganizationRepository {
     }
 
     public OrganizationApplicationRevisionEntity createRevision(
-        Organization organization,
-        List<UUID> documentMediaIds,
-        Instant submittedAt
+            Organization organization,
+            List<UUID> documentMediaIds,
+            Instant submittedAt
     ) {
         int next = revisions
-            .findFirstByOrganizationIdOrderByRevisionNoDesc(organization.id())
-            .map(value -> value.getRevisionNo() + 1)
-            .orElse(1);
+                .findFirstByOrganizationIdOrderByRevisionNoDesc(organization.id())
+                .map(value -> value.getRevisionNo() + 1)
+                .orElse(1);
         return revisions.saveAndFlush(
-            new OrganizationApplicationRevisionEntity(
-                UUID.randomUUID(),
-                organization.id(),
-                next,
-                organization.legalName(),
-                organization.displayName(),
-                organization.website(),
-                organization.industry(),
-                organization.country(),
-                organization.registrationNumber(),
-                organization.contactName(),
-                organization.contactEmail(),
-                organization.contactPhone(),
-                documentMediaIds,
-                submittedAt
-            )
+                new OrganizationApplicationRevisionEntity(
+                        UUID.randomUUID(),
+                        organization.id(),
+                        next,
+                        organization.legalName(),
+                        organization.displayName(),
+                        organization.website(),
+                        organization.industry(),
+                        organization.country(),
+                        organization.registrationNumber(),
+                        organization.contactName(),
+                        organization.contactEmail(),
+                        organization.contactPhone(),
+                        documentMediaIds,
+                        submittedAt
+                )
         );
     }
 
     public Optional<Organization> lockApplication(UUID id) {
-        return organizations
-            .findForUpdate(id)
-            .map(OrganizationEntity::toDomain);
+        return organizations.findForUpdate(id).map(entity -> {
+            entityManager.refresh(entity, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+            return entity.toDomain();
+        });
     }
 
     public Optional<OrganizationApplicationRevisionEntity> latestRevision(
-        UUID organizationId
+            UUID organizationId
     ) {
         return revisions.findFirstByOrganizationIdOrderByRevisionNoDesc(
-            organizationId
+                organizationId
         );
     }
 
     public List<OrganizationApplicationRevisionEntity> applicationRevisions(
-        UUID organizationId
+            UUID organizationId
     ) {
         return revisions.findByOrganizationIdOrderByRevisionNoDesc(
-            organizationId
+                organizationId
         );
     }
 
     public Optional<OrganizationApplicationRevisionEntity> applicationRevision(
-        UUID revisionId
+            UUID revisionId
     ) {
         return revisions.findById(revisionId);
     }
 
     public int reviewRevision(
-        UUID revisionId,
-        UUID reviewer,
-        Organization.Status decision,
-        String reason,
-        Instant reviewedAt
+            UUID revisionId,
+            UUID reviewer,
+            Organization.Status decision,
+            String reason,
+            Instant reviewedAt
     ) {
         var revision = revisions.findForUpdate(revisionId);
-        if (
-            revision.isEmpty() || !"PENDING".equals(revision.get().getStatus())
-        ) return 0;
+        if (revision.isEmpty() || !"PENDING".equals(revision.get().getStatus())) {
+            return 0;
+        }
         revision.get().review(decision.name(), reviewer, reason, reviewedAt);
         revisions.flush();
         return 1;
@@ -151,10 +155,8 @@ public class OrganizationRepository {
 
     public int resubmit(UUID id, Organization replacement, Instant now) {
         Optional<OrganizationEntity> current = organizations.findForUpdate(id);
-        if (
-            current.isEmpty() ||
-            current.get().toDomain().status() != Organization.Status.REJECTED
-        ) {
+        if (current.isEmpty()
+                || current.get().toDomain().status() != Organization.Status.REJECTED) {
             return 0;
         }
 
@@ -165,10 +167,8 @@ public class OrganizationRepository {
 
     public int saveDraft(UUID id, Organization replacement, Instant now) {
         Optional<OrganizationEntity> current = organizations.findForUpdate(id);
-        if (
-            current.isEmpty() ||
-            current.get().toDomain().status() != Organization.Status.DRAFT
-        ) {
+        if (current.isEmpty()
+                || current.get().toDomain().status() != Organization.Status.DRAFT) {
             return 0;
         }
         current.get().saveDraft(replacement, now);
@@ -178,10 +178,8 @@ public class OrganizationRepository {
 
     public int submitDraft(UUID id, Instant now) {
         Optional<OrganizationEntity> current = organizations.findForUpdate(id);
-        if (
-            current.isEmpty() ||
-            current.get().toDomain().status() != Organization.Status.DRAFT
-        ) {
+        if (current.isEmpty()
+                || current.get().toDomain().status() != Organization.Status.DRAFT) {
             return 0;
         }
         current.get().review(Organization.Status.PENDING, null, now);
@@ -190,16 +188,14 @@ public class OrganizationRepository {
     }
 
     public int review(
-        UUID id,
-        Organization.Status decision,
-        String reason,
-        Instant now
+            UUID id,
+            Organization.Status decision,
+            String reason,
+            Instant now
     ) {
         Optional<OrganizationEntity> current = organizations.findForUpdate(id);
-        if (
-            current.isEmpty() ||
-            current.get().toDomain().status() != Organization.Status.PENDING
-        ) {
+        if (current.isEmpty()
+                || current.get().toDomain().status() != Organization.Status.PENDING) {
             return 0;
         }
         current.get().review(decision, reason, now);
@@ -209,103 +205,103 @@ public class OrganizationRepository {
 
     public List<OrganizationReviewView> reviews(UUID organizationId) {
         return reviews
-            .findByOrganizationIdOrderByReviewedAtDesc(organizationId)
-            .stream()
-            .map(review ->
-                new OrganizationReviewView(
-                    review.getReviewerUserId(),
-                    review.getDecision(),
-                    review.getReason(),
-                    review.getReviewedAt()
+                .findByOrganizationIdOrderByReviewedAtDesc(organizationId)
+                .stream()
+                .map(review
+                        -> new OrganizationReviewView(
+                        review.getReviewerUserId(),
+                        review.getDecision(),
+                        review.getReason(),
+                        review.getReviewedAt()
                 )
-            )
-            .toList();
+                )
+                .toList();
     }
 
     public void logReview(
-        UUID organizationId,
-        UUID actor,
-        Organization.Status decision,
-        String reason,
-        Instant now
+            UUID organizationId,
+            UUID actor,
+            Organization.Status decision,
+            String reason,
+            Instant now
     ) {
         reviews.save(
-            new OrganizationReviewEntity(
-                organizationId,
-                actor,
-                decision,
-                reason,
-                now
-            )
+                new OrganizationReviewEntity(
+                        organizationId,
+                        actor,
+                        decision,
+                        reason,
+                        now
+                )
         );
     }
 
     public void update(
-        UUID id,
-        String display,
-        String website,
-        String industry,
-        String phone,
-        Instant now
+            UUID id,
+            String display,
+            String website,
+            String industry,
+            String phone,
+            Instant now
     ) {
         organizations
-            .findById(id)
-            .ifPresent(organization ->
-                organization.updateProfile(
-                    display,
-                    website,
-                    industry,
-                    phone,
-                    now
+                .findById(id)
+                .ifPresent(organization
+                        -> organization.updateProfile(
+                        display,
+                        website,
+                        industry,
+                        phone,
+                        now
                 )
-            );
+                );
     }
 
     public void addMember(
-        UUID organizationId,
-        UUID userId,
-        UUID actor,
-        Instant now,
-        boolean owner
+            UUID organizationId,
+            UUID userId,
+            UUID actor,
+            Instant now,
+            boolean owner
     ) {
         OrganizationMembershipEntity membership = memberships
-            .findByOrganizationIdAndUserId(organizationId, userId)
-            .map(existing -> {
-                if (!existing.isActive()) {
-                    grants
-                        .findByMembershipIdAndActiveTrue(existing.id())
-                        .forEach(grant -> grant.update(false, actor, now));
-                }
-                existing.activate();
-                return existing;
-            })
-            .orElseGet(() ->
-                memberships.saveAndFlush(
-                    new OrganizationMembershipEntity(
-                        organizationId,
-                        userId,
-                        now
-                    )
+                .findByOrganizationIdAndUserId(organizationId, userId)
+                .map(existing -> {
+                    if (!existing.isActive()) {
+                        grants
+                                .findByMembershipIdAndActiveTrue(existing.id())
+                                .forEach(grant -> grant.update(false, actor, now));
+                    }
+                    existing.activate();
+                    return existing;
+                })
+                .orElseGet(()
+                        -> memberships.saveAndFlush(
+                        new OrganizationMembershipEntity(
+                                organizationId,
+                                userId,
+                                now
+                        )
                 )
-            );
+                );
         if (owner) {
             for (String authority : List.of(
-                "MANAGE_PROFILE",
-                "MANAGE_MEMBERS",
-                "MANAGE_CONTENT",
-                "ISSUE_CERTIFICATES"
+                    "MANAGE_PROFILE",
+                    "MANAGE_MEMBERS",
+                    "MANAGE_CONTENT",
+                    "ISSUE_CERTIFICATES"
             )) {
                 OrganizationAuthorityGrantEntity existing = grants
-                    .findByMembershipIdAndAuthority(membership.id(), authority)
-                    .orElseGet(() ->
-                        new OrganizationAuthorityGrantEntity(
-                            membership.id(),
-                            authority,
-                            true,
-                            actor,
-                            now
+                        .findByMembershipIdAndAuthority(membership.id(), authority)
+                        .orElseGet(()
+                                -> new OrganizationAuthorityGrantEntity(
+                                membership.id(),
+                                authority,
+                                true,
+                                actor,
+                                now
                         )
-                    );
+                        );
                 existing.update(true, actor, now);
                 grants.save(existing);
             }
@@ -314,82 +310,82 @@ public class OrganizationRepository {
 
     public List<OrganizationMemberView> members(UUID organizationId) {
         return memberships
-            .findByOrganizationId(organizationId)
-            .stream()
-            .map(membership ->
-                new OrganizationMemberView(
-                    membership.getUserId(),
-                    membership.isActive(),
-                    null,
-                    List.of()
+                .findByOrganizationId(organizationId)
+                .stream()
+                .map(membership
+                        -> new OrganizationMemberView(
+                        membership.getUserId(),
+                        membership.isActive(),
+                        null,
+                        List.of()
                 )
-            )
-            .toList();
+                )
+                .toList();
     }
 
     public List<String> grants(UUID organizationId, UUID memberId) {
         return memberships
-            .findByOrganizationIdAndUserId(organizationId, memberId)
-            .filter(OrganizationMembershipEntity::isActive)
-            .stream()
-            .flatMap(membership ->
-                grants.findByMembershipIdAndActiveTrue(membership.id()).stream()
-            )
-            .map(OrganizationAuthorityGrantEntity::getAuthority)
-            .toList();
+                .findByOrganizationIdAndUserId(organizationId, memberId)
+                .filter(OrganizationMembershipEntity::isActive)
+                .stream()
+                .flatMap(membership
+                        -> grants.findByMembershipIdAndActiveTrue(membership.id()).stream()
+                )
+                .map(OrganizationAuthorityGrantEntity::getAuthority)
+                .toList();
     }
 
     public boolean hasGrant(UUID organizationId, UUID actor, String authority) {
         return organizations
-            .findById(organizationId)
-            .filter(
-                organization ->
-                    organization.toDomain().status() ==
-                    Organization.Status.APPROVED
-            )
-            .flatMap(organization ->
-                memberships.findByOrganizationIdAndUserId(organizationId, actor)
-            )
-            .filter(OrganizationMembershipEntity::isActive)
-            .map(membership ->
-                grants.existsByMembershipIdAndAuthorityAndActiveTrue(
-                    membership.id(),
-                    authority
+                .findById(organizationId)
+                .filter(
+                        organization
+                        -> organization.toDomain().status()
+                        == Organization.Status.APPROVED
                 )
-            )
-            .orElse(false);
+                .flatMap(organization
+                        -> memberships.findByOrganizationIdAndUserId(organizationId, actor)
+                )
+                .filter(OrganizationMembershipEntity::isActive)
+                .map(membership
+                        -> grants.existsByMembershipIdAndAuthorityAndActiveTrue(
+                        membership.id(),
+                        authority
+                )
+                )
+                .orElse(false);
     }
 
     public void grant(
-        UUID organizationId,
-        UUID memberId,
-        String authority,
-        UUID actor,
-        boolean active,
-        Instant now
+            UUID organizationId,
+            UUID memberId,
+            String authority,
+            UUID actor,
+            boolean active,
+            Instant now
     ) {
         memberships
-            .findByOrganizationIdAndUserId(organizationId, memberId)
-            .ifPresent(membership -> {
-                OrganizationAuthorityGrantEntity grant = grants
-                    .findByMembershipIdAndAuthority(membership.id(), authority)
-                    .orElseGet(() ->
-                        new OrganizationAuthorityGrantEntity(
-                            membership.id(),
-                            authority,
-                            active,
-                            actor,
-                            now
-                        )
-                    );
-                grant.update(active, actor, now);
-                grants.save(grant);
-            });
+                .findByOrganizationIdAndUserId(organizationId, memberId)
+                .ifPresent(membership -> {
+                    OrganizationAuthorityGrantEntity grant = grants
+                            .findByMembershipIdAndAuthority(membership.id(), authority)
+                            .orElseGet(()
+                                    -> new OrganizationAuthorityGrantEntity(
+                                    membership.id(),
+                                    authority,
+                                    active,
+                                    actor,
+                                    now
+                            )
+                            );
+                    grant.update(active, actor, now);
+                    grants.save(grant);
+                });
     }
 
     public int deactivate(UUID organizationId, UUID memberId) {
-        Optional<OrganizationMembershipEntity> membership =
-            memberships.findByOrganizationIdAndUserId(organizationId, memberId);
+        Optional<OrganizationMembershipEntity> membership
+                = memberships.findByOrganizationIdAndUserId(organizationId, memberId);
         if (membership.isEmpty()) {
             return 0;
         }
@@ -399,8 +395,8 @@ public class OrganizationRepository {
 
     public boolean activeMember(UUID organizationId, UUID memberId) {
         return memberships.existsByOrganizationIdAndUserIdAndActiveTrue(
-            organizationId,
-            memberId
+                organizationId,
+                memberId
         );
     }
 }

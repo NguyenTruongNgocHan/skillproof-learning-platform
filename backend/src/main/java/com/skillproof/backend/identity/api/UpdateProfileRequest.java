@@ -20,4 +20,7 @@ public record UpdateProfileRequest(
         @Size(max = 64)
         String timezone) {
 
+    public com.skillproof.backend.identity.application.model.UpdateProfileCommand toCommand() {
+        return new com.skillproof.backend.identity.application.model.UpdateProfileCommand(displayName, headline, bio, avatarUrl, locale, timezone);
+    }
 }

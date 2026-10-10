@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.skillproof.backend.identity.application.ProfileService;
+import com.skillproof.backend.identity.application.model.ProfileResponse;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -33,6 +34,6 @@ public class ProfileController {
     @PatchMapping("/profile")
     public ProfileResponse update(Authentication authentication,
             @Valid @RequestBody UpdateProfileRequest request) {
-        return profiles.update((UUID) authentication.getPrincipal(), request);
+        return profiles.update((UUID) authentication.getPrincipal(), request.toCommand());
     }
 }

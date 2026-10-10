@@ -1,0 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import "tailwindcss";
+@import "foundations.css";
+@import "public-layout.css";
+@import "../../features/organization/styles/governance.css";
+@import "controls-and-public.css";
+@import "../../features/auth/styles/auth.css";
+@import "feedback.css";
+@import "../../features/organization/styles/application.css";
+@import "../../features/learning/styles/learning.css";
+@import "../../features/discovery/styles/discovery.css";
+@import "user-menu-and-learner.css";
+@import "../../features/discovery/styles/learner-experience.css";
+@import "application-typography.css";

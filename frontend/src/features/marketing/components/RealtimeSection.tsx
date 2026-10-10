@@ -1,7 +1,7 @@
-import { Zap, Shield, BarChart2 } from "lucide-react"
-import Container from "@/components/ui/Container"
-import SectionHeading from "@/components/ui/SectionHeading"
-import Progress from "@/components/ui/Progress"
+import Container from "@/shared/ui/Container"
+import Progress from "@/shared/ui/Progress"
+import SectionHeading from "@/shared/ui/SectionHeading"
+import { BarChart2, Shield, Zap } from "lucide-react"
 
 function ChallengePreview() {
   return (
@@ -26,10 +26,7 @@ function ChallengePreview() {
           </span>
           <span className="text-xs text-muted-skin">Illustrative preview</span>
         </div>
-        <span
-          className="text-xl font-bold tabular-nums"
-          style={{ color: "var(--brand)" }}
-        >
+        <span className="text-xl font-bold tabular-nums" style={{ color: "var(--brand)" }}>
           0:23
         </span>
       </div>
@@ -42,12 +39,8 @@ function ChallengePreview() {
         ].map((player) => (
           <div key={player.name}>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-sm font-medium text-skin">
-                {player.name}
-              </span>
-              <span className="text-xs text-muted-skin">
-                {player.correct} correct
-              </span>
+              <span className="text-sm font-medium text-skin">{player.name}</span>
+              <span className="text-xs text-muted-skin">{player.correct} correct</span>
             </div>
             <Progress value={player.progress} size="sm" color="brand" />
           </div>
@@ -55,10 +48,7 @@ function ChallengePreview() {
       </div>
 
       {/* Question */}
-      <div
-        className="rounded-lg p-4 mb-4"
-        style={{ backgroundColor: "var(--bg-subtle)" }}
-      >
+      <div className="rounded-lg p-4 mb-4" style={{ backgroundColor: "var(--bg-subtle)" }}>
         <p className="text-xs text-muted-skin mb-1">Question 7 of 10</p>
         <p className="text-sm text-skin font-medium">
           Which HTTP method retrieves a resource without changing it?
@@ -85,9 +75,7 @@ function ChallengePreview() {
                   }
             }
           >
-            <span className="mr-2 opacity-60">
-              {String.fromCharCode(65 + i)}.
-            </span>
+            <span className="mr-2 opacity-60">{String.fromCharCode(65 + i)}.</span>
             {opt}
           </div>
         ))}
@@ -141,9 +129,7 @@ export default function RealtimeSection() {
                     <f.icon size={16} color="var(--brand)" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-skin text-sm mb-0.5">
-                      {f.title}
-                    </h3>
+                    <h3 className="font-semibold text-skin text-sm mb-0.5">{f.title}</h3>
                     <p className="text-sm text-muted-skin">{f.description}</p>
                   </div>
                 </div>
@@ -151,8 +137,7 @@ export default function RealtimeSection() {
             </div>
 
             <p className="text-xs text-muted-skin mt-8 leading-relaxed">
-              Concept preview. Challenge results are not recorded in this
-              release.
+              Concept preview. Challenge results are not recorded in this release.
             </p>
           </div>
 

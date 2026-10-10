@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
 @TestConfiguration(proxyBeanMethods = false)
-class IdentityTestMailConfig {
+public class IdentityTestMailConfig {
 
     @Bean
     @Primary

@@ -12,7 +12,9 @@ import jakarta.persistence.LockModeType;
 
 public interface OrganizationApplicationRevisionJpaRepository
         extends JpaRepository<OrganizationApplicationRevisionEntity, UUID> {
+
     List<OrganizationApplicationRevisionEntity> findByOrganizationIdOrderByRevisionNoDesc(UUID organizationId);
+
     Optional<OrganizationApplicationRevisionEntity> findFirstByOrganizationIdOrderByRevisionNoDesc(UUID organizationId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

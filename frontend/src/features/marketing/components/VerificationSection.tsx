@@ -1,6 +1,6 @@
+import Container from "@/shared/ui/Container"
+import SectionHeading from "@/shared/ui/SectionHeading"
 import { Briefcase, Building2, GraduationCap, ShieldCheck } from "lucide-react"
-import Container from "@/components/ui/Container"
-import SectionHeading from "@/components/ui/SectionHeading"
 
 const audiences = [
   {
@@ -32,9 +32,7 @@ export default function VerificationSection() {
 
         <div className="sp-verification__layout">
           <div className="sp-verification__people">
-            <p className="sp-verification__label">
-              A PUBLIC ANSWER, WITHOUT AN ACCOUNT
-            </p>
+            <p className="sp-verification__label">A PUBLIC ANSWER, WITHOUT AN ACCOUNT</p>
             {audiences.map(({ icon: Icon, title, description }, index) => (
               <div className="sp-verification__person" key={title}>
                 <span className="sp-verification__icon">
@@ -85,8 +83,7 @@ export default function VerificationSection() {
               <ShieldCheck size={17} /> Independent review
             </span>
             <p className="sp-verification__note">
-              Concept preview. Public lookup will show only the details needed
-              for verification.
+              Concept preview. Public lookup will show only the details needed for verification.
             </p>
           </div>
         </div>

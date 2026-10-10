@@ -8,4 +8,7 @@ public record LoginRequest(@NotBlank
         String email, @NotBlank
         String password) {
 
+    public com.skillproof.backend.identity.application.model.LoginCommand toCommand() {
+        return new com.skillproof.backend.identity.application.model.LoginCommand(email, password);
+    }
 }

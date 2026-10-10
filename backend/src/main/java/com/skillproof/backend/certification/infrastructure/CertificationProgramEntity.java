@@ -20,8 +20,8 @@ class CertificationProgramEntity {
     UUID id;
     @Column(name = "organization_id", nullable = false)
     UUID organizationId;
-    @Column(name = "learning_path_version_id", nullable = false)
-    UUID learningPathVersionId;
+    @Column(name = "course_version_id", nullable = false)
+    UUID courseVersionId;
     @Column(name = "completion_policy_id", nullable = false)
     UUID completionPolicyId;
     @Column(nullable = false)
@@ -40,7 +40,7 @@ class CertificationProgramEntity {
     CertificationProgramEntity(CertificationProgram p) {
         id = p.id();
         organizationId = p.organizationId();
-        learningPathVersionId = p.learningPathVersionId();
+        courseVersionId = p.courseVersionId();
         completionPolicyId = p.completionPolicyId();
         name = p.name();
         status = p.status();
@@ -49,7 +49,7 @@ class CertificationProgramEntity {
     }
 
     CertificationProgram domain() {
-        return new CertificationProgram(id, organizationId, learningPathVersionId, completionPolicyId,
+        return new CertificationProgram(id, organizationId, courseVersionId, completionPolicyId,
                 name, status, createdByUserId, createdAt);
     }
 }

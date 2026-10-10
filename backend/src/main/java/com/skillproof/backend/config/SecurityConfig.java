@@ -1,5 +1,8 @@
 package com.skillproof.backend.config;
 
+import com.skillproof.backend.identity.infrastructure.security.OAuth2LoginSuccessHandler;
+import com.skillproof.backend.identity.infrastructure.security.JwtAuthenticationFilter;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +28,8 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtAuthenticationFilter jwtFilter,
             OAuth2LoginSuccessHandler oauthSuccessHandler,
-            @Value("${spring.profiles.active:}") String activeProfiles
+            @Value("${spring.profiles.active:}") String activeProfiles,
+            tools.jackson.databind.ObjectMapper json
     ) throws Exception {
 
         http
@@ -50,14 +54,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         authorization
                         -> authorization
+                                .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                        "/api/v1/courses", "/api/v1/courses/*", "/api/v1/courses/*/syllabus",
+                                        "/api/v1/library", "/api/v1/library/*",
+                                        "/api/v1/payments/vnpay/ipn", "/api/v1/payments/vnpay/return")
+                                .permitAll()
                                 .requestMatchers(
                                         "/health",
                                         "/swagger-ui.html",
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**",
                                         "/api/v1/auth/register",
-                                        "/api/v1/learning/paths",
-                                        "/api/v1/learning/paths/*",
                                         "/api/v1/public/certificates/*",
                                         "/api/v1/auth/verify-email",
                                         "/api/v1/auth/resend-verification",
@@ -67,8 +74,7 @@ public class SecurityConfig {
                                         "/api/v1/auth/forgot-password",
                                         "/api/v1/auth/reset-password",
                                         "/oauth2/**",
-                                        "/login/oauth2/**",
-                                        "/ws/realtime/**"
+                                        "/login/oauth2/**"
                                 )
                                 .permitAll()
                                 .requestMatchers(
@@ -78,6 +84,19 @@ public class SecurityConfig {
                                 .anyRequest()
                                 .authenticated()
                 )
+                .exceptionHandling(errors -> errors
+                .authenticationEntryPoint((request, response, exception) -> {
+                    response.setStatus(401);
+                    response.setContentType("application/json");
+                    response.getWriter().write(json.writeValueAsString(com.skillproof.backend.common.exception.ApiError.of(
+                            org.springframework.http.HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Authentication required", request.getRequestURI())));
+                })
+                .accessDeniedHandler((request, response, exception) -> {
+                    response.setStatus(403);
+                    response.setContentType("application/json");
+                    response.getWriter().write(json.writeValueAsString(com.skillproof.backend.common.exception.ApiError.of(
+                            org.springframework.http.HttpStatus.FORBIDDEN, "ACCESS_DENIED", "Permission denied", request.getRequestURI())));
+                }))
                 .addFilterBefore(
                         jwtFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -124,7 +143,7 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(
                 List.of(
                         "Authorization",
-                        "Content-Type"
+                        "Content-Type", "Idempotency-Key"
                 )
         );
 

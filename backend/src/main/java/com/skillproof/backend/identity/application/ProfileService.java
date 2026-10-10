@@ -1,9 +1,9 @@
 package com.skillproof.backend.identity.application;
 
-import com.skillproof.backend.identity.api.ProfileResponse;
+import com.skillproof.backend.identity.application.model.ProfileResponse;
 import com.skillproof.backend.media.contract.MediaAvatarQuery;
 import com.skillproof.backend.common.exception.BadRequestException;
-import com.skillproof.backend.identity.api.UpdateProfileRequest;
+import com.skillproof.backend.identity.application.model.UpdateProfileCommand;
 import com.skillproof.backend.identity.domain.UserProfile;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
 import com.skillproof.backend.identity.infrastructure.UserProfileRepository;
@@ -34,7 +34,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public ProfileResponse update(UUID userId, UpdateProfileRequest request) {
+    public ProfileResponse update(UUID userId, UpdateProfileCommand request) {
         var user = users.findByIdForUpdate(userId).orElseThrow();
         var profile = profiles.findById(userId).orElseGet(() -> UserProfile.create(userId, Instant.now()));
         if (request.avatarUrl() != null && request.avatarUrl().startsWith("media:")) {

@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 public record CreateCertificationProgramRequest(
         @NotNull
-        UUID learningPathVersionId,
+        UUID courseVersionId,
         @NotBlank
         @Size(max = 180)
         String name) {

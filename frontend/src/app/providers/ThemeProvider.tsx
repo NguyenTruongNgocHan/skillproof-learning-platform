@@ -1,11 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from "react"
 import type { ReactNode } from "react"
+import { createContext, useContext, useEffect, useLayoutEffect, useState } from "react"
 export type Theme = "light" | "dark" | "system"
 const STORAGE_KEY = "skillproof-theme"
 interface ThemeContextValue {
@@ -20,17 +14,13 @@ export function useTheme() {
   return value
 }
 function systemTheme(): "light" | "dark" {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light"
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
 }
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setPreference] = useState<Theme>(() => {
     try {
       const value = localStorage.getItem(STORAGE_KEY)
-      return value === "light" || value === "dark" || value === "system"
-        ? value
-        : "system"
+      return value === "light" || value === "dark" || value === "system" ? value : "system"
     } catch {
       return "system"
     }

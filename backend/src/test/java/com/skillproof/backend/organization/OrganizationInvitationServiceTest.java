@@ -24,6 +24,7 @@ import org.springframework.security.access.AccessDeniedException;
 import com.skillproof.backend.common.exception.ConflictException;
 import com.skillproof.backend.identity.contract.IdentityAccessQuery;
 import com.skillproof.backend.organization.application.OrganizationInvitationService;
+import com.skillproof.backend.organization.domain.Organization;
 import com.skillproof.backend.organization.infrastructure.OrganizationInvitationEntity;
 import com.skillproof.backend.organization.infrastructure.OrganizationInvitationJpaRepository;
 import com.skillproof.backend.organization.infrastructure.OrganizationRepository;
@@ -70,6 +71,25 @@ class OrganizationInvitationServiceTest {
                 )
             )
         );
+        when(organizations.lockApplication(organization)).thenReturn(Optional.of(
+            new Organization(
+                organization,
+                UUID.randomUUID(),
+                "Legal name",
+                "Organization",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                Organization.Status.APPROVED,
+                null,
+                Instant.now(),
+                Instant.now()
+            )
+        ));
         return invitation;
     }
 

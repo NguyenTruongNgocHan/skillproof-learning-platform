@@ -1,12 +1,13 @@
+import BrandLogo from "@/shared/ui/BrandLogo"
+import ThemeSwitcher from "@/shared/ui/ThemeSwitcher"
+import { ArrowLeft, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react"
 import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
-import { ArrowLeft, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react"
-import BrandLogo from "@/components/ui/BrandLogo"
-import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
 
 interface AuthShellProps {
   children: ReactNode
   mode: "login" | "register"
+  backAction?: () => void
   backTo?: string
   backLabel?: string
 }
@@ -16,6 +17,7 @@ export default function AuthShell({
   mode,
   backTo = "/",
   backLabel = "Back to home",
+  backAction,
 }: AuthShellProps) {
   const isLogin = mode === "login"
 
@@ -80,10 +82,17 @@ export default function AuthShell({
           </div>
 
           <div className="auth-main__nav">
-            <Link to={backTo} className="auth-back">
-              <ArrowLeft size={16} aria-hidden="true" />
-              {backLabel}
-            </Link>
+            {backAction ? (
+              <button type="button" className="auth-back" onClick={backAction}>
+                <ArrowLeft size={16} aria-hidden="true" />
+                {backLabel}
+              </button>
+            ) : (
+              <Link to={backTo} className="auth-back">
+                <ArrowLeft size={16} aria-hidden="true" />
+                {backLabel}
+              </Link>
+            )}
 
             <ThemeSwitcher compact />
           </div>

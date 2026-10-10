@@ -1,6 +1,6 @@
+import Container from "@/shared/ui/Container"
+import SectionHeading from "@/shared/ui/SectionHeading"
 import { Award, ClipboardCheck, ShieldCheck } from "lucide-react"
-import Container from "@/components/ui/Container"
-import SectionHeading from "@/components/ui/SectionHeading"
 
 const stages = [
   {
@@ -45,8 +45,8 @@ export default function CertificationSection() {
           ))}
         </div>
         <p className="sp-certification__boundary">
-          Community practice, battle ratings, payments and recommendation scores
-          do not replace completion evidence.
+          Community practice, battle ratings, payments and recommendation scores do not replace
+          completion evidence.
         </p>
       </Container>
       <style>{`

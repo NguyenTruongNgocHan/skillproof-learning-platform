@@ -9,6 +9,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import com.skillproof.backend.identity.application.PasswordResetProperties;
+import com.skillproof.backend.identity.application.port.PasswordResetEmailSender;
 
 @Component
 public class SmtpPasswordResetEmailSender implements PasswordResetEmailSender {

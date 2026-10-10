@@ -1,5 +1,5 @@
+import { TOPICS } from "@/features/community/data/communityContent"
 import { Search } from "lucide-react"
-import { TOPICS } from "@/mocks/community/communityContent"
 
 type TypeFilter = "all" | "quiz" | "mock-test"
 
@@ -85,8 +85,7 @@ export default function CommunityFilters({
         {/* Type filters */}
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
           {(["all", "quiz", "mock-test"] as TypeFilter[]).map((t) => {
-            const label =
-              t === "all" ? "All" : t === "quiz" ? "Quiz" : "Mock Test"
+            const label = t === "all" ? "All" : t === "quiz" ? "Quiz" : "Mock Test"
             const active = typeFilter === t
             return (
               <button

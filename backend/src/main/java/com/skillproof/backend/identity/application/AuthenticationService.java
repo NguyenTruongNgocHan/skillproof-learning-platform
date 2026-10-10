@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.skillproof.backend.common.exception.UnauthorizedException;
-import com.skillproof.backend.identity.api.AuthResponse;
-import com.skillproof.backend.identity.api.LoginRequest;
+import com.skillproof.backend.identity.application.model.AuthResponse;
+import com.skillproof.backend.identity.application.model.LoginCommand;
 import com.skillproof.backend.identity.domain.AuthSession;
 import com.skillproof.backend.identity.domain.RefreshToken;
 import com.skillproof.backend.identity.domain.UserAccount;
@@ -42,7 +42,7 @@ public class AuthenticationService {
     }
 
     @Transactional(noRollbackFor = UnauthorizedException.class)
-    public IssuedSession login(LoginRequest request, RequestMetadata metadata) {
+    public IssuedSession login(LoginCommand request, RequestMetadata metadata) {
         String email = request.email().trim().toLowerCase(Locale.ROOT);
         UserAccount user = users.findByEmailForUpdate(email).orElseThrow(this::invalidCredentials);
         Instant now = Instant.now();
@@ -98,21 +98,28 @@ public class AuthenticationService {
         refreshTokens.save(next);
         current.consume(now, next.getId());
         session.touch(now);
-        return new IssuedSession(response(user, now), nextRaw);
+        return new IssuedSession(response(user, session.getId(), now), nextRaw);
     }
 
     @Transactional
-    public void logout(String rawToken) {
-        if (rawToken == null || rawToken.isBlank()) {
-            return;
+    public void logout(String rawRefreshToken, String rawAccessToken) {
+        Instant now = Instant.now();
+        UUID accessSessionId = accessSessionId(rawAccessToken);
+        if (rawRefreshToken != null && !rawRefreshToken.isBlank()) {
+            refreshTokens.findByTokenHash(tokens.hash(rawRefreshToken)).ifPresent(token -> {
+                refreshTokens.findAllByFamilyId(token.getFamilyId())
+                        .forEach(value -> value.revoke(now));
+                sessions.findById(token.getSessionId()).ifPresent(session -> session.revoke(now));
+            });
         }
-        refreshTokens.findByTokenHash(tokens.hash(rawToken)).ifPresent(token -> {
-            Instant now = Instant.now();
-            refreshTokens.findAllByFamilyId(token.getFamilyId()).forEach(value -> value.revoke(now));
-            sessions.findById(token.getSessionId()).ifPresent(session -> session.revoke(now));
+        if (accessSessionId != null) {
+            refreshTokens.findAllBySessionId(accessSessionId).forEach(token -> token.revoke(now));
+            sessions.findById(accessSessionId).ifPresent(session -> session.revoke(now));
+        }
+        if (rawRefreshToken != null || accessSessionId != null) {
             audit.record(null, "LOGOUT", "SUCCESS", null,
                     new RequestMetadata(null, null), null);
-        });
+        }
     }
 
     public IssuedSession createSession(UserAccount user, RequestMetadata metadata, Instant now) {
@@ -121,12 +128,24 @@ public class AuthenticationService {
         String rawRefresh = tokens.randomRefreshToken();
         refreshTokens.save(RefreshToken.issue(session.getId(), UUID.randomUUID(), tokens.hash(rawRefresh),
                 now, now.plus(properties.getRefreshTtl())));
-        return new IssuedSession(response(user, now), rawRefresh);
+        return new IssuedSession(response(user, session.getId(), now), rawRefresh);
     }
 
-    private AuthResponse response(UserAccount user, Instant now) {
-        return new AuthResponse(tokens.accessToken(user, now), properties.getAccessTtl().toSeconds(),
+    private AuthResponse response(UserAccount user, UUID sessionId, Instant now) {
+        return new AuthResponse(tokens.accessToken(user, sessionId, now), properties.getAccessTtl().toSeconds(),
                 new AuthResponse.UserSummary(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole(), user.getStatus()));
+    }
+
+    private UUID accessSessionId(String rawAccessToken) {
+        if (rawAccessToken == null || rawAccessToken.isBlank()) {
+            return null;
+        }
+        try {
+            return UUID.fromString(tokens.verifyAccessToken(rawAccessToken)
+                    .getClaim("sessionId").asString());
+        } catch (RuntimeException ignored) {
+            return null;
+        }
     }
 
     private UnauthorizedException invalidCredentials() {

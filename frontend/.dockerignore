@@ -3,3 +3,7 @@ dist
 .git
 .idea
 *.log
+
+.env
+.env.*
+!.env.example

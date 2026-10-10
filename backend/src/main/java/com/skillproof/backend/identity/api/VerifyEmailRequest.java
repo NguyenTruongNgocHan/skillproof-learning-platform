@@ -9,4 +9,7 @@ public record VerifyEmailRequest(
         String token
         ) {
 
+    public com.skillproof.backend.identity.application.model.VerifyEmailCommand toCommand() {
+        return new com.skillproof.backend.identity.application.model.VerifyEmailCommand(token);
+    }
 }

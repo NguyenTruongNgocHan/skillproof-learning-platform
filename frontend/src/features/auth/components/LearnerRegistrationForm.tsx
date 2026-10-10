@@ -1,18 +1,18 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import AuthShell from "@/features/auth/components/AuthShell"
+import PasswordRequirements from "@/features/auth/components/PasswordRequirements"
+import type { RegisterLearnerData } from "@/features/auth/types/auth.types"
 import {
   checkPassword,
   getPasswordStrength,
   isPasswordValid,
 } from "@/features/auth/validation/passwordPolicy"
-import AuthShell from "@/features/auth/components/AuthShell"
-import PasswordRequirements from "@/features/auth/components/PasswordRequirements"
-import Input from "@/components/ui/Input"
-import PasswordInput from "@/components/ui/PasswordInput"
-import Button from "@/components/ui/Button"
-import Checkbox from "@/components/ui/Checkbox"
-import LoadingSpinner from "@/components/feedback/LoadingSpinner"
-import type { RegisterLearnerData } from "@/features/auth/types/auth.types"
+import LoadingSpinner from "@/shared/components/feedback/LoadingSpinner"
+import Button from "@/shared/ui/Button"
+import Checkbox from "@/shared/ui/Checkbox"
+import Input from "@/shared/ui/Input"
+import PasswordInput from "@/shared/ui/PasswordInput"
+import { useState } from "react"
+import { Link } from "react-router-dom"
 
 interface LearnerRegistrationFormProps {
   onSubmit: (data: RegisterLearnerData) => Promise<void>
@@ -68,15 +68,10 @@ export default function LearnerRegistrationForm({
   const passwordValid = isPasswordValid(passwordChecks)
   const passwordStrength = getPasswordStrength(password)
 
-  const passwordsMatch =
-    password !== "" &&
-    confirmPassword !== "" &&
-    password === confirmPassword
+  const passwordsMatch = password !== "" && confirmPassword !== "" && password === confirmPassword
 
   const confirmError =
-    confirmPassword !== "" && !passwordsMatch
-      ? "Those passwords don't match yet."
-      : null
+    confirmPassword !== "" && !passwordsMatch ? "Those passwords don't match yet." : null
 
   const formValid =
     fullName.trim() !== "" &&
@@ -100,9 +95,7 @@ export default function LearnerRegistrationForm({
       })
     } catch (err: unknown) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "We couldn't create your account. Please try again.",
+        err instanceof Error ? err.message : "We couldn't create your account. Please try again.",
       )
     }
   }
@@ -111,15 +104,13 @@ export default function LearnerRegistrationForm({
     <AuthShell
       mode="register"
       backTo="/register"
+      backAction={onBack}
       backLabel="Choose another path"
     >
       <div className="auth-intro auth-intro--compact">
         <h1>Create your learner account</h1>
 
-        <p>
-          Build your learning record and turn progress into proof you can carry
-          forward.
-        </p>
+        <p>Build your learning record and turn progress into proof you can carry forward.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="auth-form-stack">
@@ -202,12 +193,7 @@ export default function LearnerRegistrationForm({
           </div>
         )}
 
-        <Button
-          type="submit"
-          variant="primary"
-          className="w-full"
-          disabled={!formValid || loading}
-        >
+        <Button type="submit" variant="primary" className="w-full" disabled={!formValid || loading}>
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <LoadingSpinner size={16} />

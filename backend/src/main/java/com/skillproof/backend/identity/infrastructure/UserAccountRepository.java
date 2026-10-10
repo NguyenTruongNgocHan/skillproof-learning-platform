@@ -38,4 +38,6 @@ public interface UserAccountRepository
     Optional<UserAccount> findByIdForUpdate(
             @Param("id") UUID id
     );
+    @Query("select a.id from UserAccount a where lower(a.email) like lower(concat('%', :query, '%'))")
+    java.util.List<UUID> findAccountIdsByEmailFragment(String query);
 }

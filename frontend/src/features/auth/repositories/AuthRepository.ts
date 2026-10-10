@@ -1,10 +1,10 @@
 import type {
-  User,
-  LoginCredentials,
-  RegisterLearnerData,
   AuthResult,
   LearnerPreferences,
-} from "../types/auth.types"
+  LoginCredentials,
+  RegisterLearnerData,
+  User,
+} from "@/features/auth/types/auth.types"
 
 export interface AuthRepository {
   saveLearnerPreferences(data: LearnerPreferences): Promise<void>

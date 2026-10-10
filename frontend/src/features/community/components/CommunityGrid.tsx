@@ -1,7 +1,7 @@
-import { Search } from "lucide-react"
-import EmptyState from "@/components/feedback/EmptyState"
 import CommunityContentCard from "@/features/community/components/CommunityContentCard"
-import type { CommunityContentItem } from "@/mocks/community/communityContent"
+import type { CommunityContentItem } from "@/features/community/data/communityContent"
+import EmptyState from "@/shared/components/feedback/EmptyState"
+import { Search } from "lucide-react"
 
 interface CommunityGridProps {
   items: CommunityContentItem[]

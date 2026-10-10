@@ -17,4 +17,7 @@ public record ResetPasswordRequest(
         String newPassword
         ) {
 
+    public com.skillproof.backend.identity.application.model.ResetPasswordCommand toCommand() {
+        return new com.skillproof.backend.identity.application.model.ResetPasswordCommand(token, newPassword);
+    }
 }

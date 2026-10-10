@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom"
-import Container from "@/components/ui/Container"
-import Button from "@/components/ui/Button"
 import { useAuth } from "@/features/auth/hooks/useAuth"
-import { getNextRouteForUserState } from "@/utils/authFlow"
+import { getNextRouteForUserState } from "@/features/auth/utils/authFlow"
+import Button from "@/shared/ui/Button"
+import Container from "@/shared/ui/Container"
+import { Link } from "react-router-dom"
 
 export default function FinalCTASection() {
   const { user } = useAuth()
@@ -15,15 +15,13 @@ export default function FinalCTASection() {
             Turn learning into proof.
           </h2>
           <p className="text-lg text-muted-skin max-w-xl mx-auto mb-10">
-            Start with your account today. Learning Paths, assessments and
-            verifiable certificates are planned for future releases.
+            Start with your account today. Learning Paths, assessments and verifiable certificates
+            are planned for future releases.
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 mb-6">
             <Button asChild variant="primary" size="lg">
-              <Link to={accountTarget}>
-                {user ? "My workspace" : "Create an account"}
-              </Link>
+              <Link to={accountTarget}>{user ? "My workspace" : "Create an account"}</Link>
             </Button>
             <Link
               to="/verify"

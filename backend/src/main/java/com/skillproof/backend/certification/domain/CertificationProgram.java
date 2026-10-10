@@ -6,7 +6,7 @@ import java.util.UUID;
 public record CertificationProgram(
         UUID id,
         UUID organizationId,
-        UUID learningPathVersionId,
+        UUID courseVersionId,
         UUID completionPolicyId,
         String name,
         Status status,

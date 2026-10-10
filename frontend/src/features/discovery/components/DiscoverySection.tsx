@@ -1,5 +1,5 @@
-import type { ReactNode } from "react"
 import { ArrowRight } from "lucide-react"
+import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
 
 import { useDiscoveryMotion } from "@/features/discovery/hooks/useDiscoveryMotion"
@@ -28,7 +28,9 @@ export default function DiscoverySection({
   return (
     <section
       ref={ref}
-      className={`discovery-section discovery-reveal${revealed ? " is-revealed" : ""} ${className}`.trim()}
+      className={`discovery-section discovery-reveal${
+        revealed ? " is-revealed" : ""
+      } ${className}`.trim()}
     >
       <div className="discovery-section__heading">
         <div>
