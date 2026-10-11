@@ -204,7 +204,7 @@ export function AssessmentEditor({
               if (links.loading || links.error || !links.data) return;
               void action.run(async () => {
                 const position =
-                  Math.max(0, ...links.data.map((q) => q.position)) + 1;
+                  Math.max(0, ...(links.data ?? []).map((q) => q.position)) + 1;
                 await quizApi.attach(assessment.id, question, position, points);
                 setQuestion("");
               }, "Question attached.");

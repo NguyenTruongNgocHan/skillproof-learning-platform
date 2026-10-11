@@ -1,12 +1,7 @@
 package com.skillproof.backend.access;
 
-import java.util.List;
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -18,22 +13,37 @@ import com.skillproof.backend.commerce.contract.ProductOfferQuery;
 import com.skillproof.backend.commerce.domain.ProductType;
 import com.skillproof.backend.identity.contract.IdentityAccessQuery;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.UUID;
+
 class AccessEntitlementServiceTest {
 
     private final AccessGrantRepository grants = mock(AccessGrantRepository.class);
     private final ProductOfferQuery offers = mock(ProductOfferQuery.class);
     private final IdentityAccessQuery users = mock(IdentityAccessQuery.class);
-    private final AccessEntitlementService service = new AccessEntitlementService(grants, offers, users);
+    private final AccessEntitlementService service =
+            new AccessEntitlementService(grants, offers, users);
     private final UUID learner = UUID.randomUUID(), product = UUID.randomUUID();
 
     @BeforeEach
     void setup() {
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                service,
+                "continuity",
+                mock(com.skillproof.backend.course.contract.CourseEnrollmentContinuity.class));
         when(users.isActiveLearner(learner)).thenReturn(true);
-        when(grants.findByLearnerIdAndProductTypeAndProductId(any(), anyString(), any())).thenReturn(List.of());
+        when(grants.findByLearnerIdAndProductTypeAndProductId(any(), anyString(), any()))
+                .thenReturn(List.of());
     }
 
     private void offer(ProductType type, long price, boolean publicSale, boolean available) {
-        when(offers.offer(type, product)).thenReturn(new ProductOfferQuery.Offer(type, product, null, "Product", price, publicSale, available));
+        when(offers.offer(type, product))
+                .thenReturn(
+                        new ProductOfferQuery.Offer(
+                                type, product, null, "Product", price, publicSale, available));
     }
 
     @Test

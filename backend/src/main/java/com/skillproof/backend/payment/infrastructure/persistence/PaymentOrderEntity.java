@@ -1,16 +1,27 @@
 package com.skillproof.backend.payment.infrastructure.persistence;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.time.Instant;
+import java.util.UUID;
+
 @Entity
 @Table(name = "payment_order")
 public class PaymentOrderEntity {
+
+    @Column(name = "organization_id")
+    private UUID organizationId;
+
+    public UUID getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(UUID value) {
+        organizationId = value;
+    }
 
     @Id
     @Column(name = "id", nullable = false)
@@ -46,10 +57,20 @@ public class PaymentOrderEntity {
     @Column(name = "settled_at", nullable = true)
     private Instant settledAt;
 
-    protected PaymentOrderEntity() {
-    }
+    protected PaymentOrderEntity() {}
 
-    public PaymentOrderEntity(UUID id, UUID learnerId, String productType, UUID productId, String idempotencyKey, long amountVnd, String status, String providerTransaction, Instant createdAt, Instant expiresAt, Instant settledAt) {
+    public PaymentOrderEntity(
+            UUID id,
+            UUID learnerId,
+            String productType,
+            UUID productId,
+            String idempotencyKey,
+            long amountVnd,
+            String status,
+            String providerTransaction,
+            Instant createdAt,
+            Instant expiresAt,
+            Instant settledAt) {
         this.id = id;
         this.learnerId = learnerId;
         this.productType = productType;
@@ -107,7 +128,10 @@ public class PaymentOrderEntity {
         return settledAt;
     }
 
-    public void settle(com.skillproof.backend.payment.domain.PaymentStatus status, String transaction, Instant now) {
+    public void settle(
+            com.skillproof.backend.payment.domain.PaymentStatus status,
+            String transaction,
+            Instant now) {
         if (!"PENDING".equals(this.status)) {
             throw new IllegalStateException("Payment already finalized");
         }

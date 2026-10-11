@@ -1,78 +1,88 @@
-import { quizApi } from "@/features/quiz/api/quizApi"
-import type { AttemptView, Result } from "@/features/quiz/types/quiz.types"
-import LearnerShell from "@/shared/components/layout/LearnerShell"
-import Button from "@/shared/ui/Button"
-import { useCallback, useEffect, useState } from "react"
-import { Link, useParams } from "react-router-dom"
+import { AttemptFeedback } from "@/features/feedback/components/AttemptFeedback";
+import { quizApi } from "@/features/quiz/api/quizApi";
+import type { AttemptView, Result } from "@/features/quiz/types/quiz.types";
+import LearnerShell from "@/shared/components/layout/LearnerShell";
+import Button from "@/shared/ui/Button";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 function isResult(value: AttemptView | Result): value is Result {
-  return "scorePercent" in value
+  return "scorePercent" in value;
 }
 export default function AttemptPage() {
-  const { id } = useParams()
+  const { id } = useParams();
   const [attempt, setAttempt] = useState<AttemptView | null>(null),
     [result, setResult] = useState<Result | null>(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false),
-    [now, setNow] = useState(Date.now())
+    [now, setNow] = useState(Date.now());
   const load = useCallback(async () => {
-    if (!id) return
-    setLoading(true)
+    if (!id) return;
+    setLoading(true);
     try {
-      const data = await quizApi.resume(id)
+      const data = await quizApi.resume(id);
       if (isResult(data)) {
-        setResult(data)
-        setAttempt(null)
-      } else setAttempt(data)
-      setError("")
+        setResult(data);
+        setAttempt(null);
+      } else setAttempt(data);
+      setError("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to load this attempt")
+      setError(e instanceof Error ? e.message : "Unable to load this attempt");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [id])
+  }, [id]);
   useEffect(() => {
-    void load()
-  }, [load])
+    void load();
+  }, [load]);
   useEffect(() => {
-    if (!attempt) return
-    const timer = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(timer)
-  }, [attempt])
+    if (!attempt) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [attempt]);
   const remaining = attempt
-    ? Math.max(0, Math.ceil((new Date(attempt.attempt.deadline_at).getTime() - now) / 1000))
-    : 0
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(attempt.attempt.deadline_at).getTime() - now) / 1000,
+        ),
+      )
+    : 0;
   async function answer(questionVersionId: string, optionId: string) {
-    if (!id) return
-    setBusy(true)
-    setError("")
+    if (!id) return;
+    setBusy(true);
+    setError("");
     try {
-      const data = await quizApi.answer(id, questionVersionId, optionId)
+      const data = await quizApi.answer(id, questionVersionId, optionId);
       if (isResult(data)) {
-        setResult(data)
-        setAttempt(null)
-      } else setAttempt(data)
+        setResult(data);
+        setAttempt(null);
+      } else setAttempt(data);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Answer not saved. Check your connection and retry.",
-      )
+        e instanceof Error
+          ? e.message
+          : "Answer not saved. Check your connection and retry.",
+      );
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
   async function submit() {
-    if (!id) return
-    setBusy(true)
-    setError("")
+    if (!id) return;
+    setBusy(true);
+    setError("");
     try {
-      setResult(await quizApi.submit(id))
-      setAttempt(null)
+      setResult(await quizApi.submit(id));
+      setAttempt(null);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Could not submit; your saved answers remain available.",
-      )
+        e instanceof Error
+          ? e.message
+          : "Could not submit; your saved answers remain available.",
+      );
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
   return (
@@ -100,6 +110,10 @@ export default function AttemptPage() {
                   : "Attempt completed"}
             </h1>
             <strong>{result.scorePercent}%</strong>
+            <AttemptFeedback
+              attemptId={result.attemptId}
+              assessmentId={result.assessmentId}
+            />
             <p>
               {result.timedOut
                 ? "The server closed this attempt at its deadline. Saved answers were scored, but this attempt cannot count as passed."
@@ -126,10 +140,12 @@ export default function AttemptPage() {
                 <h1>{attempt.attempt.title}</h1>
                 <p role="timer">
                   Time remaining: {Math.floor(remaining / 60)}:
-                  {String(remaining % 60).padStart(2, "0")} · Saved answers remain available after
-                  refresh.
+                  {String(remaining % 60).padStart(2, "0")} · Saved answers
+                  remain available after refresh.
                 </p>
-                <p>The server determines the deadline. Submit once you are ready.</p>
+                <p>
+                  The server determines the deadline. Submit once you are ready.
+                </p>
               </header>
               {error && (
                 <p className="org-error" role="alert">
@@ -155,7 +171,9 @@ export default function AttemptPage() {
                           name={q.question_version_id}
                           checked={q.selected_option_id === o.id}
                           disabled={busy || remaining === 0}
-                          onChange={() => void answer(q.question_version_id, o.id)}
+                          onChange={() =>
+                            void answer(q.question_version_id, o.id)
+                          }
                         />
                         {o.body}
                       </label>
@@ -165,8 +183,8 @@ export default function AttemptPage() {
               </div>
               <div className="v7-submit">
                 <span>
-                  {attempt.questions.filter((q) => q.selected_option_id).length} /{" "}
-                  {attempt.questions.length} answered
+                  {attempt.questions.filter((q) => q.selected_option_id).length}{" "}
+                  / {attempt.questions.length} answered
                 </span>
                 <Button disabled={busy} onClick={() => void submit()}>
                   {busy
@@ -181,5 +199,5 @@ export default function AttemptPage() {
         )}
       </div>
     </LearnerShell>
-  )
+  );
 }

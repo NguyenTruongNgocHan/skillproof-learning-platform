@@ -7,6 +7,7 @@ import Button from "@/shared/ui/Button";
 import Input from "@/shared/ui/Input";
 import { assignmentApi } from "../api/assignmentApi";
 import type { Assignment } from "../types/assignment.types";
+import { AssignmentRubricEditor } from "./AssignmentRubricEditor";
 import { AssignmentSubmissions } from "./AssignmentSubmissions";
 export function CourseAssignments({
   versionId,
@@ -17,6 +18,7 @@ export function CourseAssignments({
   owners: ActivityOwner[];
   editable: boolean;
 }) {
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editorBusy, setEditorBusy] = useState(false);
   const remote = useRemote(
     useCallback(() => assignmentApi.list(versionId), [versionId]),
@@ -43,6 +45,7 @@ export function CourseAssignments({
         {editable && (
           <Button
             onClick={() => {
+              setEditingId(null);
               setForm({
                 title: "",
                 instructions: "",
@@ -81,10 +84,38 @@ export function CourseAssignments({
             <p className="sporg-lesson-body">{a.instructions}</p>
             {a.dueAt && <small>Due {new Date(a.dueAt).toLocaleString()}</small>}
           </div>
+          <AssignmentRubricEditor assignmentId={a.id} editable={editable} />
           <div className="sporg-actions">
             <Button variant="outline" onClick={() => setSelected(a)}>
               Review submissions
             </Button>
+            {editable && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditingId(a.id);
+                  setForm({
+                    title: a.title,
+                    instructions: a.instructions,
+                    ownerId: a.ownerId,
+                    required: a.required,
+                    passPercent: a.passPercent,
+                    maxSubmissions: a.maxSubmissions,
+                    dueAt: a.dueAt
+                      ? new Date(
+                          new Date(a.dueAt).getTime() -
+                            new Date(a.dueAt).getTimezoneOffset() * 60000,
+                        )
+                          .toISOString()
+                          .slice(0, 16)
+                      : "",
+                  });
+                  setOpen(true);
+                }}
+              >
+                Edit assignment
+              </Button>
+            )}
             {editable && (
               <Button
                 variant="ghost"
@@ -117,7 +148,7 @@ export function CourseAssignments({
       )}
       {open && (
         <WorkspaceDialog
-          title="Add assignment"
+          title={editingId ? "Edit assignment" : "Add assignment"}
           busy={action.busy}
           close={() => {
             if (window.confirm("Discard this assignment?")) setOpen(false);
@@ -129,14 +160,27 @@ export function CourseAssignments({
               e.preventDefault();
               const owner = owners.find((o) => o.id === form.ownerId);
               if (!owner) return;
-              void action.run(async () => {
-                await assignmentApi.create(versionId, {
-                  ...form,
-                  ownerScope: owner.scope,
-                  dueAt: form.dueAt ? new Date(form.dueAt).toISOString() : null,
-                });
-                setOpen(false);
-              }, "Assignment created.");
+              void action.run(
+                async () => {
+                  await (editingId
+                    ? assignmentApi.edit(editingId, {
+                        ...form,
+                        ownerScope: owner.scope,
+                        dueAt: form.dueAt
+                          ? new Date(form.dueAt).toISOString()
+                          : null,
+                      })
+                    : assignmentApi.create(versionId, {
+                        ...form,
+                        ownerScope: owner.scope,
+                        dueAt: form.dueAt
+                          ? new Date(form.dueAt).toISOString()
+                          : null,
+                      }));
+                  setOpen(false);
+                },
+                editingId ? "Assignment updated." : "Assignment created.",
+              );
             }}
           >
             <Input
@@ -212,7 +256,7 @@ export function CourseAssignments({
             </label>
             <ActionNotice {...action} />
             <Button type="submit" disabled={action.busy}>
-              Create assignment
+              {editingId ? "Save assignment" : "Create assignment"}
             </Button>
           </form>
         </WorkspaceDialog>

@@ -1,65 +1,76 @@
-import { adminOrganizationApi } from "@/features/admin/api/adminOrganizationApi"
-import { mediaApi } from "@/features/media/api/mediaApi"
-import { ApplicationHistory } from "@/features/organization/components/ApplicationHistory"
-import "@/features/organization/styles/organizer.css"
+import { EvidenceManager } from "@/features/organization/components/EvidenceManager";
+import { adminOrganizationApi } from "@/features/admin/api/adminOrganizationApi";
+import { mediaApi } from "@/features/media/api/mediaApi";
+import { ApplicationHistory } from "@/features/organization/components/ApplicationHistory";
+import "@/features/organization/styles/organizer.css";
 import type {
   ApplicationRevision,
   Organization,
-} from "@/features/organization/types/organization.types"
-import AppShell from "@/shared/components/layout/AppShell"
-import Button from "@/shared/ui/Button"
-import { useEffect, useState } from "react"
+} from "@/features/organization/types/organization.types";
+import AppShell from "@/shared/components/layout/AppShell";
+import Button from "@/shared/ui/Button";
+import { useEffect, useState } from "react";
 
 export default function AdminOrganizationReviewPage() {
-  const [organizations, setOrganizations] = useState<Organization[]>([])
-  const [selected, setSelected] = useState<Organization | null>(null)
-  const [revision, setRevision] = useState<ApplicationRevision | null>(null)
-  const [reason, setReason] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [busy, setBusy] = useState(false)
-  const [reload, setReload] = useState(0)
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [selected, setSelected] = useState<Organization | null>(null);
+  const [revisionLoading, setRevisionLoading] = useState(false);
+  const [revision, setRevision] = useState<ApplicationRevision | null>(null);
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [reload, setReload] = useState(0);
   useEffect(() => {
-    let live = true
-    setLoading(true)
+    let live = true;
+    setLoading(true);
     adminOrganizationApi
       .pending()
       .then((rows) => {
         if (live) {
-          setOrganizations(rows)
-          setError("")
+          setOrganizations(rows);
+          setError("");
         }
       })
       .catch((e) => {
-        if (live) setError(e.message)
+        if (live) setError(e.message);
       })
       .finally(() => {
-        if (live) setLoading(false)
-      })
+        if (live) setLoading(false);
+      });
     return () => {
-      live = false
-    }
-  }, [reload])
+      live = false;
+    };
+  }, [reload]);
   useEffect(() => {
-    let live = true
-    setRevision(null)
-    setReason("")
-    setError("")
+    let live = true;
+    setRevision(null);
+    setReason("");
+    setError("");
+    setRevisionLoading(Boolean(selected));
     if (selected)
       adminOrganizationApi
         .revisions(selected.id)
         .then((rows) => {
-          if (live) setRevision([...rows].sort((a, b) => b.revisionNo - a.revisionNo)[0] ?? null)
+          if (live)
+            setRevision(
+              [...rows].sort((a, b) => b.revisionNo - a.revisionNo)[0] ?? null,
+            );
         })
         .catch((e) => {
-          if (live) setError(e.message)
+          if (live) setError(e.message);
         })
+        .finally(() => {
+          if (live) setRevisionLoading(false);
+        });
     return () => {
-      live = false
-    }
-  }, [selected])
-  async function review(decision: "APPROVED" | "REJECTED") {
-    if (!revision || busy || (decision === "REJECTED" && !reason.trim())) return
+      live = false;
+    };
+  }, [selected]);
+  async function review(
+    decision: "APPROVED" | "REJECTED" | "NEEDS_INFORMATION",
+  ) {
+    if (!revision || busy || !reason.trim()) return;
     if (
       !window.confirm(
         `${
@@ -67,19 +78,21 @@ export default function AdminOrganizationReviewPage() {
         } revision ${revision.revisionNo} of ${revision.displayName}?`,
       )
     )
-      return
-    setBusy(true)
-    setError("")
+      return;
+    setBusy(true);
+    setError("");
     try {
-      await adminOrganizationApi.review(revision.id, decision, reason.trim())
-      setSelected(null)
-      setReload((x) => x + 1)
+      await adminOrganizationApi.review(revision.id, decision, reason.trim());
+      setSelected(null);
+      setReload((x) => x + 1);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Review failed; refresh to check the current revision.",
-      )
+        e instanceof Error
+          ? e.message
+          : "Review failed; refresh to check the current revision.",
+      );
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
   async function download(id: string) {
@@ -90,9 +103,9 @@ export default function AdminOrganizationReviewPage() {
         mimeType: "application/octet-stream",
         size: 0,
         createdAt: "",
-      })
+      });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Download failed")
+      setError(e instanceof Error ? e.message : "Download failed");
     }
   }
   return (
@@ -102,7 +115,8 @@ export default function AdminOrganizationReviewPage() {
           <p className="sporg-eyebrow">Organization governance</p>
           <h1>Application review</h1>
           <p>
-            Decide on a saved submission. The applicant's later drafts never replace this evidence.
+            Decide on a saved submission. The applicant's later drafts never
+            replace this evidence.
           </p>
         </header>
         {error && (
@@ -111,8 +125,8 @@ export default function AdminOrganizationReviewPage() {
             <Button
               variant="outline"
               onClick={() => {
-                setSelected(null)
-                setReload((x) => x + 1)
+                setSelected(null);
+                setReload((x) => x + 1);
               }}
             >
               Refresh applications
@@ -135,7 +149,11 @@ export default function AdminOrganizationReviewPage() {
                       {o.legalName} · {o.country}
                     </small>
                   </div>
-                  <Button variant="outline" disabled={busy} onClick={() => setSelected(o)}>
+                  <Button
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => setSelected(o)}
+                  >
                     Review
                   </Button>
                 </div>
@@ -145,8 +163,13 @@ export default function AdminOrganizationReviewPage() {
           {selected && (
             <section className="sporg-card">
               <h2>{selected.displayName}</h2>
+              <EvidenceManager organizationId={selected.id} admin />
               {!revision ? (
-                <p role="status">Loading submission snapshot…</p>
+                <p role={revisionLoading ? "status" : "alert"}>
+                  {revisionLoading
+                    ? "Loading submission snapshot…"
+                    : "No submission snapshot available. Refresh applications to retry."}
+                </p>
               ) : (
                 <>
                   <p>
@@ -172,13 +195,40 @@ export default function AdminOrganizationReviewPage() {
                   </dl>
                   <h3>Submitted evidence</h3>
                   {revision.documentMediaIds.map((id, i) => (
-                    <Button variant="outline" key={id} onClick={() => void download(id)}>
+                    <Button
+                      variant="outline"
+                      key={id}
+                      onClick={() => void download(id)}
+                    >
                       Document {i + 1}
                     </Button>
                   ))}
-                  {!revision.documentMediaIds.length && <p>No documents submitted.</p>}
+                  {!revision.documentMediaIds.length && (
+                    <p>No documents submitted.</p>
+                  )}
+                  <section className="sporg-card">
+                    <h3>Reviewer checklist</h3>
+                    <ul>
+                      <li>
+                        Verify legal identity and representative authorization
+                        against the saved evidence.
+                      </li>
+                      <li>
+                        Check document expiry, organization name, registration
+                        and contact consistency.
+                      </li>
+                      <li>
+                        Mark each required document accepted or explain what
+                        must be supplied.
+                      </li>
+                      <li>
+                        Approval verifies the organization only; issuer rights
+                        require a separate authorization.
+                      </li>
+                    </ul>
+                  </section>
                   <label>
-                    Review reason
+                    Review reason (required for every decision)
                     <textarea
                       value={reason}
                       maxLength={1000}
@@ -188,19 +238,36 @@ export default function AdminOrganizationReviewPage() {
                   </label>
                   <div className="sporg-actions">
                     <Button
-                      disabled={busy || revision.status !== "PENDING"}
+                      disabled={
+                        busy || !reason.trim() || revision.status !== "PENDING"
+                      }
                       onClick={() => void review("APPROVED")}
                     >
                       Approve
                     </Button>
                     <Button
+                      variant="outline"
+                      disabled={
+                        busy || !reason.trim() || revision.status !== "PENDING"
+                      }
+                      onClick={() => void review("NEEDS_INFORMATION")}
+                    >
+                      Request additional information
+                    </Button>
+                    <Button
                       variant="destructive"
-                      disabled={busy || !reason.trim() || revision.status !== "PENDING"}
+                      disabled={
+                        busy || !reason.trim() || revision.status !== "PENDING"
+                      }
                       onClick={() => void review("REJECTED")}
                     >
                       Reject
                     </Button>
-                    <Button variant="ghost" disabled={busy} onClick={() => setSelected(null)}>
+                    <Button
+                      variant="ghost"
+                      disabled={busy}
+                      onClick={() => setSelected(null)}
+                    >
                       Close
                     </Button>
                   </div>
@@ -209,8 +276,14 @@ export default function AdminOrganizationReviewPage() {
             </section>
           )}
         </div>
-        {selected && <ApplicationHistory key={selected.id} organizationId={selected.id} admin />}
+        {selected && (
+          <ApplicationHistory
+            key={selected.id}
+            organizationId={selected.id}
+            admin
+          />
+        )}
       </main>
     </AppShell>
-  )
+  );
 }

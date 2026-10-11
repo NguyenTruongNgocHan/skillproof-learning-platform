@@ -1,3 +1,21 @@
+import OrganizationPricingPage from "@/features/pricing/pages/OrganizationPricingPage";
+import PublicResourcePage from "@/features/library/pages/PublicResourcePage";
+import ResourceCatalogPage from "@/features/library/pages/ResourceCatalogPage";
+import LearnerCertificateFeedbackPage from "@/features/feedback/pages/LearnerCertificateFeedbackPage";
+import AdminCertificateGovernancePage from "@/features/admin/pages/AdminCertificateGovernancePage";
+import OrganizationGradingPage from "@/features/assignment/pages/OrganizationGradingPage";
+import CheckoutPage from "@/features/payment/pages/CheckoutPage";
+import PublicOrganizationPage from "@/features/organization/pages/PublicOrganizationPage";
+import AdminOrganizationStatusPage from "@/features/admin/pages/AdminOrganizationStatusPage";
+import CourseCatalogPage from "@/features/course/pages/CourseCatalogPage";
+import PublicCourseDetailPage from "@/features/course/pages/PublicCourseDetailPage";
+import AdminLibraryReviewPage from "@/features/admin/pages/AdminLibraryReviewPage";
+import AdminFeedbackModerationPage from "@/features/admin/pages/AdminFeedbackModerationPage";
+import AdminIssuerReviewPage from "@/features/admin/pages/AdminIssuerReviewPage";
+import OrganizationActivityPage from "@/features/operations/pages/OrganizationActivityPage";
+import OrganizationFeedbackPage from "@/features/feedback/pages/OrganizationFeedbackPage";
+import OrganizationAnalyticsPage from "@/features/analytics/pages/OrganizationAnalyticsPage";
+import OrganizationGovernancePage from "@/features/organization/pages/OrganizationGovernancePage";
 import { OrganizerAuthorityGuard } from "@/app/guards/OrganizerAuthorityGuard";
 import { ROUTES } from "@/app/config/appRoutes";
 import { AuthGuard } from "@/app/guards/AuthGuard";
@@ -116,6 +134,76 @@ export function AppRouter() {
       <ScrollToRoute />
       <Suspense fallback={<RouteLoadingFrame />}>
         <Routes>
+          <Route
+            path="/admin/library"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ADMIN">
+                  <AdminLibraryReviewPage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/admin/organization-status"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ADMIN">
+                  <AdminOrganizationStatusPage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/organizations/:id"
+            element={<PublicOrganizationPage />}
+          />
+          <Route path="/catalog" element={<CourseCatalogPage />} />
+          <Route path="/catalog/:id" element={<PublicCourseDetailPage />} />
+          <Route
+            path="/checkout"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="LEARNER">
+                  <CheckoutPage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/organizer/grading"
+            element={
+              <AuthGuard>
+                <OrganizerVerificationGuard>
+                  <OrganizerAuthorityGuard authority="GRADE_ASSIGNMENTS">
+                    <OrganizationGradingPage />
+                  </OrganizerAuthorityGuard>
+                </OrganizerVerificationGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/admin/certificates"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ADMIN">
+                  <AdminCertificateGovernancePage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route path="/resources" element={<ResourceCatalogPage />} />
+          <Route path="/resources/:id" element={<PublicResourcePage />} />
+          <Route
+            path="/app/certificate-feedback"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="LEARNER">
+                  <LearnerCertificateFeedbackPage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
           {/* Public */}
           <Route path={ROUTES.HOME} element={<LandingPage />} />
           <Route path={ROUTES.COMMUNITY} element={<CommunityPage />} />
@@ -304,6 +392,92 @@ export function AppRouter() {
                       <OrganizationAccessPage />
                     </OrganizerAuthorityGuard>
                   </OrganizerVerificationGuard>
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/organizer/governance"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ORGANIZER">
+                  <OrganizerVerificationGuard>
+                    <OrganizerAuthorityGuard authority="MANAGE_PROFILE">
+                      <OrganizationGovernancePage />
+                    </OrganizerAuthorityGuard>
+                  </OrganizerVerificationGuard>
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/organizer/pricing"
+            element={
+              <AuthGuard>
+                <OrganizerVerificationGuard>
+                  <OrganizerAuthorityGuard authority="MANAGE_PRICING">
+                    <OrganizationPricingPage />
+                  </OrganizerAuthorityGuard>
+                </OrganizerVerificationGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/organizer/analytics"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ORGANIZER">
+                  <OrganizerVerificationGuard>
+                    <OrganizerAuthorityGuard authority="VIEW_ANALYTICS">
+                      <OrganizationAnalyticsPage />
+                    </OrganizerAuthorityGuard>
+                  </OrganizerVerificationGuard>
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/organizer/feedback"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ORGANIZER">
+                  <OrganizerVerificationGuard>
+                    <OrganizerAuthorityGuard authority="MANAGE_FEEDBACK">
+                      <OrganizationFeedbackPage />
+                    </OrganizerAuthorityGuard>
+                  </OrganizerVerificationGuard>
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/organizer/activity"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ORGANIZER">
+                  <OrganizerVerificationGuard>
+                    <OrganizationActivityPage />
+                  </OrganizerVerificationGuard>
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/admin/issuers"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ADMIN">
+                  <AdminIssuerReviewPage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/admin/feedback"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ADMIN">
+                  <AdminFeedbackModerationPage />
                 </RoleGuard>
               </AuthGuard>
             }

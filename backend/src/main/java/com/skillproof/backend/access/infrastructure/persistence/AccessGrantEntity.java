@@ -1,12 +1,12 @@
 package com.skillproof.backend.access.infrastructure.persistence;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "access_grant")
@@ -43,10 +43,30 @@ public class AccessGrantEntity {
     @Column(name = "revoked_at", nullable = true)
     private Instant revokedAt;
 
-    protected AccessGrantEntity() {
+    @jakarta.persistence.Column(name = "cohort", nullable = false, length = 120)
+    private String cohort = "";
+
+    public String getCohort() {
+        return cohort;
     }
 
-    public AccessGrantEntity(UUID id, UUID learnerId, String productType, UUID productId, String source, UUID referenceId, UUID grantedBy, Instant createdAt, Instant expiresAt, Instant revokedAt) {
+    public void setCohort(String cohort) {
+        this.cohort = cohort;
+    }
+
+    protected AccessGrantEntity() {}
+
+    public AccessGrantEntity(
+            UUID id,
+            UUID learnerId,
+            String productType,
+            UUID productId,
+            String source,
+            UUID referenceId,
+            UUID grantedBy,
+            Instant createdAt,
+            Instant expiresAt,
+            Instant revokedAt) {
         this.id = id;
         this.learnerId = learnerId;
         this.productType = productType;
@@ -102,10 +122,22 @@ public class AccessGrantEntity {
     public void revoke(Instant now) {
         if (revokedAt == null) {
             revokedAt = now;
-    
-        }}
+        }
+    }
 
     public boolean effective(Instant now) {
-        return com.skillproof.backend.access.domain.GrantPolicy.effective(expiresAt, revokedAt, now);
+        return com.skillproof.backend.access.domain.GrantPolicy.effective(
+                expiresAt, revokedAt, now);
+    }
+
+    @jakarta.persistence.Column(name = "organization_id")
+    private UUID organizationId;
+
+    public UUID getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(UUID value) {
+        organizationId = value;
     }
 }

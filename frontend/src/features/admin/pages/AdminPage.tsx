@@ -1,11 +1,11 @@
-import { adminApi } from "@/features/admin/api/adminApi"
-import { adminOrganizationApi } from "@/features/admin/api/adminOrganizationApi"
-import type { Account } from "@/features/admin/types/admin.types"
-import MediaPanel from "@/features/media/components/MediaPanel"
-import type { Organization } from "@/features/organization/types/organization.types"
-import AppShell from "@/shared/components/layout/AppShell"
-import Button from "@/shared/ui/Button"
-import { useEffect, useState } from "react"
+import { adminApi } from "@/features/admin/api/adminApi";
+import { adminOrganizationApi } from "@/features/admin/api/adminOrganizationApi";
+import type { Account } from "@/features/admin/types/admin.types";
+import { EvidenceManager } from "@/features/organization/components/EvidenceManager";
+import type { Organization } from "@/features/organization/types/organization.types";
+import AppShell from "@/shared/components/layout/AppShell";
+import Button from "@/shared/ui/Button";
+import { useEffect, useState } from "react";
 export default function AdminPage() {
   const [pending, setPending] = useState<Organization[]>([]),
     [accounts, setAccounts] = useState<Account[]>([]),
@@ -14,66 +14,71 @@ export default function AdminPage() {
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
-    [loading, setLoading] = useState(true)
-  const [reviews, setReviews] = useState<Awaited<ReturnType<typeof adminOrganizationApi.reviews>>>(
-    [],
-  )
-  const [reviewError, setReviewError] = useState("")
+    [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState<
+    Awaited<ReturnType<typeof adminOrganizationApi.reviews>>
+  >([]);
+  const [reviewError, setReviewError] = useState("");
   useEffect(() => {
     if (!selected) {
-      setReviews([])
-      setReviewError("")
-      return
+      setReviews([]);
+      setReviewError("");
+      return;
     }
-    let active = true
+    let active = true;
     adminOrganizationApi
       .reviews(selected.id)
       .then((rows) => {
         if (active) {
-          setReviews(rows)
-          setReviewError("")
+          setReviews(rows);
+          setReviewError("");
         }
       })
       .catch((e: unknown) => {
-        if (active) setReviewError(e instanceof Error ? e.message : "Could not load review history")
-      })
+        if (active)
+          setReviewError(
+            e instanceof Error ? e.message : "Could not load review history",
+          );
+      });
     return () => {
-      active = false
-    }
-  }, [selected])
+      active = false;
+    };
+  }, [selected]);
   async function load() {
-    setLoading(true)
+    setLoading(true);
     try {
       const [orgs, page] = await Promise.all([
         adminOrganizationApi.pending(),
         adminApi.accounts(50),
-      ])
-      setPending(orgs)
-      setAccounts(page.content)
-      setError("")
+      ]);
+      setPending(orgs);
+      setAccounts(page.content);
+      setError("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load administration data")
+      setError(
+        e instanceof Error ? e.message : "Could not load administration data",
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
   useEffect(() => {
-    void load()
-  }, [])
+    void load();
+  }, []);
   async function run(action: () => Promise<unknown>) {
-    setBusy(true)
-    setError("")
-    setMessage("")
+    setBusy(true);
+    setError("");
+    setMessage("");
     try {
-      await action()
-      setMessage("Change saved.")
-      setSelected(null)
-      setReason("")
-      await load()
+      await action();
+      setMessage("Change saved.");
+      setSelected(null);
+      setReason("");
+      await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Action failed")
+      setError(e instanceof Error ? e.message : "Action failed");
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
   return (
@@ -83,7 +88,8 @@ export default function AdminPage() {
           <span className="org-eyebrow">PLATFORM ADMINISTRATION</span>
           <h1>Reviews and accounts</h1>
           <p>
-            Decisions are saved with your identity and remain visible in the organization record.
+            Decisions are saved with your identity and remain visible in the
+            organization record.
           </p>
         </div>
         {error && (
@@ -101,7 +107,8 @@ export default function AdminPage() {
         )}
         <section className="org-panel">
           <h2>
-            Organization applications <span className="org-count">{pending.length}</span>
+            Organization applications{" "}
+            <span className="org-count">{pending.length}</span>
           </h2>
           {loading ? (
             <p>Loading applications…</p>
@@ -110,12 +117,18 @@ export default function AdminPage() {
           ) : (
             <div className="org-member-list">
               {pending.map((o) => (
-                <button className="org-review-row" key={o.id} onClick={() => setSelected(o)}>
+                <button
+                  className="org-review-row"
+                  key={o.id}
+                  onClick={() => setSelected(o)}
+                >
                   <strong>{o.displayName}</strong>
                   <span>
                     {o.legalName} · {o.country}
                   </span>
-                  <small>Submitted {new Date(o.createdAt).toLocaleDateString()}</small>
+                  <small>
+                    Submitted {new Date(o.createdAt).toLocaleDateString()}
+                  </small>
                 </button>
               ))}
             </div>
@@ -172,7 +185,8 @@ export default function AdminPage() {
                   <ul>
                     {reviews.map((review, index) => (
                       <li key={`${review.reviewed_at}-${index}`}>
-                        {review.decision} · {new Date(review.reviewed_at).toLocaleString()} ·{" "}
+                        {review.decision} ·{" "}
+                        {new Date(review.reviewed_at).toLocaleString()} ·{" "}
                         {review.reason || "No reason provided"}
                       </li>
                     ))}
@@ -182,7 +196,7 @@ export default function AdminPage() {
                 )}
               </div>
             )}
-            <MediaPanel scope="ORGANIZATION" target={selected.id} />
+            <EvidenceManager organizationId={selected.id} admin />
             <label className="org-reason">
               Review reason (required when rejecting)
               <textarea
@@ -197,7 +211,11 @@ export default function AdminPage() {
                 variant="primary"
                 onClick={() =>
                   void run(() =>
-                    adminOrganizationApi.reviewOrganization(selected.id, "APPROVED", reason),
+                    adminOrganizationApi.reviewOrganization(
+                      selected.id,
+                      "APPROVED",
+                      reason,
+                    ),
                   )
                 }
               >
@@ -208,7 +226,11 @@ export default function AdminPage() {
                 variant="outline"
                 onClick={() =>
                   void run(() =>
-                    adminOrganizationApi.reviewOrganization(selected.id, "REJECTED", reason),
+                    adminOrganizationApi.reviewOrganization(
+                      selected.id,
+                      "REJECTED",
+                      reason,
+                    ),
                   )
                 }
               >
@@ -243,7 +265,10 @@ export default function AdminPage() {
                           disabled={busy}
                           onChange={(e) =>
                             void run(() =>
-                              adminApi.changeRole(a.id, e.target.value as Account["role"]),
+                              adminApi.changeRole(
+                                a.id,
+                                e.target.value as Account["role"],
+                              ),
                             )
                           }
                         >
@@ -276,5 +301,5 @@ export default function AdminPage() {
         </section>
       </div>
     </AppShell>
-  )
+  );
 }

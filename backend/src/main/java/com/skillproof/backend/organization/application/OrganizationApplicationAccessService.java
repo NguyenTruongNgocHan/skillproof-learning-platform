@@ -1,51 +1,48 @@
 package com.skillproof.backend.organization.application;
 
+import com.skillproof.backend.organization.contract.OrganizationApplicationAccessQuery;
+import com.skillproof.backend.organization.domain.Organization;
+import com.skillproof.backend.organization.infrastructure.OrganizationRepository;
 import java.util.UUID;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.skillproof.backend.organization.contract.OrganizationApplicationAccessQuery;
-import com.skillproof.backend.organization.domain.Organization;
-import com.skillproof.backend.organization.infrastructure.OrganizationRepository;
-
 @Service
-public class OrganizationApplicationAccessService
-        implements OrganizationApplicationAccessQuery {
+public class OrganizationApplicationAccessService implements OrganizationApplicationAccessQuery {
 
-    private final OrganizationRepository organizations;
+  @org.springframework.beans.factory.annotation.Autowired
+  private com.skillproof.backend.organization.infrastructure.EvidenceRepository evidence;
 
-    public OrganizationApplicationAccessService(
-            OrganizationRepository organizations
-    ) {
-        this.organizations = organizations;
-    }
+  private final OrganizationRepository organizations;
 
-    public boolean isOwner(UUID organizationId, UUID actorId) {
-        return organizations
-                .publicView(organizationId)
-                .filter(o -> o.ownerUserId().equals(actorId))
-                .isPresent();
-    }
+  public OrganizationApplicationAccessService(OrganizationRepository organizations) {
+    this.organizations = organizations;
+  }
 
-    @Transactional(propagation = Propagation.MANDATORY)
-    public boolean lockEditableApplication(UUID organizationId, UUID actorId) {
-        return organizations
-                .lockApplication(organizationId)
-                .filter(
-                        o
-                        -> o.ownerUserId().equals(actorId)
-                        && (o.status() == Organization.Status.DRAFT
-                        || o.status() == Organization.Status.REJECTED)
-                )
-                .isPresent();
-    }
+  public boolean isOwner(UUID organizationId, UUID actorId) {
+    return organizations
+        .publicView(organizationId)
+        .filter(o -> o.ownerUserId().equals(actorId))
+        .isPresent();
+  }
 
-    public boolean documentInSubmission(UUID organizationId, UUID mediaId) {
-        return organizations
-                .applicationRevisions(organizationId)
-                .stream()
-                .anyMatch(r -> r.getDocumentMediaIds().contains(mediaId));
-    }
+  @Transactional(propagation = Propagation.MANDATORY)
+  public boolean lockEditableApplication(UUID organizationId, UUID actorId) {
+    return organizations
+        .lockApplication(organizationId)
+        .filter(
+            o ->
+                o.ownerUserId().equals(actorId)
+                    && (o.status() == Organization.Status.DRAFT
+                        || o.status() == Organization.Status.REJECTED
+                        || o.status() == Organization.Status.NEEDS_INFORMATION))
+        .isPresent();
+  }
+
+  public boolean documentInSubmission(UUID organizationId, UUID mediaId) {
+    return evidence.existsByOrganizationIdAndMediaId(organizationId, mediaId)
+        || organizations.applicationRevisions(organizationId).stream()
+            .anyMatch(r -> r.getDocumentMediaIds().contains(mediaId));
+  }
 }

@@ -1,19 +1,29 @@
 package com.skillproof.backend.media.infrastructure.persistence;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.time.Instant;
+import java.util.UUID;
+
 @Entity
 @Table(name = "media_asset")
 public class MediaAssetEntity {
 
-    @Id
-    private UUID id;
+    @Column(name = "course_id")
+    private UUID courseId;
+
+    public UUID getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(UUID value) {
+        courseId = value;
+    }
+
+    @Id private UUID id;
 
     @Column(name = "owner_user_id", nullable = false)
     private UUID ownerUserId;

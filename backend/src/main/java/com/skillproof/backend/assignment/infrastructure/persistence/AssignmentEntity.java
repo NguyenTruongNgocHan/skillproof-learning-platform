@@ -1,12 +1,12 @@
 package com.skillproof.backend.assignment.infrastructure.persistence;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "assignment")
@@ -43,10 +43,19 @@ public class AssignmentEntity {
     @Column(name = "due_at", nullable = true)
     private Instant dueAt;
 
-    protected AssignmentEntity() {
-    }
+    protected AssignmentEntity() {}
 
-    public AssignmentEntity(UUID id, UUID versionId, String ownerScope, UUID ownerId, String title, String instructions, boolean required, int passPercent, int maxSubmissions, Instant dueAt) {
+    public AssignmentEntity(
+            UUID id,
+            UUID versionId,
+            String ownerScope,
+            UUID ownerId,
+            String title,
+            String instructions,
+            boolean required,
+            int passPercent,
+            int maxSubmissions,
+            Instant dueAt) {
         this.id = id;
         this.versionId = versionId;
         this.ownerScope = ownerScope;
@@ -99,4 +108,22 @@ public class AssignmentEntity {
         return dueAt;
     }
 
+    public void edit(
+            String scope,
+            UUID owner,
+            String title,
+            String instructions,
+            boolean required,
+            int pass,
+            int max,
+            Instant due) {
+        ownerScope = scope;
+        ownerId = owner;
+        this.title = title;
+        this.instructions = instructions;
+        this.required = required;
+        passPercent = pass;
+        maxSubmissions = max;
+        dueAt = due;
+    }
 }

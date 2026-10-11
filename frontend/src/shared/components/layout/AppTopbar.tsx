@@ -1,3 +1,4 @@
+import { NotificationButton } from "@/features/operations/components/NotificationButton";
 import { Link, useLocation } from "react-router-dom";
 import type { User } from "@/features/auth/types/auth.types";
 import OrganizationSwitcher from "@/features/organization/components/OrganizationSwitcher";
@@ -52,7 +53,12 @@ export default function AppTopbar({
         )}
       </div>
       <div className="app-topbar__actions">
-        {user.role === "ORGANIZER" && <OrganizationSwitcher />}
+        {user.role === "ORGANIZER" && (
+          <>
+            <NotificationButton />
+            <OrganizationSwitcher />
+          </>
+        )}
         <ThemeSwitcher />
         <UserMenu user={user} />
       </div>

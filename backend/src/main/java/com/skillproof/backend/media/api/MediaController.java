@@ -1,9 +1,6 @@
 package com.skillproof.backend.media.api;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import com.skillproof.backend.media.application.MediaService;
 
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ContentDisposition;
@@ -22,16 +19,23 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.skillproof.backend.media.application.MediaService;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/media")
 public class MediaController {
 
     private final MediaService service;
+    private final com.skillproof.backend.media.application.port.MediaPlaybackLinks playback;
 
-    public MediaController(MediaService service) {
+    public MediaController(
+            MediaService service,
+            com.skillproof.backend.media.application.port.MediaPlaybackLinks playback) {
         this.service = service;
+        this.playback = playback;
     }
 
     private UUID actor(Authentication auth) {
@@ -44,8 +48,7 @@ public class MediaController {
             Authentication auth,
             @RequestParam String scope,
             @RequestParam(required = false) UUID target,
-            @RequestPart("file") MultipartFile file
-    ) {
+            @RequestPart("file") MultipartFile file) {
         return service.upload(actor(auth), scope, target, file);
     }
 
@@ -53,8 +56,7 @@ public class MediaController {
     public List<Map<String, Object>> list(
             Authentication auth,
             @RequestParam String scope,
-            @RequestParam(required = false) UUID target
-    ) {
+            @RequestParam(required = false) UUID target) {
         return service.list(actor(auth), scope, target);
     }
 
@@ -66,9 +68,7 @@ public class MediaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<InputStreamResource> download(
-            Authentication auth,
-            @PathVariable UUID id
-    ) {
+            Authentication auth, @PathVariable UUID id) {
         var d = service.download(actor(auth), id);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(d.mime()))
@@ -77,11 +77,20 @@ public class MediaController {
                         ContentDisposition.attachment()
                                 .filename(d.filename(), StandardCharsets.UTF_8)
                                 .build()
-                                .toString()
-                )
+                                .toString())
                 .header("X-Content-Type-Options", "nosniff")
                 .header(HttpHeaders.CACHE_CONTROL, "private, no-store")
                 .contentLength(d.size())
                 .body(new InputStreamResource(service.open(d.key())));
+    }
+
+    @GetMapping("/{id}/playback")
+    public Map<String, Object> playback(Authentication auth, @PathVariable UUID id) {
+        var file = service.download(actor(auth), id);
+        return Map.of(
+                "url",
+                playback.signedGet(file.key()),
+                "expiresAt",
+                java.time.Instant.now().plusSeconds(300));
     }
 }

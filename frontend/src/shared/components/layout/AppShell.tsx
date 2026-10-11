@@ -60,6 +60,16 @@ export default function AppShell({ children }: AppShellProps) {
       ].includes(item.path)
     )
       return grants.includes("MANAGE_CONTENT");
+    if (item.path === "/organizer/pricing")
+      return grants.includes("MANAGE_PRICING");
+    if (item.path === "/organizer/grading")
+      return grants.includes("GRADE_ASSIGNMENTS");
+    if (item.path === "/organizer/analytics")
+      return grants.includes("VIEW_ANALYTICS");
+    if (item.path === "/organizer/feedback")
+      return grants.includes("MANAGE_FEEDBACK");
+    if (item.path === "/organizer/governance")
+      return grants.includes("MANAGE_PROFILE");
     if (item.path === "/organizer/certifications")
       return grants.includes("ISSUE_CERTIFICATES");
     return true;

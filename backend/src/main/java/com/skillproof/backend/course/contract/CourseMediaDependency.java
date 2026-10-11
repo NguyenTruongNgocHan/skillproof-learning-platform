@@ -4,9 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Narrow collaboration contract for Media-owned asset lifecycle operations.
- */
+/** Narrow collaboration contract for Media-owned asset lifecycle operations. */
 public interface CourseMediaDependency {
 
     void deleteForResources(Collection<UUID> resourceIds);
@@ -14,4 +12,6 @@ public interface CourseMediaDependency {
     void cloneResourceAssets(Map<UUID, UUID> resourceIdMapping);
 
     boolean hasAssetsForAll(Collection<UUID> resourceIds);
+
+    boolean hasMatchingAsset(java.util.UUID resourceId, String kind);
 }

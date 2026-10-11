@@ -45,6 +45,8 @@ export const courseApi = {
       title: input.title,
       body: input.body,
       url: input.url,
+      required: input.required,
+      preview: input.preview,
     }),
   deleteResource: (id: string) =>
     apiClient.delete(`/courses/resources/${e(id)}`),

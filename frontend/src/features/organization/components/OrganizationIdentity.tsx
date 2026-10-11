@@ -1,18 +1,48 @@
-import { useState } from "react";
+import { brandingApi, publicImage } from "../api/brandingApi";
+import { useRemote } from "@/shared/hooks/useRemote";
+import { useState, useEffect, useCallback } from "react";
 import { ShieldCheck, Image } from "lucide-react";
 import type { Organization } from "../types/organization.types";
 // Branding URLs are intentionally optional until a dedicated backend contract exists.
 export function OrganizationIdentity({
   organization,
-  logoUrl,
-  coverUrl,
+  logoUrl: suppliedLogo,
+  coverUrl: suppliedCover,
 }: {
-  organization: Organization;
+  organization: Pick<
+    Organization,
+    "id" | "displayName" | "industry" | "country" | "website" | "status"
+  >;
   logoUrl?: string;
   coverUrl?: string;
 }) {
+  const brand = useRemote(
+    useCallback(
+      () => brandingApi.publicProfile(organization.id),
+      [organization.id],
+    ),
+  );
+  const suffix = brand.data?.branding.updatedAt ?? "";
+  const logoUrl =
+    suppliedLogo ??
+    (brand.data?.branding.logoMediaId
+      ? publicImage(
+          `/public/organizations/${organization.id}/branding/logo?v=${encodeURIComponent(suffix)}`,
+        )
+      : undefined);
+  const coverUrl =
+    suppliedCover ??
+    (brand.data?.branding.coverMediaId
+      ? publicImage(
+          `/public/organizations/${organization.id}/branding/cover?v=${encodeURIComponent(suffix)}`,
+        )
+      : undefined);
   const [logoFailed, setLogoFailed] = useState(false),
     [coverFailed, setCoverFailed] = useState(false);
+  useEffect(() => {
+    setLogoFailed(false);
+    setCoverFailed(false);
+  }, [logoUrl, coverUrl]);
   const initials = organization.displayName
     .split(/\s+/)
     .filter(Boolean)

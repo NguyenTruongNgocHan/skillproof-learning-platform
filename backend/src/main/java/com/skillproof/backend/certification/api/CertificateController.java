@@ -1,6 +1,9 @@
 package com.skillproof.backend.certification.api;
 
-import java.util.UUID;
+import com.skillproof.backend.certification.application.CertificateService;
+import com.skillproof.backend.certification.domain.Certificate;
+
+import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -12,10 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.skillproof.backend.certification.application.CertificateService;
-import com.skillproof.backend.certification.domain.Certificate;
-
-import jakarta.validation.Valid;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -40,8 +40,7 @@ public class CertificateController {
             String programName,
             UUID courseVersionId,
             String issuerName,
-            String learnerEmail
-            ) {
+            String learnerEmail) {
 
         static CertificateResponse from(Certificate c) {
             return new CertificateResponse(
@@ -57,21 +56,15 @@ public class CertificateController {
                     c.programName(),
                     c.courseVersionId(),
                     c.issuerName(),
-                    c.learnerEmail()
-            );
+                    c.learnerEmail());
         }
     }
 
     @GetMapping("/organizations/{organizationId}/certificates")
     public java.util.List<CertificateResponse> certificates(
-            Authentication authentication,
-            @PathVariable UUID organizationId
-    ) {
+            Authentication authentication, @PathVariable UUID organizationId) {
         return certificateService
-                .listCertificates(
-                        authenticatedUserId(authentication),
-                        organizationId
-                )
+                .listCertificates(authenticatedUserId(authentication), organizationId)
                 .stream()
                 .map(CertificateResponse::from)
                 .toList();
@@ -81,22 +74,12 @@ public class CertificateController {
     public org.springframework.data.domain.Page<CertificateResponse> searchCertificates(
             Authentication authentication,
             @PathVariable UUID organizationId,
-            @org.springframework.web.bind.annotation.RequestParam(
-                    required = false
-            ) Certificate.Status status,
-            @org.springframework.web.bind.annotation.RequestParam(
-                    required = false
-            ) UUID learnerId,
-            @org.springframework.web.bind.annotation.RequestParam(
-                    defaultValue = ""
-            ) String query,
-            @org.springframework.web.bind.annotation.RequestParam(
-                    defaultValue = "0"
-            ) int page,
-            @org.springframework.web.bind.annotation.RequestParam(
-                    defaultValue = "20"
-            ) int size
-    ) {
+            @org.springframework.web.bind.annotation.RequestParam(required = false)
+                    Certificate.Status status,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) UUID learnerId,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "") String query,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "0") int page,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "20") int size) {
         return certificateService
                 .searchCertificates(
                         authenticatedUserId(authentication),
@@ -105,59 +88,38 @@ public class CertificateController {
                         learnerId,
                         query,
                         page,
-                        size
-                )
+                        size)
                 .map(CertificateResponse::from);
     }
 
     @GetMapping("/certificates/{certificateId}")
     public CertificateResponse certificate(
-            Authentication authentication,
-            @PathVariable UUID certificateId
-    ) {
+            Authentication authentication, @PathVariable UUID certificateId) {
         return CertificateResponse.from(
-                certificateService.certificate(
-                        authenticatedUserId(authentication),
-                        certificateId
-                )
-        );
+                certificateService.certificate(authenticatedUserId(authentication), certificateId));
     }
 
     public record RevokeRequest(
             @jakarta.validation.constraints.NotBlank
-            @jakarta.validation.constraints.Size(max = 1000)
-            String reason
-            ) {
-
-    }
+                    @jakarta.validation.constraints.Size(max = 1000)
+                    String reason) {}
 
     @PostMapping("/certification-eligibility/{eligibilityId}/certificate")
     @ResponseStatus(HttpStatus.CREATED)
     public CertificateResponse issue(
-            Authentication authentication,
-            @PathVariable UUID eligibilityId
-    ) {
+            Authentication authentication, @PathVariable UUID eligibilityId) {
         return CertificateResponse.from(
-                certificateService.issue(
-                        authenticatedUserId(authentication),
-                        eligibilityId
-                )
-        );
+                certificateService.issue(authenticatedUserId(authentication), eligibilityId));
     }
 
     @PostMapping("/certificates/{certificateId}/revoke")
     public CertificateResponse revoke(
             Authentication authentication,
             @PathVariable UUID certificateId,
-            @Valid @RequestBody RevokeRequest request
-    ) {
+            @Valid @RequestBody RevokeRequest request) {
         return CertificateResponse.from(
                 certificateService.revoke(
-                        authenticatedUserId(authentication),
-                        certificateId,
-                        request.reason()
-                )
-        );
+                        authenticatedUserId(authentication), certificateId, request.reason()));
     }
 
     @GetMapping("/public/certificates/{serialNumber}")
@@ -171,8 +133,7 @@ public class CertificateController {
                 certificate.issuerName(),
                 certificate.programName(),
                 certificate.courseVersionId(),
-                "NOT_ANCHORED"
-        );
+                "NOT_ANCHORED");
     }
 
     public record PublicCertificateResponse(
@@ -183,10 +144,7 @@ public class CertificateController {
             String issuerName,
             String programName,
             UUID courseVersionId,
-            String proofStatus
-            ) {
-
-    }
+            String proofStatus) {}
 
     private UUID authenticatedUserId(Authentication authentication) {
         return (UUID) authentication.getPrincipal();
@@ -194,7 +152,21 @@ public class CertificateController {
 
     @GetMapping("/me/certificates")
     public java.util.List<CertificateResponse> mine(Authentication auth) {
-        return certificateService.mine(authenticatedUserId(auth)).stream().map(CertificateResponse::from).toList();
+        return certificateService.mine(authenticatedUserId(auth)).stream()
+                .map(CertificateResponse::from)
+                .toList();
     }
 
+    @GetMapping("/admin/certificates/{id}")
+    public CertificateResponse adminDetail(Authentication a, @PathVariable UUID id) {
+        return CertificateResponse.from(
+                certificateService.adminCertificate(authenticatedUserId(a), id));
+    }
+
+    @PostMapping("/admin/certificates/{id}/revoke")
+    public CertificateResponse adminRevoke(
+            Authentication a, @PathVariable UUID id, @Valid @RequestBody RevokeRequest i) {
+        return CertificateResponse.from(
+                certificateService.revoke(authenticatedUserId(a), id, i.reason()));
+    }
 }

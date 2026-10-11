@@ -1,19 +1,21 @@
 package com.skillproof.backend.course.application;
 
-import java.time.Instant;
-import java.util.UUID;
+import com.skillproof.backend.common.exception.NotFoundException;
+import com.skillproof.backend.course.contract.CompletionEvidenceQuery;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.skillproof.backend.common.exception.NotFoundException;
-import com.skillproof.backend.course.contract.CompletionEvidenceQuery;
-
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.Instant;
+import java.util.UUID;
+
 @Service
 public class CompletionEvidenceService implements CompletionEvidenceQuery {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.skillproof.backend.analytics.contract.MarketingJournal marketing;
 
     private final com.skillproof.backend.assignment.contract.AssignmentEvidenceQuery assignments;
     private final com.skillproof.backend.course.contract.LessonEvidenceQuery lessons;
@@ -21,8 +23,12 @@ public class CompletionEvidenceService implements CompletionEvidenceQuery {
     private final ObjectMapper json;
     private final com.skillproof.backend.quiz.contract.QuizCompletionEvidenceQuery assessments;
 
-    public CompletionEvidenceService(CompletionEvidenceStore evidenceStore, ObjectMapper json,
-            com.skillproof.backend.quiz.contract.QuizCompletionEvidenceQuery assessments, com.skillproof.backend.assignment.contract.AssignmentEvidenceQuery assignments, com.skillproof.backend.course.contract.LessonEvidenceQuery lessons) {
+    public CompletionEvidenceService(
+            CompletionEvidenceStore evidenceStore,
+            ObjectMapper json,
+            com.skillproof.backend.quiz.contract.QuizCompletionEvidenceQuery assessments,
+            com.skillproof.backend.assignment.contract.AssignmentEvidenceQuery assignments,
+            com.skillproof.backend.course.contract.LessonEvidenceQuery lessons) {
         this.evidenceStore = evidenceStore;
         this.json = json;
         this.assessments = assessments;
@@ -44,19 +50,48 @@ public class CompletionEvidenceService implements CompletionEvidenceQuery {
 
         var assignmentEvidence = assignments.evidence(versionId, enrollmentId);
         var lessonEvidence = lessons.evidence(versionId, enrollmentId);
-        boolean done = com.skillproof.backend.course.domain.CompletionRules.completed(
-                policy.requireAllResources(), policy.requireOfficialAssessments(), total, completed, required, passed,
-                assignmentEvidence.required(), assignmentEvidence.passed(), lessonEvidence.required(), lessonEvidence.completed());
+        boolean done =
+                com.skillproof.backend.course.domain.CompletionRules.completed(
+                        policy.requireAllResources(),
+                        policy.requireOfficialAssessments(),
+                        total,
+                        completed,
+                        required,
+                        passed,
+                        assignmentEvidence.required(),
+                        assignmentEvidence.passed(),
+                        lessonEvidence.required(),
+                        lessonEvidence.completed());
         if (done) {
             evidenceStore.markCompleted(enrollmentId, Instant.now());
+            marketing.conversion(enrollment.learnerId(), versionId, "COMPLETION", enrollmentId);
         }
 
         UUID evaluationId = UUID.randomUUID();
-        Evidence evidence = new Evidence(evaluationId, enrollmentId, enrollment.learnerId(),
-                versionId, policy.id(), total, completed, required, passed, assignmentEvidence.required(), assignmentEvidence.passed(), lessonEvidence.required(), lessonEvidence.completed(), done);
+        Evidence evidence =
+                new Evidence(
+                        evaluationId,
+                        enrollmentId,
+                        enrollment.learnerId(),
+                        versionId,
+                        policy.id(),
+                        total,
+                        completed,
+                        required,
+                        passed,
+                        assignmentEvidence.required(),
+                        assignmentEvidence.passed(),
+                        lessonEvidence.required(),
+                        lessonEvidence.completed(),
+                        done);
         try {
-            evidenceStore.record(evaluationId, enrollmentId, versionId,
-                    done ? "COMPLETED" : "NOT_COMPLETED", json.writeValueAsString(evidence), Instant.now());
+            evidenceStore.record(
+                    evaluationId,
+                    enrollmentId,
+                    versionId,
+                    done ? "COMPLETED" : "NOT_COMPLETED",
+                    json.writeValueAsString(evidence),
+                    Instant.now());
         } catch (JacksonException ex) {
             throw new IllegalStateException("Cannot serialize completion evidence", ex);
         }
@@ -72,5 +107,4 @@ public class CompletionEvidenceService implements CompletionEvidenceQuery {
         // Re-evaluate under the enrollment lock; historical snapshots are audit evidence.
         return evaluate(enrollmentId, 0, 0);
     }
-
 }

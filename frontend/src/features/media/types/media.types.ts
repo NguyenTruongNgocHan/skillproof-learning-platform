@@ -1,4 +1,5 @@
 export interface MediaItem {
+  sha256?: string;
   id: string;
   name: string;
   mimeType: string;
@@ -7,4 +8,11 @@ export interface MediaItem {
 }
 
 export type MediaScope =
-  "AVATAR" | "ORGANIZATION" | "RESOURCE" | "LIBRARY" | "SUBMISSION";
+  | "AVATAR"
+  | "ORGANIZATION"
+  | "ISSUER"
+  | "BRAND"
+  | "COURSE_COVER"
+  | "RESOURCE"
+  | "LIBRARY"
+  | "SUBMISSION";

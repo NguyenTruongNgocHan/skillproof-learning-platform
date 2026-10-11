@@ -27,16 +27,20 @@ export function CourseSettings({
     [assessments, setAssessments] = useState(
       outline.policy.require_official_assessments,
     );
-  const [mode, setMode] = useState(""),
-    [price, setPrice] = useState(""),
-    [certPrice, setCertPrice] = useState("");
+  const [mode, setMode] = useState(outline.offer.accessMode),
+    [price, setPrice] = useState(String(outline.offer.priceVnd)),
+    [certPrice, setCertPrice] = useState(
+      String(outline.offer.certificationPriceVnd),
+    );
   const { setDirty } = useOrganizationContext();
   const dirty =
     title !== course.title ||
     summary !== course.summary ||
     resources !== outline.policy.require_all_resources ||
     assessments !== outline.policy.require_official_assessments ||
-    Boolean(mode || price || certPrice);
+    mode !== outline.offer.accessMode ||
+    price !== String(outline.offer.priceVnd) ||
+    certPrice !== String(outline.offer.certificationPriceVnd);
   useEffect(() => {
     onDirtyChange?.(dirty);
     return () => onDirtyChange?.(false);
@@ -48,7 +52,9 @@ export function CourseSettings({
         summary !== course.summary ||
         resources !== outline.policy.require_all_resources ||
         assessments !== outline.policy.require_official_assessments ||
-        Boolean(mode || price || certPrice),
+        mode !== outline.offer.accessMode ||
+        price !== String(outline.offer.priceVnd) ||
+        certPrice !== String(outline.offer.certificationPriceVnd),
     );
     return () => setDirty("course-settings", false);
   }, [

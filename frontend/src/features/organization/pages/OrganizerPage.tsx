@@ -62,6 +62,10 @@ export default function OrganizerPage() {
                 <span className="sporg-tag" key={g}>
                   {
                     {
+                      VIEW_ANALYTICS: "View analytics",
+                      MANAGE_PRICING: "Manage pricing",
+                      MANAGE_FEEDBACK: "Manage feedback",
+                      GRADE_ASSIGNMENTS: "Grade assignments",
                       MANAGE_PROFILE: "Profile management",
                       MANAGE_MEMBERS: "Team management",
                       MANAGE_CONTENT: "Content authoring",

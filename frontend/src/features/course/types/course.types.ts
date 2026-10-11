@@ -9,6 +9,8 @@ export interface CourseVersion {
   id: string;
   course_id: string;
   version_no: number;
+  title?: string;
+  summary?: string;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
 }
 export interface Lesson {
@@ -41,6 +43,11 @@ export interface CourseModule {
   resources: CourseResource[];
 }
 export interface CourseOutline {
+  offer: {
+    accessMode: string;
+    priceVnd: number;
+    certificationPriceVnd: number;
+  };
   version: CourseVersion;
   modules: CourseModule[];
   policy: {

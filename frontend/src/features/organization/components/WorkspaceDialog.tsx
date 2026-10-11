@@ -16,9 +16,32 @@ export default function WorkspaceDialog({
   const dialog = useRef<HTMLDialogElement>(null);
   const { setDirty } = useOrganizationContext();
   const key = useId();
+  const edited = useRef(false);
+  const requestClose = () => {
+    if (busy) return;
+    if (edited.current && !window.confirm("Discard unsaved dialog changes?"))
+      return;
+    close();
+  };
   useEffect(() => {
-    setDirty(`workspace-dialog-${key}`, true);
-    return () => setDirty(`workspace-dialog-${key}`, false);
+    const node = dialog.current;
+    const changed = () => {
+      edited.current = true;
+      setDirty(`workspace-dialog-${key}`, true);
+    };
+    const saved = () => {
+      edited.current = false;
+      setDirty(`workspace-dialog-${key}`, false);
+    };
+    node?.addEventListener("input", changed);
+    node?.addEventListener("change", changed);
+    node?.addEventListener("workspace:saved", saved);
+    return () => {
+      node?.removeEventListener("input", changed);
+      node?.removeEventListener("change", changed);
+      node?.removeEventListener("workspace:saved", saved);
+      setDirty(`workspace-dialog-${key}`, false);
+    };
   }, [key, setDirty]);
   useEffect(() => {
     const node = dialog.current;
@@ -32,7 +55,7 @@ export default function WorkspaceDialog({
       aria-label={title}
       onCancel={(e) => {
         e.preventDefault();
-        if (!busy) close();
+        requestClose();
       }}
     >
       <header>
@@ -40,7 +63,7 @@ export default function WorkspaceDialog({
         <button
           type="button"
           disabled={busy}
-          onClick={close}
+          onClick={requestClose}
           aria-label="Close dialog"
         >
           <X size={18} />

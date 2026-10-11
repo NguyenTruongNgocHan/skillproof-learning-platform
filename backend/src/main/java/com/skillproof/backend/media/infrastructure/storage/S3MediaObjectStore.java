@@ -1,19 +1,15 @@
 package com.skillproof.backend.media.infrastructure.storage;
 
-import java.io.InputStream;
-import java.net.URI;
-import java.time.Duration;
-import java.util.UUID;
+import com.skillproof.backend.media.application.exception.StorageException;
+import com.skillproof.backend.media.application.port.MediaObjectStore;
+
+import jakarta.annotation.PreDestroy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import com.skillproof.backend.media.application.exception.StorageException;
-import com.skillproof.backend.media.application.port.MediaObjectStore;
-
-import jakarta.annotation.PreDestroy;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
@@ -27,6 +23,11 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.InputStream;
+import java.net.URI;
+import java.time.Duration;
+import java.util.UUID;
+
 @Component
 @Profile("!test")
 public class S3MediaObjectStore implements MediaObjectStore {
@@ -37,19 +38,39 @@ public class S3MediaObjectStore implements MediaObjectStore {
     private final boolean ownsClient;
 
     @Autowired
-    public S3MediaObjectStore(@Value("${skillproof.media.bucket}") String bucket,
+    public S3MediaObjectStore(
+            @Value("${skillproof.media.bucket}") String bucket,
             @Value("${skillproof.media.region}") String region,
             @Value("${skillproof.media.endpoint:}") String endpoint,
             @Value("${skillproof.media.access-key:}") String accessKey,
             @Value("${skillproof.media.secret-key:}") String secretKey,
             @Value("${skillproof.media.prefix:skillproof/}") String prefix) {
-        this(bucket, region, endpoint, accessKey, secretKey, prefix, buildClient(region, endpoint, accessKey, secretKey), true);
+        this(
+                bucket,
+                region,
+                endpoint,
+                accessKey,
+                secretKey,
+                prefix,
+                buildClient(region, endpoint, accessKey, secretKey),
+                true);
     }
 
-    S3MediaObjectStore(String bucket, String region, String endpoint, String accessKey,
-            String secretKey, String prefix, S3Client client, boolean ownsClient) {
-        if (bucket.isBlank() || region.isBlank() || prefix.contains("..") || prefix.startsWith("/")) {
-            throw new IllegalArgumentException("Configure a private media bucket, region and safe prefix");
+    S3MediaObjectStore(
+            String bucket,
+            String region,
+            String endpoint,
+            String accessKey,
+            String secretKey,
+            String prefix,
+            S3Client client,
+            boolean ownsClient) {
+        if (bucket.isBlank()
+                || region.isBlank()
+                || prefix.contains("..")
+                || prefix.startsWith("/")) {
+            throw new IllegalArgumentException(
+                    "Configure a private media bucket, region and safe prefix");
         }
         this.bucket = bucket;
         this.prefix = prefix.endsWith("/") ? prefix : prefix + "/";
@@ -59,34 +80,44 @@ public class S3MediaObjectStore implements MediaObjectStore {
             client.headBucket(HeadBucketRequest.builder().bucket(bucket).build());
         } catch (software.amazon.awssdk.services.s3.model.S3Exception exception) {
             if (exception.statusCode() == 403) {
-                throw new StorageException("STORAGE_ACCESS_DENIED",
-                        "Object storage denied access to the configured bucket", exception);
+                throw new StorageException(
+                        "STORAGE_ACCESS_DENIED",
+                        "Object storage denied access to the configured bucket",
+                        exception);
             }
             if (exception.statusCode() == 404) {
-                throw new StorageException("STORAGE_BUCKET_UNAVAILABLE",
-                        "Configured object storage bucket is unavailable", exception);
+                throw new StorageException(
+                        "STORAGE_BUCKET_UNAVAILABLE",
+                        "Configured object storage bucket is unavailable",
+                        exception);
             }
-            throw new StorageException("STORAGE_CONNECTION_FAILED",
-                    "Object storage health check failed", exception);
+            throw new StorageException(
+                    "STORAGE_CONNECTION_FAILED", "Object storage health check failed", exception);
         } catch (SdkClientException exception) {
-            throw new StorageException("STORAGE_CONNECTION_FAILED",
-                    "Could not connect to configured object storage", exception);
+            throw new StorageException(
+                    "STORAGE_CONNECTION_FAILED",
+                    "Could not connect to configured object storage",
+                    exception);
         } catch (RuntimeException exception) {
-            throw new StorageException("STORAGE_CONNECTION_FAILED",
-                    "Object storage health check failed", exception);
+            throw new StorageException(
+                    "STORAGE_CONNECTION_FAILED", "Object storage health check failed", exception);
         }
     }
 
-    private static S3Client buildClient(String region, String endpoint, String accessKey, String secretKey) {
+    private static S3Client buildClient(
+            String region, String endpoint, String accessKey, String secretKey) {
         if (region.isBlank()) {
             throw new IllegalArgumentException("MEDIA_S3_REGION is required");
         }
-        var builder = S3Client.builder().region(Region.of(region))
-                .overrideConfiguration(ClientOverrideConfiguration.builder()
-                        .apiCallTimeout(Duration.ofSeconds(10))
-                        .apiCallAttemptTimeout(Duration.ofSeconds(5))
-                        .retryPolicy(RetryPolicy.builder().numRetries(2).build())
-                        .build());
+        var builder =
+                S3Client.builder()
+                        .region(Region.of(region))
+                        .overrideConfiguration(
+                                ClientOverrideConfiguration.builder()
+                                        .apiCallTimeout(Duration.ofSeconds(600))
+                                        .apiCallAttemptTimeout(Duration.ofSeconds(300))
+                                        .retryPolicy(RetryPolicy.builder().numRetries(2).build())
+                                        .build());
         if (!endpoint.isBlank()) {
             if (!endpoint.startsWith("http://") && !endpoint.startsWith("https://")) {
                 throw new IllegalArgumentException("MEDIA_S3_ENDPOINT must be an HTTP(S) URL");
@@ -97,7 +128,9 @@ public class S3MediaObjectStore implements MediaObjectStore {
             if (accessKey.isBlank() || secretKey.isBlank()) {
                 throw new IllegalArgumentException("Both object storage credentials are required");
             }
-            builder.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)));
+            builder.credentialsProvider(
+                    StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(accessKey, secretKey)));
         }
         return builder.build();
     }
@@ -109,7 +142,13 @@ public class S3MediaObjectStore implements MediaObjectStore {
     @Override
     public void put(UUID id, InputStream input, long length, String mime) {
         try {
-            client.putObject(PutObjectRequest.builder().bucket(bucket).key(objectKey(id)).contentType(mime).build(), RequestBody.fromInputStream(input, length));
+            client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(objectKey(id))
+                            .contentType(mime)
+                            .build(),
+                    RequestBody.fromInputStream(input, length));
         } catch (RuntimeException failure) {
             throw new StorageException("STORAGE_UPLOAD_FAILED", "Could not upload object", failure);
         }
@@ -118,7 +157,8 @@ public class S3MediaObjectStore implements MediaObjectStore {
     @Override
     public InputStream open(UUID id) {
         try {
-            return client.getObject(GetObjectRequest.builder().bucket(bucket).key(objectKey(id)).build());
+            return client.getObject(
+                    GetObjectRequest.builder().bucket(bucket).key(objectKey(id)).build());
         } catch (RuntimeException failure) {
             throw new StorageException("STORAGE_DOWNLOAD_FAILED", "Could not open object", failure);
         }
@@ -127,7 +167,8 @@ public class S3MediaObjectStore implements MediaObjectStore {
     @Override
     public void delete(UUID id) {
         try {
-            client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(objectKey(id)).build());
+            client.deleteObject(
+                    DeleteObjectRequest.builder().bucket(bucket).key(objectKey(id)).build());
         } catch (RuntimeException failure) {
             throw new StorageException("STORAGE_DELETE_FAILED", "Could not delete object", failure);
         }

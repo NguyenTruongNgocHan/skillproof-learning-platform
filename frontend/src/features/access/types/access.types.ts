@@ -5,6 +5,8 @@ export interface AccessGrant {
   productType: ProductType;
   productId: string;
   source: string;
+  cohort: string;
+  createdAt: string;
   expiresAt: string | null;
   revokedAt: string | null;
 }

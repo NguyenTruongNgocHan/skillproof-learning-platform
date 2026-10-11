@@ -25,3 +25,16 @@ export interface Submission {
   passed: boolean | null;
   submittedAt: string | null;
 }
+
+export interface RubricCriterion {
+  id: string;
+  assignmentId: string;
+  title: string;
+  weight: number;
+  position: number;
+}
+export interface CriterionGrade {
+  criterionId: string;
+  score: number;
+  feedback: string;
+}

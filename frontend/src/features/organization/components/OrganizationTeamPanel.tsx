@@ -15,12 +15,20 @@ const authorities: Authority[] = [
   "MANAGE_MEMBERS",
   "MANAGE_CONTENT",
   "ISSUE_CERTIFICATES",
+  "VIEW_ANALYTICS",
+  "MANAGE_PRICING",
+  "MANAGE_FEEDBACK",
+  "GRADE_ASSIGNMENTS",
 ];
 const labels: Record<Authority, string> = {
   MANAGE_PROFILE: "Manage profile",
   MANAGE_MEMBERS: "Manage team",
   MANAGE_CONTENT: "Author content",
   ISSUE_CERTIFICATES: "Issue certificates",
+  VIEW_ANALYTICS: "View analytics",
+  MANAGE_PRICING: "Manage pricing",
+  MANAGE_FEEDBACK: "Manage feedback",
+  GRADE_ASSIGNMENTS: "Grade assignments",
 };
 export function OrganizationTeamPanel({
   onDirtyChange,

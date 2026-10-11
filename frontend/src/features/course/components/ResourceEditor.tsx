@@ -41,6 +41,10 @@ export function ResourceEditor({
         if (window.confirm("Discard resource changes?")) close();
       }}
     >
+      <p>
+        Changing the resource type removes its existing draft attachments when
+        saved. Upload matching files for the new type.
+      </p>
       <form
         className="sporg-form"
         onSubmit={(e) => {
@@ -70,7 +74,12 @@ export function ResourceEditor({
             <select
               value={form.kind}
               onChange={(e) =>
-                setForm({ ...form, kind: e.target.value as ResourceKind })
+                setForm({
+                  ...form,
+                  kind: e.target.value as ResourceKind,
+                  body: "",
+                  url: "",
+                })
               }
             >
               {["ARTICLE", "LINK", "VIDEO", "FILE", "AUDIO", "IMAGE"].map(
@@ -104,9 +113,13 @@ export function ResourceEditor({
         )}
         {["LINK", "VIDEO"].includes(form.kind) && (
           <Input
-            label="HTTPS / HTTP URL"
+            label={
+              form.kind === "VIDEO"
+                ? "HTTPS video URL (optional; upload a video after saving)"
+                : "HTTPS URL"
+            }
             type="url"
-            required
+            required={form.kind === "LINK"}
             maxLength={1000}
             value={form.url ?? ""}
             onChange={(e) => setForm({ ...form, url: e.target.value })}

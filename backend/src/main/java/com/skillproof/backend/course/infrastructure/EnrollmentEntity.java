@@ -1,19 +1,18 @@
 package com.skillproof.backend.course.infrastructure;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.time.Instant;
+import java.util.UUID;
+
 @Entity
 @Table(name = "enrollment")
 public class EnrollmentEntity {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @Column(name = "learner_id", nullable = false)
     private UUID learnerId;
@@ -33,10 +32,30 @@ public class EnrollmentEntity {
     @Column(name = "completed_at")
     private Instant completedAt;
 
-    protected EnrollmentEntity() {
+    @Column(name = "retained_free_access", nullable = false)
+    private boolean retainedFreeAccess;
+
+    public Instant getCompletedAt() {
+        return completedAt;
     }
 
-    public EnrollmentEntity(UUID id, UUID learnerId, UUID courseId, UUID versionId, String status, Instant enrolledAt) {
+    public boolean isRetainedFreeAccess() {
+        return retainedFreeAccess;
+    }
+
+    public void retainFreeAccess(boolean value) {
+        retainedFreeAccess = value;
+    }
+
+    protected EnrollmentEntity() {}
+
+    public EnrollmentEntity(
+            UUID id,
+            UUID learnerId,
+            UUID courseId,
+            UUID versionId,
+            String status,
+            Instant enrolledAt) {
         this.id = id;
         this.learnerId = learnerId;
         this.courseId = courseId;

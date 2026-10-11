@@ -1,29 +1,41 @@
 package com.skillproof.backend.library.application;
 
-import java.time.Instant;
-import java.util.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.data.domain.PageRequest;
-import com.skillproof.backend.library.infrastructure.persistence.*;
-import com.skillproof.backend.identity.contract.IdentityAccessQuery;
 import com.skillproof.backend.access.contract.AccessEntitlementQuery;
 import com.skillproof.backend.commerce.domain.ProductType;
 import com.skillproof.backend.common.exception.*;
+import com.skillproof.backend.identity.contract.IdentityAccessQuery;
+import com.skillproof.backend.library.infrastructure.persistence.*;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.*;
 
 @Service
 public class LibraryResourceService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.skillproof.backend.feedback.contract.ExperienceJournal experience;
 
     private final com.skillproof.backend.media.contract.LibraryMediaQuery media;
     private final LibraryAuthorAccess authors;
     private final LibraryOfferService offers;
-    private final com.skillproof.backend.organization.contract.OrganizationPublicQuery organizations;
+    private final com.skillproof.backend.organization.contract.OrganizationPublicQuery
+            organizations;
     private final LibraryResourceRepository resources;
     private final IdentityAccessQuery identities;
     private final AccessEntitlementQuery entitlements;
 
-    public LibraryResourceService(LibraryResourceRepository resources, IdentityAccessQuery identities, AccessEntitlementQuery entitlements, com.skillproof.backend.media.contract.LibraryMediaQuery media, LibraryAuthorAccess authors, LibraryOfferService offers, com.skillproof.backend.organization.contract.OrganizationPublicQuery organizations) {
+    public LibraryResourceService(
+            LibraryResourceRepository resources,
+            IdentityAccessQuery identities,
+            AccessEntitlementQuery entitlements,
+            com.skillproof.backend.media.contract.LibraryMediaQuery media,
+            LibraryAuthorAccess authors,
+            LibraryOfferService offers,
+            com.skillproof.backend.organization.contract.OrganizationPublicQuery organizations) {
         this.authors = authors;
         this.offers = offers;
         this.organizations = organizations;
@@ -33,16 +45,21 @@ public class LibraryResourceService {
         this.entitlements = entitlements;
     }
 
-    public record Summary(UUID id, UUID authorId, String title, String summary, long priceVnd) {
-
-    }
+    public record Summary(UUID id, UUID authorId, String title, String summary, long priceVnd) {}
 
     private Summary summary(LibraryResourceEntity r) {
-        return new Summary(r.getId(), r.getAuthorId(), r.getTitle(), r.getSummary(), r.getPriceVnd());
+        return new Summary(
+                r.getId(), r.getAuthorId(), r.getTitle(), r.getSummary(), r.getPriceVnd());
     }
 
     private LibraryResourceEntity published(UUID id) {
-        return resources.findById(id).filter(r -> "PUBLISHED".equals(r.getStatus())).orElseThrow(() -> new NotFoundException("RESOURCE_NOT_FOUND", "Published resource not found"));
+        return resources
+                .findById(id)
+                .filter(r -> "PUBLISHED".equals(r.getStatus()))
+                .orElseThrow(
+                        () ->
+                                new NotFoundException(
+                                        "RESOURCE_NOT_FOUND", "Published resource not found"));
     }
 
     private void author(UUID actor, LibraryResourceEntity r) {
@@ -50,18 +67,34 @@ public class LibraryResourceService {
     }
 
     private void validate(String title, String summary, String body, long price) {
-        if (title == null || title.isBlank() || title.length() > 180 || summary == null || summary.isBlank() || summary.length() > 1000
-                || body == null || body.length() > 100000 || !com.skillproof.backend.library.domain.LibraryRules.validPrice(price)) {
-            throw new BadRequestException("RESOURCE_INVALID", "Invalid resource content or VND price");
+        if (title == null
+                || title.isBlank()
+                || title.length() > 180
+                || summary == null
+                || summary.isBlank()
+                || summary.length() > 1000
+                || body == null
+                || body.length() > 100000
+                || !com.skillproof.backend.library.domain.LibraryRules.validPrice(price)) {
+            throw new BadRequestException(
+                    "RESOURCE_INVALID", "Invalid resource content or VND price");
         }
     }
 
     @Transactional(readOnly = true)
     public List<Summary> discover(int page, int size) {
-        return resources.findByStatusOrderByCreatedAtDesc("PUBLISHED", PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100))).stream().filter(r -> {
-            var offer = offers.offer(r.getId());
-            return offer.available() && offer.purchasable();
-        }).map(this::summary).toList();
+        return resources
+                .findByStatusOrderByCreatedAtDesc(
+                        "PUBLISHED",
+                        PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100)))
+                .stream()
+                .filter(
+                        r -> {
+                            var offer = offers.offer(r.getId());
+                            return offer.available() && offer.purchasable();
+                        })
+                .map(this::summary)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -73,38 +106,62 @@ public class LibraryResourceService {
         return summary(published(id));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public LibraryResourceEntity content(UUID learner, UUID id) {
         entitlements.require(learner, ProductType.RESOURCE, id);
-        return published(id);
+        var resource = published(id);
+        experience.accessed(learner, "RESOURCE", id);
+        return resource;
     }
 
     @Transactional(readOnly = true)
     public List<LibraryResourceEntity> mine(UUID author) {
         if (!identities.isActiveLearner(author)) {
             throw new AccessDeniedException("Active learner required");
-        
-        }return resources.findByAuthorIdOrderByCreatedAtDesc(author);
+        }
+        return resources.findByAuthorIdOrderByCreatedAtDesc(author);
     }
 
     @Transactional
-    public LibraryResourceEntity create(UUID actor, String title, String summary, String body, long price) {
+    public LibraryResourceEntity create(
+            UUID actor, String title, String summary, String body, long price) {
         if (!identities.isActiveLearner(actor)) {
             throw new AccessDeniedException("Active learner required");
-        
-        }validate(title, summary, body, price);
-        return resources.save(new LibraryResourceEntity(UUID.randomUUID(), actor, null, title.trim(), summary.trim(), body, "DRAFT", price, Instant.now(), null, null));
+        }
+        validate(title, summary, body, price);
+        return resources.save(
+                new LibraryResourceEntity(
+                        UUID.randomUUID(),
+                        actor,
+                        null,
+                        title.trim(),
+                        summary.trim(),
+                        body,
+                        "DRAFT",
+                        price,
+                        Instant.now(),
+                        null,
+                        null));
     }
 
     @Transactional
-    public LibraryResourceEntity edit(UUID actor, UUID id, String title, String summary, String body, long price) {
-        var r = resources.lock(id).orElseThrow(() -> new NotFoundException("RESOURCE_NOT_FOUND", "Resource not found"));
+    public LibraryResourceEntity edit(
+            UUID actor, UUID id, String title, String summary, String body, long price) {
+        var r =
+                resources
+                        .lock(id)
+                        .orElseThrow(
+                                () ->
+                                        new NotFoundException(
+                                                "RESOURCE_NOT_FOUND", "Resource not found"));
         author(actor, r);
         if (!List.of("DRAFT", "REJECTED").contains(r.getStatus())) {
-            throw new ConflictException("RESOURCE_IMMUTABLE", "Published or submitted resources cannot be edited");
+            throw new ConflictException(
+                    "RESOURCE_IMMUTABLE", "Published or submitted resources cannot be edited");
         }
         if ("RESTRICTED".equals(r.getAccessMode()) && price != 0) {
-            throw new BadRequestException("RESOURCE_OFFER", "Restricted resource is not publicly sold");
+            throw new BadRequestException(
+                    "RESOURCE_OFFER", "Restricted resource is not publicly sold");
         }
         validate(title, summary, body, price);
         r.reopenDraft();
@@ -114,12 +171,19 @@ public class LibraryResourceService {
 
     @Transactional
     public LibraryResourceEntity submit(UUID actor, UUID id) {
-        var r = resources.lock(id).orElseThrow(() -> new NotFoundException("RESOURCE_NOT_FOUND", "Resource not found"));
+        var r =
+                resources
+                        .lock(id)
+                        .orElseThrow(
+                                () ->
+                                        new NotFoundException(
+                                                "RESOURCE_NOT_FOUND", "Resource not found"));
         author(actor, r);
         if (!"DRAFT".equals(r.getStatus())) {
             throw new ConflictException("RESOURCE_STATE", "Draft required");
         }
-        if (!com.skillproof.backend.library.domain.LibraryRules.hasContent(r.getBody(), media.hasLibraryFiles(id))) {
+        if (!com.skillproof.backend.library.domain.LibraryRules.hasContent(
+                r.getBody(), media.hasLibraryFiles(id))) {
             throw new BadRequestException("RESOURCE_EMPTY", "Text or an uploaded file is required");
         }
         r.submitReview();
@@ -131,7 +195,13 @@ public class LibraryResourceService {
         if (!identities.isActiveAdmin(admin)) {
             throw new AccessDeniedException("Administrator required");
         }
-        var r = resources.lock(id).orElseThrow(() -> new NotFoundException("RESOURCE_NOT_FOUND", "Resource not found"));
+        var r =
+                resources
+                        .lock(id)
+                        .orElseThrow(
+                                () ->
+                                        new NotFoundException(
+                                                "RESOURCE_NOT_FOUND", "Resource not found"));
         if (!"SUBMITTED".equals(r.getStatus())) {
             throw new ConflictException("RESOURCE_STATE", "Submitted resource required");
         }
@@ -147,7 +217,12 @@ public class LibraryResourceService {
         if (!identities.isActiveAdmin(admin)) {
             throw new AccessDeniedException("Administrator required");
         }
-        return resources.findByStatusOrderByCreatedAtDesc("SUBMITTED", PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100))).stream().toList();
+        return resources
+                .findByStatusOrderByCreatedAtDesc(
+                        "SUBMITTED",
+                        PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100)))
+                .stream()
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -155,18 +230,42 @@ public class LibraryResourceService {
         if (!identities.isActiveAdmin(admin)) {
             throw new AccessDeniedException("Administrator required");
         }
-        return resources.findById(id).orElseThrow(() -> new NotFoundException("RESOURCE_NOT_FOUND", "Resource not found"));
+        return resources
+                .findById(id)
+                .orElseThrow(
+                        () -> new NotFoundException("RESOURCE_NOT_FOUND", "Resource not found"));
     }
 
     @Transactional
-    public LibraryResourceEntity createOrganization(UUID actor, UUID organization, String title, String summary, String body, long price, String mode) {
+    public LibraryResourceEntity createOrganization(
+            UUID actor,
+            UUID organization,
+            String title,
+            String summary,
+            String body,
+            long price,
+            String mode) {
         organizations.requireApprovedForUpdate(organization);
         authors.organization(actor, organization);
         validate(title, summary, body, price);
-        if (!java.util.List.of("PUBLIC", "RESTRICTED").contains(mode) || "RESTRICTED".equals(mode) && price != 0) {
-            throw new BadRequestException("RESOURCE_OFFER", "Use PUBLIC prices or RESTRICTED with zero price");
+        if (!java.util.List.of("PUBLIC", "RESTRICTED").contains(mode)
+                || "RESTRICTED".equals(mode) && price != 0) {
+            throw new BadRequestException(
+                    "RESOURCE_OFFER", "Use PUBLIC prices or RESTRICTED with zero price");
         }
-        var resource = new LibraryResourceEntity(UUID.randomUUID(), actor, organization, title.trim(), summary.trim(), body, "DRAFT", price, Instant.now(), null, null);
+        var resource =
+                new LibraryResourceEntity(
+                        UUID.randomUUID(),
+                        actor,
+                        organization,
+                        title.trim(),
+                        summary.trim(),
+                        body,
+                        "DRAFT",
+                        price,
+                        Instant.now(),
+                        null,
+                        null);
         resource.configureAccess(mode);
         return resources.save(resource);
     }
@@ -176,5 +275,4 @@ public class LibraryResourceService {
         authors.organization(actor, organization);
         return resources.findByOrganizationIdOrderByCreatedAtDesc(organization);
     }
-
 }

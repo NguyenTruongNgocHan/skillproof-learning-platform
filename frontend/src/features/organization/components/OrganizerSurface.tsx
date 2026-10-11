@@ -3,6 +3,8 @@ import "@/features/organization/styles/organizer.css";
 import "@/features/organization/styles/workspace.css";
 import type { Authority } from "@/features/organization/types/organization.types";
 import AppShell from "@/shared/components/layout/AppShell";
+import { useWorkspaceFormSafety } from "../hooks/useWorkspaceFormSafety";
+import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
 export function OrganizerSurface({
   title,
@@ -15,11 +17,15 @@ export function OrganizerSurface({
   authority?: Authority;
   children: ReactNode;
 }) {
+  const formRoot = useWorkspaceFormSafety();
   const { organization, grants } = useOrganizationContext();
   return (
     <AppShell>
       <section className="sporg skillproof-app-theme">
         <header className="sporg-heading">
+          <nav aria-label="Breadcrumb">
+            <Link to="/organizer">Workspace</Link> / <span>{title}</span>
+          </nav>
           <p className="sporg-eyebrow">
             {organization?.displayName ?? "Organizer"}
           </p>
@@ -35,7 +41,7 @@ export function OrganizerSurface({
             </p>
           </section>
         ) : (
-          children
+          <div ref={formRoot}>{children}</div>
         )}
       </section>
     </AppShell>

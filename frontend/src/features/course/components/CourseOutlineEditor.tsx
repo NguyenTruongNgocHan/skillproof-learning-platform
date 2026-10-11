@@ -253,7 +253,12 @@ export function CourseOutlineEditor({
           {m.lessons.map((l, li) => {
             const rows = m.resources.filter((r) => r.lesson_id === l.id);
             return (
-              <details className="sporg-lesson" key={l.id} open>
+              <details
+                className="sporg-lesson"
+                id={`lesson-${l.id}`}
+                key={l.id}
+                open
+              >
                 <summary>
                   {l.title}
                   <small>{rows.length} resources</small>

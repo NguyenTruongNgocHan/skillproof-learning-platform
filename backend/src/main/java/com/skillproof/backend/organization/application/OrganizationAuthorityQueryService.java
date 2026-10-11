@@ -3,8 +3,10 @@ package com.skillproof.backend.organization.application;
 import com.skillproof.backend.identity.contract.IdentityAccessQuery;
 import com.skillproof.backend.organization.contract.OrganizationAuthorityQuery;
 import com.skillproof.backend.organization.infrastructure.OrganizationRepository;
-import java.util.UUID;
+
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class OrganizationAuthorityQueryService implements OrganizationAuthorityQuery {
@@ -13,10 +15,14 @@ public class OrganizationAuthorityQueryService implements OrganizationAuthorityQ
     private final IdentityAccessQuery identities;
 
     public OrganizationAuthorityQueryService(
-            OrganizationRepository organizations,
-            IdentityAccessQuery identities) {
+            OrganizationRepository organizations, IdentityAccessQuery identities) {
         this.organizations = organizations;
         this.identities = identities;
+    }
+
+    @Override
+    public boolean activeMember(UUID org, UUID actor) {
+        return organizations.activeMember(org, actor);
     }
 
     @Override

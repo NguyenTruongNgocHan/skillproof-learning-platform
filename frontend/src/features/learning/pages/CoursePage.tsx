@@ -1,73 +1,86 @@
-import { learningApi } from "@/features/learning/api/learningApi"
-import type { Course, Resource } from "@/features/learning/types/learning.types"
-import MediaPanel from "@/features/media/components/MediaPanel"
-import { quizApi } from "@/features/quiz/api/quizApi"
-import type { Assessment, AttemptHistory } from "@/features/quiz/types/quiz.types"
-import LearnerShell from "@/shared/components/layout/LearnerShell"
-import Button from "@/shared/ui/Button"
-import { useCallback, useEffect, useState } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { FeedbackPanel } from "@/features/feedback/components/FeedbackPanel";
+import { learningApi } from "@/features/learning/api/learningApi";
+import type {
+  Course,
+  Resource,
+} from "@/features/learning/types/learning.types";
+import MediaPanel from "@/features/media/components/MediaPanel";
+import { quizApi } from "@/features/quiz/api/quizApi";
+import type {
+  Assessment,
+  AttemptHistory,
+} from "@/features/quiz/types/quiz.types";
+import LearnerShell from "@/shared/components/layout/LearnerShell";
+import Button from "@/shared/ui/Button";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 export default function CoursePage() {
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null),
     [assessments, setAssessments] = useState<Assessment[]>([]),
     [history, setHistory] = useState<AttemptHistory[]>([]),
     [selected, setSelected] = useState<Resource | null>(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true),
-    [busy, setBusy] = useState(false)
+    [busy, setBusy] = useState(false);
   const load = useCallback(async () => {
-    if (!id) return
-    setLoading(true)
+    if (!id) return;
+    setLoading(true);
     try {
       const [c, a, h] = await Promise.all([
         learningApi.course(id),
         quizApi.available(id),
         quizApi.history(id),
-      ])
-      setCourse(c)
-      setAssessments(a)
-      setHistory(h)
+      ]);
+      setCourse(c);
+      setAssessments(a);
+      setHistory(h);
       setSelected(
         (previous) =>
-          c.modules.flatMap((m) => m.resources).find((r) => r.id === previous?.id) ??
+          c.modules
+            .flatMap((m) => m.resources)
+            .find((r) => r.id === previous?.id) ??
           c.modules[0]?.resources[0] ??
           null,
-      )
-      setError("")
+      );
+      setError("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to load your enrollment")
+      setError(
+        e instanceof Error ? e.message : "Unable to load your enrollment",
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [id])
+  }, [id]);
   useEffect(() => {
-    void load()
-  }, [load])
+    void load();
+  }, [load]);
   async function complete() {
-    if (!id || !selected) return
-    setBusy(true)
+    if (!id || !selected) return;
+    setBusy(true);
     try {
-      await learningApi.complete(id, selected.id)
-      await load()
+      await learningApi.complete(id, selected.id);
+      await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not save progress")
+      setError(e instanceof Error ? e.message : "Could not save progress");
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
   async function begin(a: Assessment) {
-    if (!id) return
-    setBusy(true)
-    setError("")
+    if (!id) return;
+    setBusy(true);
+    setError("");
     try {
-      const view = await quizApi.start(a.id, id)
-      navigate(`/app/attempts/${view.attempt.id}`)
+      const view = await quizApi.start(a.id, id);
+      navigate(`/app/attempts/${view.attempt.id}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to start this assessment")
+      setError(
+        e instanceof Error ? e.message : "Unable to start this assessment",
+      );
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
   return (
@@ -91,7 +104,9 @@ export default function CoursePage() {
               <header className="v7-hero">
                 <span className="course-hero__context">
                   Version {course.enrollment.version_no} ·{" "}
-                  {course.enrollment.status === "COMPLETED" ? "Completed" : "In progress"}
+                  {course.enrollment.status === "COMPLETED"
+                    ? "Completed"
+                    : "In progress"}
                 </span>
                 <h1>{course.enrollment.title}</h1>
                 <p>{course.enrollment.summary}</p>
@@ -114,9 +129,11 @@ export default function CoursePage() {
                   />
                 </div>
                 <p>
-                  {course.progress.completedResources} / {course.progress.totalResources} resources
-                  · {course.progress.passedAssessments} / {course.progress.officialAssessments}{" "}
-                  official assessments passed
+                  {course.progress.completedResources} /{" "}
+                  {course.progress.totalResources} resources ·{" "}
+                  {course.progress.passedAssessments} /{" "}
+                  {course.progress.officialAssessments} official assessments
+                  passed
                 </p>
               </header>
               {error && (
@@ -154,19 +171,34 @@ export default function CoursePage() {
                       <h2>{selected.title}</h2>
                       {selected.kind === "ARTICLE" ? (
                         <div className="v7-article">{selected.body}</div>
-                      ) : selected.kind === "FILE" || selected.kind === "AUDIO" ? (
+                      ) : selected.kind === "FILE" ||
+                        selected.kind === "AUDIO" ? (
                         <p>Download the lesson attachment below.</p>
                       ) : (
                         <p>
-                          Open the {selected.kind.toLowerCase()} resource in a new tab:{" "}
-                          <a href={selected.url ?? "#"} target="_blank" rel="noreferrer">
+                          Open the {selected.kind.toLowerCase()} resource in a
+                          new tab:{" "}
+                          <a
+                            href={selected.url ?? "#"}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
                             {selected.title} â†—
                           </a>
                         </p>
                       )}
-                      <MediaPanel key={selected.id} scope="RESOURCE" target={selected.id} />
-                      <Button disabled={busy || selected.completed} onClick={() => void complete()}>
-                        {selected.completed ? "Completed" : "Mark this resource complete"}
+                      <MediaPanel
+                        key={selected.id}
+                        scope="RESOURCE"
+                        target={selected.id}
+                      />
+                      <Button
+                        disabled={busy || selected.completed}
+                        onClick={() => void complete()}
+                      >
+                        {selected.completed
+                          ? "Completed"
+                          : "Mark this resource complete"}
                       </Button>
                     </>
                   ) : (
@@ -185,8 +217,8 @@ export default function CoursePage() {
                         <span className="org-eyebrow">{a.kind}</span>
                         <h3>{a.title}</h3>
                         <p>
-                          {Math.ceil(a.duration_seconds / 60)} minutes · {a.max_attempts} attempts ·
-                          Pass at {a.pass_percent}%
+                          {Math.ceil(a.duration_seconds / 60)} minutes ·{" "}
+                          {a.max_attempts} attempts · Pass at {a.pass_percent}%
                         </p>
                         <p>
                           {a.kind === "OFFICIAL"
@@ -204,7 +236,10 @@ export default function CoursePage() {
               <section className="v7-section">
                 <h2>Your attempt history</h2>
                 {history.length === 0 ? (
-                  <p>No attempts yet. Your answers and results will appear here after you begin.</p>
+                  <p>
+                    No attempts yet. Your answers and results will appear here
+                    after you begin.
+                  </p>
                 ) : (
                   <div className="v7-grid">
                     {history.map((h) => (
@@ -220,7 +255,9 @@ export default function CoursePage() {
                         </p>
                         <Button asChild variant="outline">
                           <Link to={`/app/attempts/${h.id}`}>
-                            {h.status === "SCORED" ? "Review result" : "Resume attempt"}
+                            {h.status === "SCORED"
+                              ? "Review result"
+                              : "Resume attempt"}
                           </Link>
                         </Button>
                       </article>
@@ -232,6 +269,9 @@ export default function CoursePage() {
           )
         )}
       </div>
+      {course && (
+        <FeedbackPanel type="COURSE" target={course.enrollment.version_id} />
+      )}
     </LearnerShell>
-  )
+  );
 }

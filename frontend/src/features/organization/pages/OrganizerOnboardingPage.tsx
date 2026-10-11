@@ -1,15 +1,16 @@
-import MediaPanel from "@/features/media/components/MediaPanel"
-import BrandLogo from "@/shared/ui/BrandLogo"
-import Button from "@/shared/ui/Button"
-import ThemeSwitcher from "@/shared/ui/ThemeSwitcher"
-import { useNavigate } from "react-router-dom"
-import { ApplicationHistory } from "../components/ApplicationHistory"
-import { OrganizationApplicationFields } from "../components/OrganizationApplicationFields"
-import { useOrganizationApplication } from "../hooks/useOrganizationApplication"
-import "../styles/organizer.css"
+import { EvidenceManager } from "../components/EvidenceManager";
+import MediaPanel from "@/features/media/components/MediaPanel";
+import BrandLogo from "@/shared/ui/BrandLogo";
+import Button from "@/shared/ui/Button";
+import ThemeSwitcher from "@/shared/ui/ThemeSwitcher";
+import { useNavigate } from "react-router-dom";
+import { ApplicationHistory } from "../components/ApplicationHistory";
+import { OrganizationApplicationFields } from "../components/OrganizationApplicationFields";
+import { useOrganizationApplication } from "../hooks/useOrganizationApplication";
+import "../styles/organizer.css";
 
 export default function OrganizerOnboardingPage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const {
     owned,
     form,
@@ -27,7 +28,7 @@ export default function OrganizerOnboardingPage() {
     changeField,
     save,
     submit,
-  } = useOrganizationApplication()
+  } = useOrganizationApplication();
   return (
     <div className="sporg-shell">
       <header className="sporg-shell-header">
@@ -38,13 +39,13 @@ export default function OrganizerOnboardingPage() {
         <header className="sporg-heading">
           <p className="sporg-eyebrow">Organization application</p>
           <h1>
-            {owned?.status === "REJECTED"
+            {["REJECTED", "NEEDS_INFORMATION"].includes(owned?.status ?? "")
               ? "Prepare your next submission"
               : "Build your organization"}
           </h1>
           <p>
-            Save your details, add supporting documents, then review and submit. Submitted records
-            remain unchanged.
+            Save your details, add supporting documents, then review and submit.
+            Submitted records remain unchanged.
           </p>
         </header>
         {loading ? (
@@ -59,7 +60,9 @@ export default function OrganizerOnboardingPage() {
             <section className="sporg-card">
               <h2>1. Organization details</h2>
               {owned?.reviewReason && (
-                <p className="sporg-alert">Previous review: {owned.reviewReason}</p>
+                <p className="sporg-alert">
+                  Previous review: {owned.reviewReason}
+                </p>
               )}
               {error && (
                 <div role="alert" className="sporg-alert">
@@ -83,7 +86,9 @@ export default function OrganizerOnboardingPage() {
                 <Button type="submit" disabled={busy || attachmentsBusy}>
                   {busy
                     ? "Saving…"
-                    : owned?.status === "REJECTED"
+                    : ["REJECTED", "NEEDS_INFORMATION"].includes(
+                          owned?.status ?? "",
+                        )
                       ? "Open and save new draft"
                       : "Save draft"}
                 </Button>
@@ -92,12 +97,9 @@ export default function OrganizerOnboardingPage() {
             <section className="sporg-card">
               <h2>2. Supporting documents</h2>
               {owned?.status === "DRAFT" ? (
-                <MediaPanel
-                  scope="ORGANIZATION"
-                  target={owned.id}
-                  writable
-                  removable
-                  onChanged={() => setReview(false)}
+                <EvidenceManager
+                  organizationId={owned.id}
+                  editable
                   onBusyChange={setAttachmentsBusy}
                 />
               ) : (
@@ -105,12 +107,18 @@ export default function OrganizerOnboardingPage() {
               )}
               <h2>3. Review and submit</h2>
               <p>
-                Check your contact details and attachments. You will not be able to change this
-                submission while it is under review.
+                Check your contact details and attachments. You will not be able
+                to change this submission while it is under review.
               </p>
               <Button
                 variant="outline"
-                disabled={!owned || owned.status !== "DRAFT" || dirty || busy || attachmentsBusy}
+                disabled={
+                  !owned ||
+                  owned.status !== "DRAFT" ||
+                  dirty ||
+                  busy ||
+                  attachmentsBusy
+                }
                 onClick={() => setReview(true)}
               >
                 Review saved application
@@ -133,7 +141,12 @@ export default function OrganizerOnboardingPage() {
                   </dl>
                   <MediaPanel scope="ORGANIZATION" target={owned.id} />
                   <Button
-                    disabled={busy || attachmentsBusy || dirty || owned.status !== "DRAFT"}
+                    disabled={
+                      busy ||
+                      attachmentsBusy ||
+                      dirty ||
+                      owned.status !== "DRAFT"
+                    }
                     onClick={() => void submit()}
                   >
                     {busy ? "Submitting…" : "Submit for review"}
@@ -144,7 +157,10 @@ export default function OrganizerOnboardingPage() {
             </section>
             {owned && (
               <div className="sporg-full">
-                <ApplicationHistory organizationId={owned.id} refreshKey={owned.updatedAt} />
+                <ApplicationHistory
+                  organizationId={owned.id}
+                  refreshKey={owned.updatedAt}
+                />
               </div>
             )}
           </div>
@@ -153,7 +169,7 @@ export default function OrganizerOnboardingPage() {
           <Button
             variant="ghost"
             onClick={() => {
-              navigate("/organizer")
+              navigate("/organizer");
             }}
           >
             Workspace
@@ -161,5 +177,5 @@ export default function OrganizerOnboardingPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

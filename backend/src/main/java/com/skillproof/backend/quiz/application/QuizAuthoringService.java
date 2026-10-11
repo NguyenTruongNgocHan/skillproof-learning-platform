@@ -1,23 +1,20 @@
 package com.skillproof.backend.quiz.application;
 
-import com.skillproof.backend.quiz.infrastructure.persistence.*;
-
 import com.skillproof.backend.common.exception.BadRequestException;
 import com.skillproof.backend.common.exception.NotFoundException;
 import com.skillproof.backend.course.contract.CourseQuizAccess;
+import com.skillproof.backend.quiz.infrastructure.persistence.*;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.transaction.annotation.Transactional;
-
-/**
- * Coordinates question-bank and question-version authoring use cases.
- */
+/** Coordinates question-bank and question-version authoring use cases. */
 @org.springframework.stereotype.Service
 public class QuizAuthoringService {
 
@@ -32,8 +29,7 @@ public class QuizAuthoringService {
             QuizQuestionRootRepository questions,
             QuizQuestionVersionRepository versions,
             QuizOptionRepository optionRepository,
-            CourseQuizAccess access
-    ) {
+            CourseQuizAccess access) {
         this.banks = banks;
         this.questions = questions;
         this.versions = versions;
@@ -42,38 +38,42 @@ public class QuizAuthoringService {
     }
 
     private QuizBank bank(UUID id) {
-        return banks.findById(id).orElseThrow(()
-                -> new NotFoundException("QUIZ_NOT_FOUND", "Quiz record not found")
-        );
+        return banks.findById(id)
+                .orElseThrow(
+                        () -> new NotFoundException("QUIZ_NOT_FOUND", "Quiz record not found"));
     }
 
     private com.skillproof.backend.quiz.application.model.BankView bankView(QuizBank b) {
-        return new com.skillproof.backend.quiz.application.model.BankView(b.getId(), b.getOrganizationId(), b.getTitle(), b.getCreatedBy(), b.getCreatedAt());
+        return new com.skillproof.backend.quiz.application.model.BankView(
+                b.getId(), b.getOrganizationId(), b.getTitle(), b.getCreatedBy(), b.getCreatedAt());
     }
 
     private void requireBankAuthor(UUID actor, QuizBank bank) {
         if (bank.getOrganizationId() == null) {
-            access.requirePersonalAuthor(actor, bank.getCreatedBy()); 
-        }else {
+            access.requirePersonalAuthor(actor, bank.getCreatedBy());
+        } else {
             access.requireOrganizer(actor, bank.getOrganizationId());
         }
     }
 
     public List<com.skillproof.backend.quiz.application.model.BankView> personalBanks(UUID actor) {
         access.requireLearner(actor);
-        return banks.findByCreatedByAndOrganizationIdIsNullOrderByCreatedAtDesc(actor).stream().map(this::bankView).toList();
+        return banks.findByCreatedByAndOrganizationIdIsNullOrderByCreatedAtDesc(actor).stream()
+                .map(this::bankView)
+                .toList();
     }
 
-    public List<com.skillproof.backend.quiz.application.model.BankView> banks(UUID actor, UUID org) {
+    public List<com.skillproof.backend.quiz.application.model.BankView> banks(
+            UUID actor, UUID org) {
         access.requireOrganizer(actor, org);
-        return banks.findByOrganizationIdOrderByCreatedAtDesc(org)
-                .stream()
+        return banks.findByOrganizationIdOrderByCreatedAtDesc(org).stream()
                 .map(this::bankView)
                 .toList();
     }
 
     @Transactional
-    public com.skillproof.backend.quiz.application.model.BankView createBank(UUID actor, UUID org, String title) {
+    public com.skillproof.backend.quiz.application.model.BankView createBank(
+            UUID actor, UUID org, String title) {
         if (org == null) {
             access.requireLearner(actor);
         } else {
@@ -91,75 +91,82 @@ public class QuizAuthoringService {
     public List<Map<String, Object>> questions(UUID actor, UUID bankId) {
         var b = bank(bankId);
         requireBankAuthor(actor, b);
-        return questions.findByBankIdOrderByCreatedAtDesc(bankId)
-                .stream()
-                .map(q -> {
-                    var v = versions.findFirstByQuestionIdOrderByVersionNoDesc(q.getId())
-                            .orElseThrow();
-                    return Map.<String, Object>of(
-                            "id", q.getId(),
-                            "version_id", v.getId(),
-                            "version_no", v.getVersionNo(),
-                            "stem", v.getStem()
-                    );
-                })
+        return questions.findByBankIdOrderByCreatedAtDesc(bankId).stream()
+                .map(
+                        q -> {
+                            var v =
+                                    versions.findFirstByQuestionIdOrderByVersionNoDesc(q.getId())
+                                            .orElseThrow();
+                            return Map.<String, Object>of(
+                                    "id", q.getId(),
+                                    "version_id", v.getId(),
+                                    "version_no", v.getVersionNo(),
+                                    "stem", v.getStem());
+                        })
                 .toList();
     }
 
     public Map<String, Object> question(UUID actor, UUID id) {
-        var q = questions.findById(id).orElseThrow(()
-                -> new NotFoundException("QUIZ_NOT_FOUND", "Quiz record not found")
-        );
+        var q =
+                questions
+                        .findById(id)
+                        .orElseThrow(
+                                () ->
+                                        new NotFoundException(
+                                                "QUIZ_NOT_FOUND", "Quiz record not found"));
         var b = bank(q.getBankId());
         requireBankAuthor(actor, b);
-        var v = versions.findFirstByQuestionIdOrderByVersionNoDesc(id)
-                .orElseThrow();
-        var qm = Map.<String, Object>of(
-                "id", q.getId(),
-                "bank_id", q.getBankId(),
-                "bank_owner", b.getCreatedBy()
-        );
-        var vm = Map.<String, Object>of(
-                "id", v.getId(),
-                "question_id", v.getQuestionId(),
-                "version_no", v.getVersionNo(),
-                "stem", v.getStem(),
-                "created_at", v.getCreatedAt()
-        );
-        var opts = optionRepository
-                .findByQuestionVersionIdOrderByPosition(v.getId())
-                .stream()
-                .map(o -> Map.<String, Object>of(
-                "id", o.getId(),
-                "question_version_id", v.getId(),
-                "position", o.getPosition(),
-                "body", o.getBody(),
-                "correct", o.getCorrect()
-        ))
-                .toList();
+        var v = versions.findFirstByQuestionIdOrderByVersionNoDesc(id).orElseThrow();
+        var qm =
+                Map.<String, Object>of(
+                        "id", q.getId(),
+                        "bank_id", q.getBankId(),
+                        "bank_owner", b.getCreatedBy());
+        var vm =
+                Map.<String, Object>of(
+                        "id", v.getId(),
+                        "question_id", v.getQuestionId(),
+                        "version_no", v.getVersionNo(),
+                        "stem", v.getStem(),
+                        "created_at", v.getCreatedAt());
+        var opts =
+                optionRepository.findByQuestionVersionIdOrderByPosition(v.getId()).stream()
+                        .map(
+                                o ->
+                                        Map.<String, Object>of(
+                                                "id", o.getId(),
+                                                "question_version_id", v.getId(),
+                                                "position", o.getPosition(),
+                                                "body", o.getBody(),
+                                                "correct", o.getCorrect()))
+                        .toList();
         return Map.of("question", qm, "version", vm, "options", opts);
     }
 
     public static void validateOptions(List<Option> options) {
         try {
-            com.skillproof.backend.quiz.domain.QuestionRules.validate(options == null ? null : options.stream()
-                    .map(o -> o == null ? null : new com.skillproof.backend.quiz.domain.QuestionRules.Choice(o.body(), o.correct())).toList());
+            com.skillproof.backend.quiz.domain.QuestionRules.validate(
+                    options == null
+                            ? null
+                            : options.stream()
+                                    .map(
+                                            o ->
+                                                    o == null
+                                                            ? null
+                                                            : new com.skillproof.backend.quiz.domain
+                                                                    .QuestionRules.Choice(
+                                                                    o.body(), o.correct()))
+                                    .toList());
         } catch (IllegalArgumentException invalid) {
             throw new BadRequestException("QUESTION_OPTIONS_INVALID", invalid.getMessage());
         }
     }
 
-    public record Option(String body, boolean correct) {
-
-    }
+    public record Option(String body, boolean correct) {}
 
     @Transactional
     public Map<String, Object> addQuestion(
-            UUID actor,
-            UUID bankId,
-            String stem,
-            List<Option> options
-    ) {
+            UUID actor, UUID bankId, String stem, List<Option> options) {
         validateOptions(options);
         var b = bank(bankId);
         requireBankAuthor(actor, b);
@@ -193,15 +200,15 @@ public class QuizAuthoringService {
 
     @Transactional
     public Map<String, Object> revise(
-            UUID actor,
-            UUID questionId,
-            String stem,
-            List<Option> options
-    ) {
+            UUID actor, UUID questionId, String stem, List<Option> options) {
         validateOptions(options);
-        var q = questions.findForUpdate(questionId).orElseThrow(()
-                -> new NotFoundException("QUIZ_NOT_FOUND", "Quiz record not found")
-        );
+        var q =
+                questions
+                        .findForUpdate(questionId)
+                        .orElseThrow(
+                                () ->
+                                        new NotFoundException(
+                                                "QUIZ_NOT_FOUND", "Quiz record not found"));
         var b = bank(q.getBankId());
         requireBankAuthor(actor, b);
         var v = new QuizQuestionVersion();
@@ -224,5 +231,31 @@ public class QuizAuthoringService {
         versions.save(v);
         optionRepository.saveAll(newOptions);
         return question(actor, questionId);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> versionPreview(UUID actor, UUID id) {
+        var v = versions.findById(id).orElseThrow();
+        var root = questions.findById(v.getQuestionId()).orElseThrow();
+        requireBankAuthor(actor, bank(root.getBankId()));
+        return Map.of(
+                "id",
+                id,
+                "versionNo",
+                v.getVersionNo(),
+                "stem",
+                v.getStem(),
+                "options",
+                optionRepository.findByQuestionVersionIdOrderByPosition(id).stream()
+                        .map(
+                                o ->
+                                        Map.of(
+                                                "id",
+                                                o.getId(),
+                                                "body",
+                                                o.getBody(),
+                                                "correct",
+                                                o.getCorrect()))
+                        .toList());
     }
 }

@@ -1,17 +1,20 @@
+import { RubricGradingForm } from "./RubricGradingForm";
 import { useCallback, useState, useEffect } from "react";
 import MediaPanel from "@/features/media/components/MediaPanel";
 import { useRemote, useAction } from "@/shared/hooks/useRemote";
 import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState";
 import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
+
 import type { Assignment, Submission } from "../types/assignment.types";
 import { assignmentApi } from "../api/assignmentApi";
 export function AssignmentSubmissions({
   onBusyChange,
   assignment,
+  initialSubmission,
 }: {
   onBusyChange?: (busy: boolean) => void;
   assignment: Assignment;
+  initialSubmission?: Submission;
 }) {
   const remote = useRemote(
     useCallback(
@@ -24,9 +27,9 @@ export function AssignmentSubmissions({
     onBusyChange?.(action.busy);
     return () => onBusyChange?.(false);
   }, [action.busy, onBusyChange]);
-  const [selected, setSelected] = useState<Submission | null>(null),
-    [score, setScore] = useState(""),
-    [feedback, setFeedback] = useState("");
+  const [selected, setSelected] = useState<Submission | null>(
+    initialSubmission ?? null,
+  );
   return (
     <>
       <RemoteState {...remote} retry={remote.reload} />
@@ -48,8 +51,6 @@ export function AssignmentSubmissions({
             variant="outline"
             onClick={() => {
               setSelected(s);
-              setScore(s.scorePercent === null ? "" : String(s.scorePercent));
-              setFeedback(s.feedback ?? "");
             }}
           >
             Review
@@ -74,55 +75,16 @@ export function AssignmentSubmissions({
             </a>
           )}
           <MediaPanel scope="SUBMISSION" target={selected.id} />
-          {selected.status === "SUBMITTED" ? (
-            <form
-              className="sporg-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (
-                  !window.confirm(
-                    "Finalize this grade? The result cannot be edited afterwards.",
-                  )
-                )
-                  return;
-                void action.run(async () => {
-                  const s = await assignmentApi.grade(selected.id, {
-                    scorePercent: Number(score),
-                    feedback,
-                  });
-                  setSelected(s);
-                }, "Grade recorded.");
-              }}
-            >
-              <Input
-                label="Score (%)"
-                type="number"
-                required
-                min={0}
-                max={100}
-                value={score}
-                onChange={(e) => setScore(e.target.value)}
-              />
-              <label>
-                Feedback
-                <textarea
-                  required
-                  maxLength={2000}
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                />
-              </label>
-              <Button type="submit" disabled={action.busy}>
-                Finalize grade
-              </Button>
-            </form>
-          ) : (
-            <p>
-              {selected.status === "GRADED"
-                ? `Final grade: ${selected.scorePercent}% · ${selected.passed ? "Passed" : "Not passed"}. ${selected.feedback ?? ""}`
-                : "This draft has not been submitted for grading."}
-            </p>
-          )}
+          <RubricGradingForm
+            key={selected.id}
+            assignmentId={assignment.id}
+            submission={selected}
+            onBusyChange={onBusyChange}
+            saved={(s) => {
+              setSelected(s);
+              remote.reload();
+            }}
+          />
         </section>
       )}
     </>

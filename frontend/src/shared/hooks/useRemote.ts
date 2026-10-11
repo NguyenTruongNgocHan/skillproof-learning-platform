@@ -51,12 +51,16 @@ export function useAction(onDone?: () => void) {
     message = "Changes saved.",
   ) {
     if (locked.current) return false;
+    const form = document.activeElement?.closest("form");
     locked.current = true;
     setBusy(true);
     setError("");
     setSuccess("");
     try {
       await action();
+      form?.dispatchEvent(
+        new CustomEvent("workspace:saved", { bubbles: true }),
+      );
       if (live.current) {
         setSuccess(message);
         onDone?.();

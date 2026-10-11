@@ -1,27 +1,32 @@
-import { useAuth } from "@/features/auth/hooks/useAuth"
-import { ApplicationHistory } from "@/features/organization/components/ApplicationHistory"
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
-import "@/features/organization/styles/organizer.css"
-import BrandLogo from "@/shared/ui/BrandLogo"
-import Button from "@/shared/ui/Button"
-import ThemeSwitcher from "@/shared/ui/ThemeSwitcher"
-import { useState } from "react"
-import { Link, Navigate } from "react-router-dom"
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { ApplicationHistory } from "@/features/organization/components/ApplicationHistory";
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
+import "@/features/organization/styles/organizer.css";
+import BrandLogo from "@/shared/ui/BrandLogo";
+import Button from "@/shared/ui/Button";
+import ThemeSwitcher from "@/shared/ui/ThemeSwitcher";
+import { useState } from "react";
+import { Link, Navigate } from "react-router-dom";
 export default function OrganizerVerificationPendingPage() {
-  const { owned, organization, loading, error, refresh } = useOrganizationContext()
-  const { logout } = useAuth()
-  const [signingOut, setSigningOut] = useState(false)
-  const [actionError, setActionError] = useState("")
+  const { owned, organization, loading, error, refresh } =
+    useOrganizationContext();
+  const { logout } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
+  const [actionError, setActionError] = useState("");
   async function signOut() {
-    if (signingOut) return
-    setSigningOut(true)
-    setActionError("")
+    if (signingOut) return;
+    setSigningOut(true);
+    setActionError("");
     try {
-      await logout()
+      await logout();
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : "Unable to sign out. Please retry.")
+      setActionError(
+        cause instanceof Error
+          ? cause.message
+          : "Unable to sign out. Please retry.",
+      );
     } finally {
-      setSigningOut(false)
+      setSigningOut(false);
     }
   }
   if (loading)
@@ -29,16 +34,17 @@ export default function OrganizerVerificationPendingPage() {
       <main className="sporg" role="status">
         Checking your application…
       </main>
-    )
+    );
   if (error)
     return (
       <main className="sporg">
         <p role="alert">{error}</p>
         <Button onClick={() => void refresh()}>Retry</Button>
       </main>
-    )
-  if (owned?.status === "APPROVED") return <Navigate to="/organizer" replace />
-  if (!owned || owned.status === "DRAFT") return <Navigate to="/onboarding/organizer" replace />
+    );
+  if (owned?.status === "APPROVED") return <Navigate to="/organizer" replace />;
+  if (!owned || owned.status === "DRAFT")
+    return <Navigate to="/onboarding/organizer" replace />;
   return (
     <div className="sporg-shell">
       <header className="sporg-shell-header">
@@ -49,9 +55,11 @@ export default function OrganizerVerificationPendingPage() {
         <header className="sporg-heading">
           <p className="sporg-eyebrow">{owned.status}</p>
           <h1>
-            {owned.status === "REJECTED"
-              ? "Your application needs changes"
-              : "Your application is under review"}
+            {owned.status === "SUSPENDED"
+              ? "Your organization has been suspended"
+              : ["REJECTED", "NEEDS_INFORMATION"].includes(owned.status)
+                ? "Your application needs changes"
+                : "Your application is under review"}
           </h1>
           <p>
             {owned.reviewReason ??
@@ -64,7 +72,7 @@ export default function OrganizerVerificationPendingPage() {
           </p>
         )}
         <div className="sporg-actions">
-          {owned.status === "REJECTED" && (
+          {["REJECTED", "NEEDS_INFORMATION"].includes(owned.status) && (
             <Button asChild>
               <Link to="/onboarding/organizer">Prepare another submission</Link>
             </Button>
@@ -77,7 +85,11 @@ export default function OrganizerVerificationPendingPage() {
           <Button variant="outline" onClick={() => void refresh()}>
             Check status
           </Button>
-          <Button variant="ghost" disabled={signingOut} onClick={() => void signOut()}>
+          <Button
+            variant="ghost"
+            disabled={signingOut}
+            onClick={() => void signOut()}
+          >
             {signingOut ? "Signing out…" : "Sign out"}
           </Button>
         </div>
@@ -98,8 +110,11 @@ export default function OrganizerVerificationPendingPage() {
             </dd>
           </dl>
         </section>
-        <ApplicationHistory organizationId={owned.id} refreshKey={owned.updatedAt} />
+        <ApplicationHistory
+          organizationId={owned.id}
+          refreshKey={owned.updatedAt}
+        />
       </main>
     </div>
-  )
+  );
 }

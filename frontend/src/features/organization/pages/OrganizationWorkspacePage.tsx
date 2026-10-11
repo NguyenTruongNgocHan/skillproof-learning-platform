@@ -1,3 +1,4 @@
+import { OrganizationBrandingPanel } from "../components/OrganizationBrandingPanel";
 import { useState } from "react";
 import MediaPanel from "@/features/media/components/MediaPanel";
 import { ApplicationHistory } from "../components/ApplicationHistory";
@@ -19,8 +20,8 @@ export default function OrganizationWorkspacePage() {
   const tabs = [
     "profile",
     ...(grants.includes("MANAGE_MEMBERS") ? ["team"] : []),
-    ...(grants.includes("MANAGE_PROFILE") ? ["documents"] : []),
-    "history",
+    ...(grants.includes("MANAGE_PROFILE") ? ["branding", "documents"] : []),
+    ...(grants.includes("MANAGE_PROFILE") ? ["history"] : []),
   ];
   return (
     <OrganizerSurface
@@ -61,6 +62,9 @@ export default function OrganizationWorkspacePage() {
             onDirtyChange={setPanelDirty}
           />
         )}{" "}
+        {tab === "branding" && organization && (
+          <OrganizationBrandingPanel organizationId={organization.id} />
+        )}
         {tab === "documents" &&
           organization &&
           grants.includes("MANAGE_PROFILE") && (
@@ -73,13 +77,15 @@ export default function OrganizationWorkspacePage() {
               <MediaPanel scope="ORGANIZATION" target={organization.id} />
             </section>
           )}
-        {tab === "history" && organization && (
-          <ApplicationHistory
-            organizationId={organization.id}
-            refreshKey={organization.updatedAt}
-            documentsVisible={grants.includes("MANAGE_PROFILE")}
-          />
-        )}
+        {tab === "history" &&
+          organization &&
+          grants.includes("MANAGE_PROFILE") && (
+            <ApplicationHistory
+              organizationId={organization.id}
+              refreshKey={organization.updatedAt}
+              documentsVisible={grants.includes("MANAGE_PROFILE")}
+            />
+          )}
       </div>
     </OrganizerSurface>
   );

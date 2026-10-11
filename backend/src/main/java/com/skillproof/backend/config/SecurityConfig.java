@@ -1,9 +1,7 @@
 package com.skillproof.backend.config;
 
-import com.skillproof.backend.identity.infrastructure.security.OAuth2LoginSuccessHandler;
 import com.skillproof.backend.identity.infrastructure.security.JwtAuthenticationFilter;
-
-import java.util.List;
+import com.skillproof.backend.identity.infrastructure.security.OAuth2LoginSuccessHandler;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +18,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
+
 @Configuration
 public class SecurityConfig {
 
@@ -29,86 +29,103 @@ public class SecurityConfig {
             JwtAuthenticationFilter jwtFilter,
             OAuth2LoginSuccessHandler oauthSuccessHandler,
             @Value("${spring.profiles.active:}") String activeProfiles,
-            tools.jackson.databind.ObjectMapper json
-    ) throws Exception {
+            tools.jackson.databind.ObjectMapper json)
+            throws Exception {
 
-        http
-                .csrf(
-                        AbstractHttpConfigurer::disable
-                )
-                .cors(
-                        Customizer.withDefaults()
-                )
-                .formLogin(
-                        AbstractHttpConfigurer::disable
-                )
-                .httpBasic(
-                        AbstractHttpConfigurer::disable
-                )
+        http.csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(
-                        session
-                        -> session.sessionCreationPolicy(
-                                SessionCreationPolicy.IF_REQUIRED
-                        )
-                )
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(
-                        authorization
-                        -> authorization
-                                .requestMatchers(org.springframework.http.HttpMethod.GET,
-                                        "/api/v1/courses", "/api/v1/courses/*", "/api/v1/courses/*/syllabus",
-                                        "/api/v1/library", "/api/v1/library/*",
-                                        "/api/v1/payments/vnpay/ipn", "/api/v1/payments/vnpay/return")
-                                .permitAll()
-                                .requestMatchers(
-                                        "/health",
-                                        "/swagger-ui.html",
-                                        "/swagger-ui/**",
-                                        "/v3/api-docs/**",
-                                        "/api/v1/auth/register",
-                                        "/api/v1/public/certificates/*",
-                                        "/api/v1/auth/verify-email",
-                                        "/api/v1/auth/resend-verification",
-                                        "/api/v1/auth/login",
-                                        "/api/v1/auth/refresh",
-                                        "/api/v1/auth/logout",
-                                        "/api/v1/auth/forgot-password",
-                                        "/api/v1/auth/reset-password",
-                                        "/oauth2/**",
-                                        "/login/oauth2/**"
-                                )
-                                .permitAll()
-                                .requestMatchers(
-                                        "/api/v1/admin/**"
-                                )
-                                .hasRole("ADMIN")
-                                .anyRequest()
-                                .authenticated()
-                )
-                .exceptionHandling(errors -> errors
-                .authenticationEntryPoint((request, response, exception) -> {
-                    response.setStatus(401);
-                    response.setContentType("application/json");
-                    response.getWriter().write(json.writeValueAsString(com.skillproof.backend.common.exception.ApiError.of(
-                            org.springframework.http.HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Authentication required", request.getRequestURI())));
-                })
-                .accessDeniedHandler((request, response, exception) -> {
-                    response.setStatus(403);
-                    response.setContentType("application/json");
-                    response.getWriter().write(json.writeValueAsString(com.skillproof.backend.common.exception.ApiError.of(
-                            org.springframework.http.HttpStatus.FORBIDDEN, "ACCESS_DENIED", "Permission denied", request.getRequestURI())));
-                }))
-                .addFilterBefore(
-                        jwtFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                );
+                        authorization ->
+                                authorization
+                                        .requestMatchers(
+                                                org.springframework.http.HttpMethod.GET,
+                                                "/api/v1/courses",
+                                                "/api/v1/courses/*",
+                                                "/api/v1/courses/*/syllabus",
+                                                "/api/v1/library",
+                                                "/api/v1/library/*",
+                                                "/api/v1/payments/vnpay/ipn",
+                                                "/api/v1/payments/vnpay/return")
+                                        .permitAll()
+                                        .requestMatchers(
+                                                "/health",
+                                                "/swagger-ui.html",
+                                                "/swagger-ui/**",
+                                                "/v3/api-docs/**",
+                                                "/api/v1/auth/register",
+                                                "/api/v1/public/certificates/**",
+                                                "/api/v1/public/organizations/**",
+                                                "/api/v1/public/courses/*/cover",
+                                                "/api/v1/public/feedback/**",
+                                                "/api/v1/analytics/events",
+                                                "/api/v1/auth/verify-email",
+                                                "/api/v1/auth/resend-verification",
+                                                "/api/v1/auth/login",
+                                                "/api/v1/auth/refresh",
+                                                "/api/v1/auth/logout",
+                                                "/api/v1/auth/forgot-password",
+                                                "/api/v1/auth/reset-password",
+                                                "/oauth2/**",
+                                                "/login/oauth2/**")
+                                        .permitAll()
+                                        .requestMatchers("/api/v1/admin/**")
+                                        .hasRole("ADMIN")
+                                        .anyRequest()
+                                        .authenticated())
+                .exceptionHandling(
+                        errors ->
+                                errors.authenticationEntryPoint(
+                                                (request, response, exception) -> {
+                                                    response.setStatus(401);
+                                                    response.setContentType("application/json");
+                                                    response.getWriter()
+                                                            .write(
+                                                                    json.writeValueAsString(
+                                                                            com.skillproof.backend
+                                                                                    .common
+                                                                                    .exception
+                                                                                    .ApiError.of(
+                                                                                    org
+                                                                                            .springframework
+                                                                                            .http
+                                                                                            .HttpStatus
+                                                                                            .UNAUTHORIZED,
+                                                                                    "UNAUTHORIZED",
+                                                                                    "Authentication"
+                                                                                        + " required",
+                                                                                    request
+                                                                                            .getRequestURI())));
+                                                })
+                                        .accessDeniedHandler(
+                                                (request, response, exception) -> {
+                                                    response.setStatus(403);
+                                                    response.setContentType("application/json");
+                                                    response.getWriter()
+                                                            .write(
+                                                                    json.writeValueAsString(
+                                                                            com.skillproof.backend
+                                                                                    .common
+                                                                                    .exception
+                                                                                    .ApiError.of(
+                                                                                    org
+                                                                                            .springframework
+                                                                                            .http
+                                                                                            .HttpStatus
+                                                                                            .FORBIDDEN,
+                                                                                    "ACCESS_DENIED",
+                                                                                    "Permission"
+                                                                                        + " denied",
+                                                                                    request
+                                                                                            .getRequestURI())));
+                                                }))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         if (activeProfiles.contains("oauth")) {
-            http.oauth2Login(
-                    oauth
-                    -> oauth.successHandler(
-                            oauthSuccessHandler
-                    )
-            );
+            http.oauth2Login(oauth -> oauth.successHandler(oauthSuccessHandler));
         }
 
         return http.build();
@@ -121,41 +138,22 @@ public class SecurityConfig {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(
-            @Value("${skillproof.cors.allowed-origin}") String allowedOrigin
-    ) {
+            @Value("${skillproof.cors.allowed-origin}") String allowedOrigin) {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
-                List.of(allowedOrigin)
-        );
+        configuration.setAllowedOrigins(List.of(allowedOrigin));
 
         configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "PATCH",
-                        "DELETE",
-                        "OPTIONS"
-                )
-        );
+                List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         configuration.setAllowedHeaders(
-                List.of(
-                        "Authorization",
-                        "Content-Type", "Idempotency-Key"
-                )
-        );
+                List.of("Authorization", "Content-Type", "Idempotency-Key"));
 
         configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source
-                = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }

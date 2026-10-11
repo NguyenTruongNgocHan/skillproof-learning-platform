@@ -1,13 +1,13 @@
 package com.skillproof.backend.course.infrastructure;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "resource_progress")
@@ -25,8 +25,15 @@ public class ResourceProgressEntity {
     @Column(name = "completed_at", nullable = false)
     private Instant completedAt;
 
-    protected ResourceProgressEntity() {
+    public UUID getResourceId() {
+        return resourceId;
     }
+
+    public Instant getCompletedAt() {
+        return completedAt;
+    }
+
+    protected ResourceProgressEntity() {}
 
     public ResourceProgressEntity(UUID enrollmentId, UUID resourceId, Instant completedAt) {
         this.enrollmentId = enrollmentId;
