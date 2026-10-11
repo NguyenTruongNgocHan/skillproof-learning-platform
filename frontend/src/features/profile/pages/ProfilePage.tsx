@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import MediaPanel from "@/features/media/components/MediaPanel"
+import "../styles/profile-workspace.css"
 import { profileApi } from "@/features/profile/api/profileApi"
 import LearningPreferencesPanel from "@/features/profile/components/LearningPreferencesPanel"
 import type { Profile } from "@/features/profile/types/profile.types"
@@ -40,7 +41,7 @@ export default function ProfilePage() {
   }
 
   const content = (
-    <main className="learner-page learner-page--profile">
+    <main className={user?.role === "LEARNER" ? "learner-page learner-page--profile" : "profile-workspace"}>
       {!profile ? (
         <div
           className={`learner-state${error ? " learner-state--error" : ""}`}
