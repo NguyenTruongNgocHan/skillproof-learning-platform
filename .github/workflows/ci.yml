@@ -1,15 +1,39 @@
-name: CI
+name: SkillProof CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   backend:
-    name: Backend
+    name: Backend / Java 21
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: backend
+        shell: bash
+    env:
+      S3_IT_ENABLED: 'true'
+      MEDIA_S3_BUCKET: skillproof-media
+      MEDIA_S3_REGION: us-east-1
+      MEDIA_S3_ENDPOINT: http://localhost:9000
+      MEDIA_S3_ACCESS_KEY: skillproof
+      MEDIA_S3_SECRET_KEY: skillproof123
+      # Ephemeral CI credentials only; never use production credentials here.
+      AWS_ACCESS_KEY_ID: skillproof
+      AWS_SECRET_ACCESS_KEY: skillproof123
+      AWS_DEFAULT_REGION: us-east-1
     services:
       postgres:
         image: postgres:18
@@ -23,7 +47,7 @@ jobs:
           --health-cmd "pg_isready -U skillproof -d skillproof"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
       redis:
         image: redis:8
         ports:
@@ -32,79 +56,108 @@ jobs:
           --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
-      minio:
-        image: pgsty/silo:latest
-        env:
-          MINIO_ROOT_USER: skillproof
-          MINIO_ROOT_PASSWORD: skillproof123
-        ports:
-          - 9000:9000
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live"
-          --health-interval 10s
-          --health-timeout 5s
           --health-retries 10
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
-
-      - name: Run tests
-        run: ./mvnw clean test
-
-      - name: Provision private S3 test bucket
-        env:
-          AWS_ACCESS_KEY_ID: skillproof
-          AWS_SECRET_ACCESS_KEY: skillproof123
+          cache-dependency-path: backend/pom.xml
+      - name: Start S3-compatible storage
         run: |
-          aws s3api create-bucket --bucket skillproof-media --endpoint-url http://localhost:9000
-          aws s3api put-bucket-acl --bucket skillproof-media --acl private --endpoint-url http://localhost:9000
-
-      - name: Run S3-compatible integration test
-        env:
-          S3_IT_ENABLED: 'true'
-          MEDIA_S3_BUCKET: skillproof-media
-          MEDIA_S3_REGION: us-east-1
-          MEDIA_S3_ENDPOINT: http://localhost:9000
-          MEDIA_S3_ACCESS_KEY: skillproof
-          MEDIA_S3_SECRET_KEY: skillproof123
-        run: ./mvnw -Dtest=S3CompatibilityIntegrationTest test
+          set -euo pipefail
+          docker run -d --name skillproof-ci-minio \
+            -p 127.0.0.1:9000:9000 \
+            -e MINIO_ROOT_USER=skillproof \
+            -e MINIO_ROOT_PASSWORD=skillproof123 \
+            pgsty/silo:latest server /data --console-address ':9001'
+          for attempt in {1..60}; do
+            if curl --fail --silent http://localhost:9000/minio/health/ready >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs skillproof-ci-minio
+          echo 'Object storage did not become ready.' >&2
+          exit 1
+      - name: Provision private S3 bucket before tests
+        run: |
+          set -euo pipefail
+          s3api() {
+            docker run --rm --network host \
+              -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION \
+              amazon/aws-cli:latest s3api "$@" \
+              --endpoint-url "$MEDIA_S3_ENDPOINT"
+          }
+          s3api create-bucket --bucket "$MEDIA_S3_BUCKET"
+          s3api put-bucket-acl --bucket "$MEDIA_S3_BUCKET" --acl private
+          s3api head-bucket --bucket "$MEDIA_S3_BUCKET"
+      - name: Run backend tests including S3 integration
+        run: bash ./mvnw --batch-mode --no-transfer-progress clean verify
+      - name: Upload backend test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload backend package
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-package
+          path: backend/target/*.jar
+          if-no-files-found: error
+          retention-days: 7
+      - name: Container diagnostics on failure
+        if: failure()
+        run: |
+          docker ps -a
+          if docker inspect skillproof-ci-minio >/dev/null 2>&1; then
+            docker logs skillproof-ci-minio
+          fi
+      - name: Remove temporary storage container
+        if: always()
+        run: |
+          if docker inspect skillproof-ci-minio >/dev/null 2>&1; then
+            docker rm -f skillproof-ci-minio
+          fi
 
   frontend:
-    name: Frontend
+    name: Frontend / Node 22
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: frontend
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up Node.js
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
+      - name: Install locked dependencies
         run: npm ci
-
       - name: Typecheck
         run: npm run typecheck
-
-      - name: Run tests
+      - name: Run frontend tests
         run: npm test
-
-      - name: Build
+      - name: Build frontend
         run: npm run build
+      - name: Upload frontend package
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          if-no-files-found: error
+          retention-days: 7
