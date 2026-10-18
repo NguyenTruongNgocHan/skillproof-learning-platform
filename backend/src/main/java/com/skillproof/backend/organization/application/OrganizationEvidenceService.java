@@ -1,18 +1,21 @@
 package com.skillproof.backend.organization.application;
 
-import com.skillproof.backend.common.exception.*;
-import com.skillproof.backend.identity.contract.IdentityAccessQuery;
-import com.skillproof.backend.media.contract.OrganizationEvidenceFiles;
-import com.skillproof.backend.operations.contract.ActivityJournal;
-import com.skillproof.backend.organization.contract.*;
-import com.skillproof.backend.organization.infrastructure.*;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.*;
-import java.util.*;
+import com.skillproof.backend.common.exception.BadRequestException;
+import com.skillproof.backend.identity.contract.IdentityAccessQuery;
+import com.skillproof.backend.media.contract.OrganizationEvidenceFiles;
+import com.skillproof.backend.operations.contract.ActivityJournal;
+import com.skillproof.backend.organization.contract.OrganizationAuthorityQuery;
+import com.skillproof.backend.organization.infrastructure.EvidenceDocument;
+import com.skillproof.backend.organization.infrastructure.EvidenceRepository;
+import com.skillproof.backend.organization.infrastructure.OrganizationRepository;
 
 @Service
 public class OrganizationEvidenceService {
@@ -77,7 +80,11 @@ public class OrganizationEvidenceService {
             throw new AccessDeniedException("Profile authority required");
         if (expiry != null && !expiry.isAfter(Instant.now()))
             throw new BadRequestException("EVIDENCE_EXPIRED", "Document has expired");
-        files.requireFile(org, media, purpose);
+        if ("COMPANY_IMAGE".equals(kind)) {
+            if (!"VERIFICATION".equals(purpose))
+                throw new BadRequestException("COMPANY_IMAGE_PURPOSE", "Company images are verification evidence");
+            files.requireImage(org, media);
+        } else files.requireFile(org, media, purpose);
         var doc =
                 evidence.save(
                         new EvidenceDocument(
@@ -109,6 +116,16 @@ public class OrganizationEvidenceService {
         return doc;
     }
 
+    private void requireThreeCompanyImages(List<EvidenceDocument> docs, boolean approved) {
+        long count = docs.stream()
+                .filter(d -> "COMPANY_IMAGE".equals(d.getKind()))
+                .filter(d -> !approved || "ACCEPTED".equals(d.getStatus()))
+                .map(EvidenceDocument::getMediaId).distinct().count();
+        if (count < 3)
+            throw new BadRequestException(approved ? "COMPANY_IMAGES_REVIEW_REQUIRED" : "COMPANY_IMAGES_REQUIRED",
+                    "At least three distinct company images are required" + (approved ? " and must be accepted by an admin" : " before submission"));
+    }
+
     public void requireSubmission(UUID org, List<UUID> activeFiles) {
         var docs =
                 evidence.findByOrganizationIdOrderByCreatedAtDesc(org).stream()
@@ -119,6 +136,7 @@ public class OrganizationEvidenceService {
                                                 && (d.getExpiresAt() == null
                                                         || d.getExpiresAt().isAfter(Instant.now())))
                         .toList();
+        requireThreeCompanyImages(docs, false);
         for (String kind : List.of("LEGAL_IDENTITY", "REPRESENTATIVE"))
             if (docs.stream().noneMatch(d -> kind.equals(d.getKind())))
                 throw new BadRequestException(
@@ -127,7 +145,12 @@ public class OrganizationEvidenceService {
     }
 
     public void requireApprovedEvidence(UUID org, List<UUID> snapshot) {
-        var docs = evidence.findByOrganizationIdOrderByCreatedAtDesc(org);
+        var docs = evidence.findByOrganizationIdOrderByCreatedAtDesc(org).stream()
+                .filter(d -> snapshot.contains(d.getMediaId())
+                        && "VERIFICATION".equals(d.getPurpose())
+                        && (d.getExpiresAt() == null || d.getExpiresAt().isAfter(Instant.now())))
+                .toList();
+        requireThreeCompanyImages(docs, true);
         for (String kind : List.of("LEGAL_IDENTITY", "REPRESENTATIVE"))
             if (docs.stream()
                     .noneMatch(

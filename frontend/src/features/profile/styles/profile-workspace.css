@@ -170,3 +170,42 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* Keep uploaded media inside the profile frame at every viewport width. */
+.profile-workspace .profile-hub__avatar,
+.profile-workspace .v7-media,
+.profile-workspace .v7-media-preview,
+.profile-workspace .v7-media>* {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.profile-workspace .v7-media {
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+.profile-workspace .v7-media-preview {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-workspace .v7-media-preview img {
+    width: min(100%, 240px);
+    height: auto;
+    max-height: 180px;
+    object-fit: contain;
+}
+
+.profile-workspace .v7-media input[type=file] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 760px) {
+    .profile-workspace .profile-hub__hero {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

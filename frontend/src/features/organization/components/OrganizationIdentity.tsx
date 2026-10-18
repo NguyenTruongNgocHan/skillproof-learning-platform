@@ -32,9 +32,9 @@ export function OrganizationIdentity({
       : undefined);
   const coverUrl =
     suppliedCover ??
-    (brand.data?.branding.coverMediaId
+    ((brand.data?.branding.coverMediaId || brand.data?.branding.logoMediaId)
       ? publicImage(
-          `/public/organizations/${organization.id}/branding/cover?v=${encodeURIComponent(suffix)}`,
+          `/public/organizations/${organization.id}/branding/${brand.data?.branding.coverMediaId ? "cover" : "logo"}?v=${encodeURIComponent(suffix)}`,
         )
       : undefined);
   const [logoFailed, setLogoFailed] = useState(false),

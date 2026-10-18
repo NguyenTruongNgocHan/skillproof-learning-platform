@@ -1,0 +1,127 @@
+/* Media layout: one scoped owner for upload and file rows. */
+.v7-media-panel,
+.v7-media-panel * {
+    box-sizing: border-box;
+}
+
+.v7-media-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.v7-media-panel .v7-media-upload-label {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.v7-media-panel input[type="file"] {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.v7-media-panel .v7-media-list {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    width: 100%;
+    min-width: 0;
+}
+
+.v7-media-panel .v7-media-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border, #444);
+}
+
+.v7-media-panel .v7-media-row:last-child {
+    border-bottom: 0;
+}
+
+.v7-media-panel .v7-media-preview {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+}
+
+.v7-media-panel .v7-media-preview img,
+.v7-media-panel .v7-media-preview video,
+.v7-media-panel .v7-media-preview audio,
+.v7-media-panel .v7-media-preview iframe {
+    display: block;
+    max-width: 100%;
+}
+
+.v7-media-panel .v7-media-file-info {
+    flex: 1 1 180px;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.v7-media-panel .v7-media-file-info>button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.v7-media-panel .v7-media-file-name {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+.v7-media-panel .v7-media-file-size {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.v7-media-panel .v7-media-row>button {
+    flex: 0 0 auto;
+    max-width: 100%;
+}
+
+.v7-media-panel .v7-media-row>.sporg-review-file-icon {
+    flex: 0 0 24px;
+}
+
+.v7-media-panel .v7-media-row>.v7-media-preview:has(img, video, audio, iframe) {
+    flex-basis: 100%;
+}
+
+@media (max-width: 600px) {
+    .v7-media-panel .v7-media-row {
+        gap: 8px;
+    }
+
+    .v7-media-panel .v7-media-preview {
+        flex-basis: 100%;
+    }
+
+    .v7-media-panel .v7-media-file-info {
+        flex-basis: 100%;
+    }
+
+    .v7-media-panel .v7-media-row>button {
+        margin-left: auto;
+    }
+}

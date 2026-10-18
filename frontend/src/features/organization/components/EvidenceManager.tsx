@@ -12,12 +12,14 @@ export function EvidenceManager({
   editable = false,
   admin = false,
   onBusyChange,
+  onChanged,
 }: {
   organizationId: string;
   purpose?: "VERIFICATION" | "ISSUER";
   editable?: boolean;
   admin?: boolean;
   onBusyChange?: (busy: boolean) => void;
+  onChanged?: () => void;
 }) {
   const remote = useRemote(
     useCallback(() => governanceApi.evidence(organizationId), [organizationId]),
@@ -35,6 +37,7 @@ export function EvidenceManager({
   const action = useAction(() => {
     remote.reload();
     files.reload();
+    onChanged?.();
   });
   const [uploading, setUploading] = useState(false);
   useEffect(() => {
@@ -60,7 +63,7 @@ export function EvidenceManager({
       <p>
         {purpose === "ISSUER"
           ? "Provide training credentials, expertise and authority to issue certificates."
-          : "Required: legal identity and representative authorization. Activity photos support your application but do not replace legal evidence."}
+          : "Required: legal identity and representative authorization. At least three distinct company images are required for review. Each must be classified as COMPANY_IMAGE and accepted by an admin. Legal identity and representative documents are also required."}
       </p>
       <MediaPanel
         scope={purpose === "ISSUER" ? "ISSUER" : "ORGANIZATION"}
@@ -68,7 +71,7 @@ export function EvidenceManager({
         writable={editable}
         removable={editable && purpose === "VERIFICATION"}
         onBusyChange={setUploading}
-        onChanged={files.reload}
+        onChanged={() => { files.reload(); remote.reload(); onChanged?.(); }}
       />
       <RemoteState {...remote} retry={remote.reload} />
       <ActionNotice {...action} />
@@ -114,7 +117,7 @@ export function EvidenceManager({
             >
               {(purpose === "ISSUER"
                 ? ["TRAINING_CAPABILITY", "REPRESENTATIVE", "SUPPORTING"]
-                : ["LEGAL_IDENTITY", "REPRESENTATIVE", "SUPPORTING"]
+                : ["LEGAL_IDENTITY", "REPRESENTATIVE", "COMPANY_IMAGE", "SUPPORTING"]
               ).map((k) => (
                 <option key={k}>{k}</option>
               ))}

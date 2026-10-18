@@ -41,7 +41,7 @@ export function OrganizerSurface({
             </p>
           </section>
         ) : (
-          <div ref={formRoot}>{children}</div>
+          <div ref={formRoot} className="sporg-page-flow">{children}</div>
         )}
       </section>
     </AppShell>

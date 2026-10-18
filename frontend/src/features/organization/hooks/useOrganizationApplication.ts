@@ -31,6 +31,7 @@ export function useOrganizationApplication() {
   const [busy, setBusy] = useState(false);
   const [attachmentsBusy, setAttachmentsBusy] = useState(false);
   const [error, setError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [review, setReview] = useState(false);
   const inFlight = useRef(false);
@@ -40,6 +41,7 @@ export function useOrganizationApplication() {
     markDirty(false);
     setReview(false);
     setError("");
+    setSubmitError("");
     setFieldErrors({});
   }, [owned, user?.id, user?.email]);
   useEffect(() => {
@@ -60,6 +62,7 @@ export function useOrganizationApplication() {
     setForm((previous) => ({ ...previous, [key]: value }));
     markDirty(true);
     setReview(false);
+    setSubmitError("");
     setFieldErrors((previous) => ({ ...previous, [key]: "" }));
   };
   function reportFailure(cause: unknown, fallback: string) {
@@ -118,14 +121,16 @@ export function useOrganizationApplication() {
       return;
     inFlight.current = true;
     setBusy(true);
-    setError("");
+    setSubmitError("");
     try {
       await organizationApi.submit();
       await refresh();
       toast("success", "Application submitted for review.");
       navigate("/organizer/verification-pending", { replace: true });
     } catch (cause) {
-      reportFailure(cause, "Unable to submit application.");
+      const message = cause instanceof Error ? cause.message : "Unable to submit application.";
+      setSubmitError(message);
+      toast("error", message);
     } finally {
       inFlight.current = false;
       setBusy(false);
@@ -139,6 +144,7 @@ export function useOrganizationApplication() {
     attachmentsBusy,
     setAttachmentsBusy,
     error,
+    submitError,
     fieldErrors,
     review,
     setReview,

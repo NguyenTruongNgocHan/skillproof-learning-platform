@@ -68,6 +68,7 @@ export const ORGANIZER_NAV: NavItem[] = [
 ];
 
 export const ADMIN_NAV: NavItem[] = [
+  { label: "Overview", path: "/admin", icon: LayoutDashboard },
   { label: "Certificate governance", path: "/admin/certificates", icon: Award },
   { label: "Resource review", path: "/admin/library", icon: LibraryBig },
   {
@@ -77,7 +78,6 @@ export const ADMIN_NAV: NavItem[] = [
   },
   { label: "Issuer review", path: "/admin/issuers", icon: Award },
   { label: "Feedback moderation", path: "/admin/feedback", icon: ListChecks },
-  { label: "Overview", path: "/admin", icon: LayoutDashboard },
   {
     label: "Application review",
     path: "/admin/organizations",

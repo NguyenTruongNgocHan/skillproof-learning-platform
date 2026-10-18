@@ -96,7 +96,7 @@ public class OrganizationBrandService {
         UUID id =
                 "logo".equals(kind)
                         ? b.getLogoMediaId()
-                        : "cover".equals(kind) ? b.getCoverMediaId() : null;
+                        : "cover".equals(kind) ? (b.getCoverMediaId() != null ? b.getCoverMediaId() : b.getLogoMediaId()) : null;
         if (id == null) throw new NotFoundException("IMAGE_NOT_FOUND", "No artwork");
         return files.image(id);
     }

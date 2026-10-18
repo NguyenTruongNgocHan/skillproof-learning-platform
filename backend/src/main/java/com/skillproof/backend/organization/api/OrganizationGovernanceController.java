@@ -1,13 +1,28 @@
 package com.skillproof.backend.organization.api;
 
-import com.skillproof.backend.organization.application.*;
-import com.skillproof.backend.organization.infrastructure.*;
-import jakarta.validation.*;
-import jakarta.validation.constraints.*;
-import java.time.*;
-import java.util.*;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.skillproof.backend.organization.application.IssuerAuthorizationService;
+import com.skillproof.backend.organization.application.OrganizationEvidenceService;
+import com.skillproof.backend.organization.infrastructure.EvidenceDocument;
+import com.skillproof.backend.organization.infrastructure.IssuerApplication;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -23,7 +38,7 @@ public class OrganizationGovernanceController {
 
   public record EvidenceInput(
       @NotNull UUID mediaId,
-      @Pattern(regexp = "LEGAL_IDENTITY|REPRESENTATIVE|TRAINING_CAPABILITY|SUPPORTING") @NotBlank
+      @Pattern(regexp = "LEGAL_IDENTITY|REPRESENTATIVE|TRAINING_CAPABILITY|SUPPORTING|COMPANY_IMAGE") @NotBlank
           String kind,
       @Pattern(regexp = "VERIFICATION|ISSUER") @NotBlank String purpose,
       @NotBlank @Size(max = 180) String title,

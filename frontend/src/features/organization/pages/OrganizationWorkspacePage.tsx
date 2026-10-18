@@ -20,7 +20,7 @@ export default function OrganizationWorkspacePage() {
   const tabs = [
     "profile",
     ...(grants.includes("MANAGE_MEMBERS") ? ["team"] : []),
-    ...(grants.includes("MANAGE_PROFILE") ? ["branding", "documents"] : []),
+    ...(grants.includes("MANAGE_PROFILE") ? ["branding", "images", "documents"] : []),
     ...(grants.includes("MANAGE_PROFILE") ? ["history"] : []),
   ];
   return (
@@ -64,6 +64,13 @@ export default function OrganizationWorkspacePage() {
         )}{" "}
         {tab === "branding" && organization && (
           <OrganizationBrandingPanel organizationId={organization.id} />
+        )}
+        {tab === "images" && organization && grants.includes("MANAGE_PROFILE") && (
+          <section className="sporg-card">
+            <h2>Organization images</h2>
+            <p>Manage organization media here. Verification images must also be attached as COMPANY_IMAGE evidence in the application before submission. Uploading here alone does not satisfy verification.</p>
+            <MediaPanel scope="ORGANIZATION" target={organization.id} writable />
+          </section>
         )}
         {tab === "documents" &&
           organization &&

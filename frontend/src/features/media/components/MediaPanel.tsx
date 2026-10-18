@@ -1,6 +1,7 @@
 import { mediaApi } from "@/features/media/api/mediaApi";
 import type { MediaItem, MediaScope } from "@/features/media/types/media.types";
 import Button from "@/shared/ui/Button";
+import "../styles/media-panel.css";
 import { cancelMultipart } from "../api/multipartUpload";
 import { useEffect, useState, useRef } from "react";
 function Preview({ item, auto = false }: { item: MediaItem; auto?: boolean }) {
@@ -91,6 +92,7 @@ export default function MediaPanel({
   onChanged,
   preferredId,
   onBusyChange,
+  compact = false,
 }: {
   scope: MediaScope;
   target?: string;
@@ -100,6 +102,7 @@ export default function MediaPanel({
   onChanged?: () => void;
   onBusyChange?: (busy: boolean) => void;
   preferredId?: string;
+  compact?: boolean;
 }) {
   const lastFile = useRef<File | null>(null);
   const [uploadError, setUploadError] = useState(false);
@@ -154,21 +157,21 @@ export default function MediaPanel({
     }
   }
   return (
-    <div className="v7-media">
+    <div className={`v7-media v7-media-panel${compact ? " v7-media--review" : ""}`}>
       {busy && (
         <p role="status">
           Uploading {transfer}% · validating file before attachment…
         </p>
       )}
-      <h3>
+      {!compact && <h3>
         {scope === "AVATAR" || scope === "BRAND" || scope === "COURSE_COVER"
           ? "Profile image"
           : scope === "ORGANIZATION" || scope === "ISSUER"
             ? "Organization documents"
             : "Lesson attachments"}
-      </h3>
+      </h3>}
       {writable && (
-        <label>
+        <label className="v7-media-upload-label">
           Choose a file (up to{" "}
           {scope === "BRAND" || scope === "COURSE_COVER" ? "10" : "500"} MB)
           <input
@@ -176,8 +179,8 @@ export default function MediaPanel({
             disabled={busy}
             accept={
               scope === "AVATAR" ||
-              scope === "BRAND" ||
-              scope === "COURSE_COVER"
+                scope === "BRAND" ||
+                scope === "COURSE_COVER"
                 ? "image/png,image/jpeg,image/webp"
                 : scope === "ORGANIZATION" || scope === "ISSUER"
                   ? "application/pdf,image/png,image/jpeg,image/webp"
@@ -215,7 +218,7 @@ export default function MediaPanel({
             variant="ghost"
             onClick={() => {
               void cancelMultipart(scope, target, lastFile.current!).catch(
-                () => {},
+                () => { },
               );
               lastFile.current = null;
               setUploadError(false);
@@ -246,30 +249,42 @@ export default function MediaPanel({
       {items.length === 0 ? (
         <p>No files uploaded yet.</p>
       ) : (
-        <ul>
+        <ul className="v7-media-list">
           {items.map((item) => (
-            <li key={item.id}>
-              <Preview
+            <li key={item.id} className="v7-media-row">
+              {!compact && <Preview
                 item={item}
                 auto={
                   scope === "AVATAR" &&
                   item.id === (preferredId ?? items[0]?.id)
                 }
-              />
-              <Button
-                variant="outline"
-                onClick={() =>
-                  void mediaApi
-                    .save(item)
-                    .catch((e) =>
+              />}
+              {compact && <span className="sporg-review-file-icon" aria-hidden="true">{item.mimeType.startsWith("image/") ? "▧" : item.mimeType === "application/pdf" ? "▤" : "▣"}</span>}
+              <div className="v7-media-file-info">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    void mediaApi.save(item).catch((e) =>
                       setError(
-                        e instanceof Error ? e.message : "Download failed",
-                      ),
+                        e instanceof Error
+                          ? e.message
+                          : "Download failed"
+                      )
                     )
-                }
-              >
-                {item.name} · {(item.size / 1024 / 1024).toFixed(1)} MB ↓
-              </Button>
+                  }
+                >
+                  <span
+                    className="v7-media-file-name"
+                    title={item.name}
+                  >
+                    {item.name}
+                  </span>
+
+                  <span className="v7-media-file-size">
+                    {(item.size / 1024 / 1024).toFixed(1)} MB ↓
+                  </span>
+                </Button>
+              </div>
               {writable && removable && (
                 <Button
                   variant="destructive"

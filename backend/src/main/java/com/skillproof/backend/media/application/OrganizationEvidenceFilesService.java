@@ -1,12 +1,13 @@
 package com.skillproof.backend.media.application;
 
-import com.skillproof.backend.common.exception.BadRequestException;
-import com.skillproof.backend.media.contract.OrganizationEvidenceFiles;
-import com.skillproof.backend.media.infrastructure.persistence.MediaAssetRepository;
+import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import com.skillproof.backend.common.exception.BadRequestException;
+import com.skillproof.backend.media.contract.OrganizationEvidenceFiles;
+import com.skillproof.backend.media.infrastructure.persistence.MediaAssetRepository;
 
 @Service
 public class OrganizationEvidenceFilesService implements OrganizationEvidenceFiles {
@@ -14,6 +15,16 @@ public class OrganizationEvidenceFilesService implements OrganizationEvidenceFil
 
     public OrganizationEvidenceFilesService(MediaAssetRepository files) {
         this.files = files;
+    }
+
+    @Override
+    public void requireImage(UUID org, UUID id) {
+        var file = files.findById(id).orElseThrow(() ->
+                new BadRequestException("COMPANY_IMAGE_INVALID", "Upload a company image first"));
+        if (!org.equals(file.getOrganizationId())
+                || !"ORGANIZATION".equals(file.getScope())
+                || !Set.of("image/jpeg", "image/png", "image/webp").contains(file.getMimeType()))
+            throw new BadRequestException("COMPANY_IMAGE_INVALID", "A company image must be a JPEG, PNG or WebP organization upload");
     }
 
     public void requireFile(UUID org, UUID id, String purpose) {
