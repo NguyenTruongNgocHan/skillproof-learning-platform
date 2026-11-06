@@ -1,22 +1,20 @@
-import { ReviewModerationHistory } from "../components/ReviewModerationHistory";
-import { exportPagedCsv } from "@/shared/utils/exportPagedCsv";
-import { useCallback, useState } from "react";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import { exportCsv } from "@/shared/utils/exportCsv";
-import { feedbackApi } from "../api/feedbackApi";
-import Button from "@/shared/ui/Button";
+import { ReviewModerationHistory } from "../components/ReviewModerationHistory"
+import { exportPagedCsv } from "@/shared/utils/exportPagedCsv"
+import { useCallback, useState } from "react"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import { exportCsv } from "@/shared/utils/exportCsv"
+import { feedbackApi } from "../api/feedbackApi"
+import Button from "@/shared/ui/Button"
 export default function OrganizationFeedbackPage() {
-  const { organization } = useOrganizationContext();
-  const org = organization?.id ?? "";
+  const { organization } = useOrganizationContext()
+  const org = organization?.id ?? ""
   const [page, setPage] = useState(0),
-    [replies, setReplies] = useState<Record<string, string>>({});
-  const remote = useRemote(
-    useCallback(() => feedbackApi.organization(org, page), [org, page]),
-  );
-  const action = useAction(remote.reload);
+    [replies, setReplies] = useState<Record<string, string>>({})
+  const remote = useRemote(useCallback(() => feedbackApi.organization(org, page), [org, page]))
+  const action = useAction(remote.reload)
   return (
     <OrganizerSurface
       title="Learner feedback"
@@ -54,9 +52,7 @@ export default function OrganizationFeedbackPage() {
       </Button>
       <RemoteState {...remote} retry={remote.reload} />
       <ActionNotice {...action} />
-      {remote.data?.content.length === 0 && (
-        <div className="sporg-empty">No feedback yet.</div>
-      )}
+      {remote.data?.content.length === 0 && <div className="sporg-empty">No feedback yet.</div>}
       {remote.data?.content.map((r) => (
         <section className="sporg-card" key={r.id}>
           <span className="sporg-badge">
@@ -71,11 +67,8 @@ export default function OrganizationFeedbackPage() {
           <form
             className="sporg-form"
             onSubmit={(e) => {
-              e.preventDefault();
-              void action.run(
-                () => feedbackApi.reply(r.id, replies[r.id] ?? ""),
-                "Response saved.",
-              );
+              e.preventDefault()
+              void action.run(() => feedbackApi.reply(r.id, replies[r.id] ?? ""), "Response saved.")
             }}
           >
             <label>
@@ -84,9 +77,7 @@ export default function OrganizationFeedbackPage() {
                 required
                 maxLength={2000}
                 value={replies[r.id] ?? r.reply ?? ""}
-                onChange={(e) =>
-                  setReplies({ ...replies, [r.id]: e.target.value })
-                }
+                onChange={(e) => setReplies({ ...replies, [r.id]: e.target.value })}
               />
             </label>
             <div className="sporg-actions">
@@ -97,14 +88,12 @@ export default function OrganizationFeedbackPage() {
                 variant="outline"
                 disabled={action.busy}
                 onClick={() => {
-                  const reason = window.prompt(
-                    "Why are you reporting this review?",
-                  );
+                  const reason = window.prompt("Why are you reporting this review?")
                   if (reason?.trim())
                     void action.run(
                       () => feedbackApi.report(r.id, reason),
                       "Report submitted to moderation.",
-                    );
+                    )
                 }}
               >
                 Report
@@ -115,11 +104,7 @@ export default function OrganizationFeedbackPage() {
       ))}
       {remote.data && (
         <div className="sporg-actions">
-          <Button
-            variant="outline"
-            disabled={page === 0}
-            onClick={() => setPage(page - 1)}
-          >
+          <Button variant="outline" disabled={page === 0} onClick={() => setPage(page - 1)}>
             Previous
           </Button>
           <span>
@@ -135,5 +120,5 @@ export default function OrganizationFeedbackPage() {
         </div>
       )}
     </OrganizerSurface>
-  );
+  )
 }

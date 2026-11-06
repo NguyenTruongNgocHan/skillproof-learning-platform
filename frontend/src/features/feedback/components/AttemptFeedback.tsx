@@ -1,14 +1,14 @@
-import { useCallback } from "react";
-import { apiClient } from "@/shared/api/apiClient";
-import { useRemote } from "@/shared/hooks/useRemote";
-import { RemoteState } from "@/shared/ui/RemoteState";
-import { FeedbackForm } from "./FeedbackForm";
+import { useCallback } from "react"
+import { apiClient } from "@/shared/api/apiClient"
+import { useRemote } from "@/shared/hooks/useRemote"
+import { RemoteState } from "@/shared/ui/RemoteState"
+import { FeedbackForm } from "./FeedbackForm"
 export function AttemptFeedback({
   attemptId,
   assessmentId,
 }: {
-  attemptId: string;
-  assessmentId: string;
+  attemptId: string
+  assessmentId: string
 }) {
   const remote = useRemote(
     useCallback(
@@ -18,7 +18,7 @@ export function AttemptFeedback({
         ),
       [attemptId],
     ),
-  );
+  )
   return (
     <section className="sporg">
       <details>
@@ -35,5 +35,5 @@ export function AttemptFeedback({
         </details>
       ))}
     </section>
-  );
+  )
 }

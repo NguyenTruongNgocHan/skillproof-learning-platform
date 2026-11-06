@@ -3,7 +3,9 @@ export interface Account {
   email: string
   displayName: string
   role: "LEARNER" | "ORGANIZER" | "ADMIN"
-  status: "ACTIVE" | "DISABLED" | "PENDING_VERIFICATION"
+  createdAt?: string | null
+  lastLoginAt?: string | null
+  status: "ACTIVE" | "DISABLED" | "PENDING_VERIFICATION" | "LOCKED"
 }
 
 export interface AccountPage {

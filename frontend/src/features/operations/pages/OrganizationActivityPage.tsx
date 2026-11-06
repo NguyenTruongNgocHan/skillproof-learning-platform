@@ -1,30 +1,26 @@
-import { exportPagedCsv } from "@/shared/utils/exportPagedCsv";
-import { useCallback, useState } from "react";
-import { Link } from "react-router-dom";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { operationsApi } from "../api/operationsApi";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import { exportCsv } from "@/shared/utils/exportCsv";
-import Button from "@/shared/ui/Button";
+import { exportPagedCsv } from "@/shared/utils/exportPagedCsv"
+import { useCallback, useState } from "react"
+import { Link } from "react-router-dom"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { operationsApi } from "../api/operationsApi"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import { exportCsv } from "@/shared/utils/exportCsv"
+import Button from "@/shared/ui/Button"
 export default function OrganizationActivityPage() {
-  const { organization, grants } = useOrganizationContext();
-  const org = organization?.id ?? "";
-  const [page, setPage] = useState(0);
-  const notices = useRemote(
-    useCallback(() => operationsApi.notices(page), [page]),
-  );
+  const { organization, grants } = useOrganizationContext()
+  const org = organization?.id ?? ""
+  const [page, setPage] = useState(0)
+  const notices = useRemote(useCallback(() => operationsApi.notices(page), [page]))
   const audit = useRemote(
     useCallback(
       () =>
-        grants.includes("MANAGE_MEMBERS")
-          ? operationsApi.audit(org, page)
-          : Promise.resolve(null),
+        grants.includes("MANAGE_MEMBERS") ? operationsApi.audit(org, page) : Promise.resolve(null),
       [org, page, grants],
     ),
-  );
-  const action = useAction(notices.reload);
+  )
+  const action = useAction(notices.reload)
   return (
     <OrganizerSurface
       title="Activity & notifications"
@@ -42,25 +38,14 @@ export default function OrganizationActivityPage() {
               <p>{n.message}</p>
               <small>{new Date(n.createdAt).toLocaleString()}</small>
             </div>
-            <Link
-              to={
-                n.link.startsWith("/") && !n.link.startsWith("//")
-                  ? n.link
-                  : "/organizer"
-              }
-            >
+            <Link to={n.link.startsWith("/") && !n.link.startsWith("//") ? n.link : "/organizer"}>
               Open
             </Link>
             {!n.readAt && (
               <Button
                 variant="outline"
                 disabled={action.busy}
-                onClick={() =>
-                  void action.run(
-                    () => operationsApi.read(n.id),
-                    "Marked as read.",
-                  )
-                }
+                onClick={() => void action.run(() => operationsApi.read(n.id), "Marked as read.")}
               >
                 Mark read
               </Button>
@@ -118,8 +103,7 @@ export default function OrganizationActivityPage() {
         </Button>
         <Button
           disabled={
-            page + 1 >=
-            Math.max(notices.data?.totalPages ?? 0, audit.data?.totalPages ?? 0)
+            page + 1 >= Math.max(notices.data?.totalPages ?? 0, audit.data?.totalPages ?? 0)
           }
           onClick={() => setPage(page + 1)}
         >
@@ -127,5 +111,5 @@ export default function OrganizationActivityPage() {
         </Button>
       </div>
     </OrganizerSurface>
-  );
+  )
 }

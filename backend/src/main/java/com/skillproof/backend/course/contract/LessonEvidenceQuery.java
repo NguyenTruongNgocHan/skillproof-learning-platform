@@ -4,9 +4,7 @@ import java.util.UUID;
 
 public interface LessonEvidenceQuery {
 
-    record Evidence(int required, int completed) {
+  record Evidence(int required, int completed) {}
 
-    }
-
-    Evidence evidence(UUID versionId, UUID enrollmentId);
+  Evidence evidence(UUID versionId, UUID enrollmentId);
 }

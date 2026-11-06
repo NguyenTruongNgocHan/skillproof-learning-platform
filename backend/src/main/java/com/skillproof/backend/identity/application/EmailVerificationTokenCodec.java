@@ -6,48 +6,36 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HexFormat;
-
 import org.springframework.stereotype.Component;
 
 @Component
 public class EmailVerificationTokenCodec {
 
-    private static final int TOKEN_BYTES = 32;
+  private static final int TOKEN_BYTES = 32;
 
-    private final SecureRandom secureRandom
-            = new SecureRandom();
+  private final SecureRandom secureRandom = new SecureRandom();
 
-    public String generateRawToken() {
+  public String generateRawToken() {
 
-        byte[] bytes = new byte[TOKEN_BYTES];
+    byte[] bytes = new byte[TOKEN_BYTES];
 
-        secureRandom.nextBytes(bytes);
+    secureRandom.nextBytes(bytes);
 
-        return Base64
-                .getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(bytes);
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+  }
+
+  public String hash(String rawToken) {
+
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+      byte[] hash = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
+
+      return HexFormat.of().formatHex(hash);
+
+    } catch (NoSuchAlgorithmException exception) {
+
+      throw new IllegalStateException("SHA-256 is unavailable.", exception);
     }
-
-    public String hash(String rawToken) {
-
-        try {
-            MessageDigest digest
-                    = MessageDigest.getInstance("SHA-256");
-
-            byte[] hash = digest.digest(
-                    rawToken.getBytes(StandardCharsets.UTF_8)
-            );
-
-            return HexFormat.of()
-                    .formatHex(hash);
-
-        } catch (NoSuchAlgorithmException exception) {
-
-            throw new IllegalStateException(
-                    "SHA-256 is unavailable.",
-                    exception
-            );
-        }
-    }
+  }
 }

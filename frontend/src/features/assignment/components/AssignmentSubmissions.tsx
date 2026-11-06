@@ -1,35 +1,30 @@
-import { RubricGradingForm } from "./RubricGradingForm";
-import { useCallback, useState, useEffect } from "react";
-import MediaPanel from "@/features/media/components/MediaPanel";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
+import { RubricGradingForm } from "./RubricGradingForm"
+import { useCallback, useState, useEffect } from "react"
+import MediaPanel from "@/features/media/components/MediaPanel"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
 
-import type { Assignment, Submission } from "../types/assignment.types";
-import { assignmentApi } from "../api/assignmentApi";
+import type { Assignment, Submission } from "../types/assignment.types"
+import { assignmentApi } from "../api/assignmentApi"
 export function AssignmentSubmissions({
   onBusyChange,
   assignment,
   initialSubmission,
 }: {
-  onBusyChange?: (busy: boolean) => void;
-  assignment: Assignment;
-  initialSubmission?: Submission;
+  onBusyChange?: (busy: boolean) => void
+  assignment: Assignment
+  initialSubmission?: Submission
 }) {
   const remote = useRemote(
-    useCallback(
-      () => assignmentApi.submissions(assignment.id),
-      [assignment.id],
-    ),
-  );
-  const action = useAction(remote.reload);
+    useCallback(() => assignmentApi.submissions(assignment.id), [assignment.id]),
+  )
+  const action = useAction(remote.reload)
   useEffect(() => {
-    onBusyChange?.(action.busy);
-    return () => onBusyChange?.(false);
-  }, [action.busy, onBusyChange]);
-  const [selected, setSelected] = useState<Submission | null>(
-    initialSubmission ?? null,
-  );
+    onBusyChange?.(action.busy)
+    return () => onBusyChange?.(false)
+  }, [action.busy, onBusyChange])
+  const [selected, setSelected] = useState<Submission | null>(initialSubmission ?? null)
   return (
     <>
       <RemoteState {...remote} retry={remote.reload} />
@@ -41,16 +36,14 @@ export function AssignmentSubmissions({
             <strong>Learner {s.learnerId}</strong>
             <small>
               {s.status.toLowerCase()} ·{" "}
-              {s.submittedAt
-                ? new Date(s.submittedAt).toLocaleString()
-                : "Not submitted"}
+              {s.submittedAt ? new Date(s.submittedAt).toLocaleString() : "Not submitted"}
             </small>
           </div>
           <Button
             disabled={action.busy}
             variant="outline"
             onClick={() => {
-              setSelected(s);
+              setSelected(s)
             }}
           >
             Review
@@ -60,14 +53,10 @@ export function AssignmentSubmissions({
       {selected && (
         <section key={selected.id} className="sporg-card">
           <h3>Submission</h3>
-          <p className="sporg-lesson-body">
-            {selected.body || "No text provided."}
-          </p>
+          <p className="sporg-lesson-body">{selected.body || "No text provided."}</p>
           {selected.link && (
             <a
-              href={
-                /^https?:\/\//i.test(selected.link) ? selected.link : undefined
-              }
+              href={/^https?:\/\//i.test(selected.link) ? selected.link : undefined}
               target="_blank"
               rel="noreferrer"
             >
@@ -81,12 +70,12 @@ export function AssignmentSubmissions({
             submission={selected}
             onBusyChange={onBusyChange}
             saved={(s) => {
-              setSelected(s);
-              remote.reload();
+              setSelected(s)
+              remote.reload()
             }}
           />
         </section>
       )}
     </>
-  );
+  )
 }

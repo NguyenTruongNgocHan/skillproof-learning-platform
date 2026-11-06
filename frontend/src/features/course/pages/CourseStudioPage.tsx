@@ -1,62 +1,61 @@
-import { CourseVersionComparison } from "../components/CourseVersionComparison";
-import { CourseArtworkPanel } from "../components/CourseArtworkPanel";
-import { CoursePreview } from "../components/CoursePreview";
-import { CourseReadinessPanel } from "../components/CourseReadinessPanel";
-import { CourseEnrollmentPanel } from "../components/CourseEnrollmentPanel";
-import { CourseCommercialPanel } from "@/features/pricing/components/CourseCommercialPanel";
-import { useState, useCallback, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { useAction, useRemote } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
-import { workspaceCourseApi } from "../api/workspaceCourseApi";
-import { courseApi } from "../api/courseApi";
-import { useCourseStudio } from "../hooks/useCourseStudio";
-import { CourseOutlineEditor } from "../components/CourseOutlineEditor";
-import { CourseSettings } from "../components/CourseSettings";
-import { CourseAssessments } from "@/features/quiz/components/CourseAssessments";
-import { CourseAssignments } from "@/features/assignment/components/CourseAssignments";
+import { CourseMetadataPanel } from "../components/CourseMetadataPanel"
+import { CourseVersionComparison } from "../components/CourseVersionComparison"
+import { CourseArtworkPanel } from "../components/CourseArtworkPanel"
+import { CoursePreview } from "../components/CoursePreview"
+import { CourseReadinessPanel } from "../components/CourseReadinessPanel"
+import { CourseEnrollmentPanel } from "../components/CourseEnrollmentPanel"
+import { CourseCommercialPanel } from "@/features/pricing/components/CourseCommercialPanel"
+import { useState, useCallback, useEffect } from "react"
+import { Link, useParams } from "react-router-dom"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { useAction, useRemote } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import { workspaceCourseApi } from "../api/workspaceCourseApi"
+import { courseApi } from "../api/courseApi"
+import { useCourseStudio } from "../hooks/useCourseStudio"
+import { CourseOutlineEditor } from "../components/CourseOutlineEditor"
+import { CourseSettings } from "../components/CourseSettings"
+import { CourseAssessments } from "@/features/quiz/components/CourseAssessments"
+import { CourseAssignments } from "@/features/assignment/components/CourseAssignments"
 export default function CourseStudioPage() {
-  const { id = "" } = useParams();
-  const { organization, confirmDiscard } = useOrganizationContext();
-  const studio = useCourseStudio(id, organization?.id ?? "");
-  const [tab, setTab] = useState("outline");
-  const [settingsDirty, setSettingsDirty] = useState(false);
+  const { id = "" } = useParams()
+  const { organization, grants, confirmDiscard } = useOrganizationContext()
+  const studio = useCourseStudio(id, organization?.id ?? "")
+  const [tab, setTab] = useState("outline")
+  const [settingsDirty, setSettingsDirty] = useState(false)
   const canLeave = () => {
-    const ok = confirmDiscard(
-      "Discard unsaved course form changes before switching?",
-    );
-    if (ok) setSettingsDirty(false);
-    return ok;
-  };
-  const [target, setTarget] = useState<string | null>(null);
+    const ok = confirmDiscard("Discard unsaved course form changes before switching?")
+    if (ok) setSettingsDirty(false)
+    return ok
+  }
+  const [target, setTarget] = useState<string | null>(null)
   const readiness = useRemote(
     useCallback(
       () =>
-        studio.versionId
+        studio.versionId && studio.outline.data
           ? workspaceCourseApi.readiness(studio.versionId)
           : Promise.resolve(null),
       [studio.versionId, studio.outline.data],
     ),
-  );
+  )
   useEffect(() => {
-    if (!target) return;
+    if (!target) return
     const timer = setTimeout(() => {
       document
         .getElementById(`lesson-${target}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        ?.scrollIntoView({ behavior: "smooth", block: "center" })
       document
         .getElementById(`resource-${target}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
-      setTarget(null);
-    }, 80);
-    return () => clearTimeout(timer);
-  }, [target, tab]);
-  const action = useAction(studio.reload);
-  const value = studio.outline.data;
-  const draft = value?.version.status === "DRAFT";
+        ?.scrollIntoView({ behavior: "smooth", block: "center" })
+      setTarget(null)
+    }, 80)
+    return () => clearTimeout(timer)
+  }, [target, tab])
+  const action = useAction(studio.reload)
+  const value = studio.outline.data
+  const draft = value?.version.status === "DRAFT"
   const owners = value
     ? [
         {
@@ -73,7 +72,7 @@ export default function CourseStudioPage() {
           })),
         ]),
       ]
-    : [];
+    : []
   return (
     <OrganizerSurface
       title={studio.header.data?.course.title ?? "Course studio"}
@@ -90,6 +89,15 @@ export default function CourseStudioPage() {
         retry={studio.header.reload}
       />
       <ActionNotice {...action} />
+      {studio.versionId && (
+        <p className="platform-readonly">
+          Pricing handoff for this version:{" "}
+          <Link to={`/organizer/pricing?version=${encodeURIComponent(studio.versionId)}`}>
+            Open pricing workspace
+          </Link>{" "}
+          · <code>{studio.versionId}</code>
+        </p>
+      )}
       {studio.header.data && (
         <div className="sporg-toolbar">
           <label>
@@ -98,7 +106,7 @@ export default function CourseStudioPage() {
               value={studio.versionId}
               disabled={action.busy}
               onChange={(e) => {
-                if (canLeave()) studio.selectVersion(e.target.value);
+                if (canLeave()) studio.selectVersion(e.target.value)
               }}
             >
               {studio.header.data.versions.map((v) => (
@@ -113,12 +121,7 @@ export default function CourseStudioPage() {
               <Button
                 disabled={action.busy}
                 variant="outline"
-                onClick={() =>
-                  void action.run(
-                    () => courseApi.clone(id),
-                    "New draft created.",
-                  )
-                }
+                onClick={() => void action.run(() => courseApi.clone(id), "New draft created.")}
               >
                 Create next draft
               </Button>
@@ -127,7 +130,7 @@ export default function CourseStudioPage() {
               <Button
                 disabled={action.busy || studio.outline.loading}
                 onClick={() => {
-                  if (canLeave()) setTab("publish");
+                  if (canLeave()) setTab("publish")
                 }}
               >
                 Review & publish
@@ -140,8 +143,8 @@ export default function CourseStudioPage() {
         <section className="sporg-card sporg-course-wizard">
           <h2>Course creation workflow</h2>
           <p>
-            Each step describes saved data. Optional activities do not become
-            mandatory just because they exist.{" "}
+            Each step describes saved data. Optional activities do not become mandatory just because
+            they exist.{" "}
             {settingsDirty
               ? "Unsaved settings — save before preview or publish."
               : "Preview shows server-saved content."}
@@ -152,8 +155,7 @@ export default function CourseStudioPage() {
                 label: "Information",
                 tab: "settings",
                 done: Boolean(
-                  studio.header.data?.course.title &&
-                  studio.header.data?.course.summary,
+                  studio.header.data?.course.title && studio.header.data?.course.summary,
                 ),
                 hint: "Explain the audience and outcome; set a course cover.",
               },
@@ -162,15 +164,16 @@ export default function CourseStudioPage() {
                 tab: "outline",
                 done:
                   value.modules.some((m) => m.lessons.length > 0) &&
+                  Boolean(readiness.data) &&
                   !readiness.data?.issues.some((i) => i.tab === "outline"),
                 hint: "Create modules and lessons, then attach actual resources.",
               },
               {
                 label: "Assessments & assignments",
                 tab: "assessments",
-                done: !readiness.data?.issues.some(
-                  (i) => i.tab === "assessments",
-                ),
+                done:
+                  Boolean(readiness.data) &&
+                  !readiness.data?.issues.some((i) => i.tab === "assessments"),
                 hint: "Choose practice or official assessments; assignments are optional unless marked required.",
               },
               {
@@ -195,7 +198,7 @@ export default function CourseStudioPage() {
               <li key={step.label}>
                 <button
                   onClick={() => {
-                    if (canLeave()) setTab(step.tab);
+                    if (canLeave()) setTab(step.tab)
                   }}
                 >
                   <span>{i + 1}</span>
@@ -216,33 +219,25 @@ export default function CourseStudioPage() {
       )}
       {studio.header.data && (
         <div className="sporg-toolbar">
-          <strong>
-            {draft ? "Draft editor" : "Published / archived view"}
-          </strong>
+          <strong>{draft ? "Draft editor" : "Published / archived view"}</strong>
           <div className="sporg-actions">
             <Button
               variant="outline"
               onClick={() => {
-                if (canLeave()) setTab("preview");
+                if (canLeave()) setTab("preview")
               }}
             >
               {draft ? "Preview saved draft" : "View this published version"}
             </Button>
             <Button
               variant="outline"
-              disabled={
-                !studio.header.data.versions.some(
-                  (v) => v.status === "PUBLISHED",
-                )
-              }
+              disabled={!studio.header.data.versions.some((v) => v.status === "PUBLISHED")}
               onClick={() => {
                 if (canLeave()) {
                   studio.selectVersion(
-                    studio.header.data!.versions.find(
-                      (v) => v.status === "PUBLISHED",
-                    )!.id,
-                  );
-                  setTab("preview");
+                    studio.header.data!.versions.find((v) => v.status === "PUBLISHED")!.id,
+                  )
+                  setTab("preview")
                 }
               }}
             >
@@ -250,17 +245,13 @@ export default function CourseStudioPage() {
             </Button>
             <Button
               variant="outline"
-              disabled={
-                !studio.header.data.versions.some((v) => v.status === "DRAFT")
-              }
+              disabled={!studio.header.data.versions.some((v) => v.status === "DRAFT")}
               onClick={() => {
                 if (canLeave()) {
                   studio.selectVersion(
-                    studio.header.data!.versions.find(
-                      (v) => v.status === "DRAFT",
-                    )!.id,
-                  );
-                  setTab("outline");
+                    studio.header.data!.versions.find((v) => v.status === "DRAFT")!.id,
+                  )
+                  setTab("outline")
                 }
               }}
             >
@@ -269,11 +260,7 @@ export default function CourseStudioPage() {
           </div>
         </div>
       )}
-      <div
-        className="sporg-local-tabs"
-        role="tablist"
-        aria-label="Course studio"
-      >
+      <div className="sporg-local-tabs" role="tablist" aria-label="Course studio">
         {[
           "outline",
           "assessments",
@@ -284,20 +271,22 @@ export default function CourseStudioPage() {
           "learners",
           "compare",
           "publish",
-        ].map((t) => (
-          <button
-            key={t}
-            role="tab"
-            id={`studio-tab-${t}`}
-            aria-selected={tab === t}
-            aria-controls="studio-panel"
-            onClick={() => {
-              if (t === tab || canLeave()) setTab(t);
-            }}
-          >
-            {t[0].toUpperCase() + t.slice(1)}
-          </button>
-        ))}
+        ]
+          .filter((t) => t !== "pricing" || grants.includes("MANAGE_PRICING"))
+          .map((t) => (
+            <button
+              key={t}
+              role="tab"
+              id={`studio-tab-${t}`}
+              aria-selected={tab === t}
+              aria-controls="studio-panel"
+              onClick={() => {
+                if (t === tab || canLeave()) setTab(t)
+              }}
+            >
+              {t[0].toUpperCase() + t.slice(1)}
+            </button>
+          ))}
       </div>
       <RemoteState
         loading={Boolean(studio.versionId) && studio.outline.loading}
@@ -313,8 +302,7 @@ export default function CourseStudioPage() {
         >
           {!draft && (
             <p className="sporg-success">
-              This version is {value.version.status.toLowerCase()}. Content is
-              read-only.
+              This version is {value.version.status.toLowerCase()}. Content is read-only.
             </p>
           )}
           <div className="sporg-studio-layout">
@@ -334,8 +322,8 @@ export default function CourseStudioPage() {
                         key={l.id}
                         onClick={() => {
                           if (canLeave()) {
-                            setTab("outline");
-                            setTarget(l.id);
+                            setTab("outline")
+                            setTarget(l.id)
                           }
                         }}
                       >
@@ -348,16 +336,14 @@ export default function CourseStudioPage() {
             </aside>
             <div>
               {tab === "outline" && (
-                <CourseOutlineEditor
-                  outline={value}
-                  refresh={studio.outline.reload}
-                />
+                <CourseOutlineEditor outline={value} refresh={studio.outline.reload} />
               )}
               {tab === "assessments" && (
                 <CourseAssessments
                   versionId={studio.versionId}
                   owners={owners}
                   editable={draft}
+                  onChanged={readiness.reload}
                 />
               )}
               {tab === "assignments" && (
@@ -365,6 +351,7 @@ export default function CourseStudioPage() {
                   versionId={studio.versionId}
                   owners={owners}
                   editable={draft}
+                  onChanged={readiness.reload}
                 />
               )}
               {tab === "compare" && (
@@ -374,27 +361,22 @@ export default function CourseStudioPage() {
                 />
               )}
               {tab === "preview" && (
-                <CoursePreview
-                  course={studio.header.data!.course}
-                  outline={value}
-                />
+                <CoursePreview course={studio.header.data!.course} outline={value} />
               )}
-              {tab === "pricing" && (
+              {tab === "pricing" && grants.includes("MANAGE_PRICING") && (
                 <CourseCommercialPanel
                   versionId={studio.versionId}
                   onDirtyChange={setSettingsDirty}
                 />
               )}
-              {tab === "learners" && (
-                <CourseEnrollmentPanel versionId={studio.versionId} />
-              )}
+              {tab === "learners" && <CourseEnrollmentPanel versionId={studio.versionId} />}
               {tab === "publish" && (
                 <CourseReadinessPanel
                   versionId={studio.versionId}
                   navigate={(next, id) => {
                     if (canLeave()) {
-                      setTab(next);
-                      setTarget(id ?? null);
+                      setTab(next)
+                      setTarget(id ?? null)
                     }
                   }}
                   published={studio.reload}
@@ -402,7 +384,12 @@ export default function CourseStudioPage() {
               )}
               {tab === "settings" && (
                 <>
-                  <CourseArtworkPanel courseId={id} />
+                  {draft && <CourseArtworkPanel courseId={id} />}
+                  <CourseMetadataPanel
+                    versionId={studio.versionId}
+                    editable={draft}
+                    onChanged={readiness.reload}
+                  />
                   <CourseSettings
                     course={studio.header.data!.course}
                     outline={value}
@@ -416,5 +403,5 @@ export default function CourseStudioPage() {
         </div>
       )}
     </OrganizerSurface>
-  );
+  )
 }

@@ -1,3 +1,4 @@
+import { RevisionEvidencePanel } from "./RevisionEvidencePanel"
 import { mediaApi } from "@/features/media/api/mediaApi"
 import { organizationApi } from "@/features/organization/api/organizationApi"
 import type { ApplicationRevision } from "@/features/organization/types/organization.types"
@@ -14,6 +15,7 @@ export function ApplicationHistory({
   documentsVisible?: boolean
   refreshKey?: string
 }) {
+  const [expanded, setExpanded] = useState<string[]>([])
   const [rows, setRows] = useState<ApplicationRevision[]>([])
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(true)
@@ -77,7 +79,13 @@ export function ApplicationHistory({
         <p>No application has been submitted yet.</p>
       ) : (
         rows.map((r) => (
-          <details key={r.id}>
+          <details
+            key={r.id}
+            onToggle={(event) => {
+              if (event.currentTarget.open)
+                setExpanded((ids) => (ids.includes(r.id) ? ids : [...ids, r.id]))
+            }}
+          >
             <summary>
               Revision {r.revisionNo} · {r.status} · {new Date(r.submittedAt).toLocaleDateString()}
             </summary>
@@ -104,6 +112,9 @@ export function ApplicationHistory({
                 {r.reviewedAt && ` · ${new Date(r.reviewedAt).toLocaleString()}`}
               </dd>
             </dl>
+            {documentsVisible && expanded.includes(r.id) && (
+              <RevisionEvidencePanel revisionId={r.id} organizationId={organizationId} />
+            )}
             <h3>Submitted documents</h3>
             {r.documentMediaIds?.length && documentsVisible ? (
               r.documentMediaIds.map((id, i) => (

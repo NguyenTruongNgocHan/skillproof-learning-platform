@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface SubmissionMediaQuery {
 
-    boolean hasSubmissionFiles(UUID submissionId);
+  boolean hasSubmissionFiles(UUID submissionId);
 }

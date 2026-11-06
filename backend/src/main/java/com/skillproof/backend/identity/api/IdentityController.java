@@ -1,12 +1,5 @@
 package com.skillproof.backend.identity.api;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.skillproof.backend.identity.application.AuthenticationService;
 import com.skillproof.backend.identity.application.ForgotPasswordService;
 import com.skillproof.backend.identity.application.RegisterUserService;
@@ -18,182 +11,156 @@ import com.skillproof.backend.identity.application.VerifyEmailService;
 import com.skillproof.backend.identity.application.model.AuthResponse;
 import com.skillproof.backend.identity.application.model.RegisterResponse;
 import com.skillproof.backend.identity.application.model.VerifyEmailResponse;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class IdentityController {
 
-    private final RegisterUserService registerUserService;
+  private final RegisterUserService registerUserService;
 
-    private final VerifyEmailService verifyEmailService;
+  private final VerifyEmailService verifyEmailService;
 
-    private final ResendEmailVerificationService resendEmailVerificationService;
-    private final AuthenticationService authenticationService;
-    private final TokenProperties tokenProperties;
-    private final ForgotPasswordService forgotPasswordService;
-    private final ResetPasswordService resetPasswordService;
+  private final ResendEmailVerificationService resendEmailVerificationService;
+  private final AuthenticationService authenticationService;
+  private final TokenProperties tokenProperties;
+  private final ForgotPasswordService forgotPasswordService;
+  private final ResetPasswordService resetPasswordService;
 
-    public IdentityController(
-            RegisterUserService registerUserService,
-            VerifyEmailService verifyEmailService,
-            ResendEmailVerificationService resendEmailVerificationService,
-            AuthenticationService authenticationService,
-            TokenProperties tokenProperties,
-            ForgotPasswordService forgotPasswordService,
-            ResetPasswordService resetPasswordService
-    ) {
-        this.registerUserService
-                = registerUserService;
+  public IdentityController(
+      RegisterUserService registerUserService,
+      VerifyEmailService verifyEmailService,
+      ResendEmailVerificationService resendEmailVerificationService,
+      AuthenticationService authenticationService,
+      TokenProperties tokenProperties,
+      ForgotPasswordService forgotPasswordService,
+      ResetPasswordService resetPasswordService) {
+    this.registerUserService = registerUserService;
 
-        this.verifyEmailService
-                = verifyEmailService;
+    this.verifyEmailService = verifyEmailService;
 
-        this.resendEmailVerificationService
-                = resendEmailVerificationService;
-        this.authenticationService = authenticationService;
-        this.tokenProperties = tokenProperties;
-        this.forgotPasswordService = forgotPasswordService;
-        this.resetPasswordService = resetPasswordService;
+    this.resendEmailVerificationService = resendEmailVerificationService;
+    this.authenticationService = authenticationService;
+    this.tokenProperties = tokenProperties;
+    this.forgotPasswordService = forgotPasswordService;
+    this.resetPasswordService = resetPasswordService;
+  }
+
+  @PostMapping("/register")
+  public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
+
+    RegisterResponse response = registerUserService.register(request.toCommand());
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @PostMapping("/verify-email")
+  public ResponseEntity<VerifyEmailResponse> verifyEmail(
+      @Valid @RequestBody VerifyEmailRequest request) {
+
+    return ResponseEntity.ok(verifyEmailService.verify(request.toCommand()));
+  }
+
+  @PostMapping("/resend-verification")
+  public ResponseEntity<Void> resendVerification(
+      @Valid @RequestBody ResendVerificationRequest request) {
+
+    resendEmailVerificationService.resend(request.toCommand());
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @PostMapping("/login")
+  public AuthResponse login(
+      @Valid @RequestBody LoginRequest request,
+      HttpServletRequest servletRequest,
+      HttpServletResponse servletResponse) {
+    var issued = authenticationService.login(request.toCommand(), metadata(servletRequest));
+    setRefreshCookie(servletResponse, issued.refreshToken());
+    return issued.response();
+  }
+
+  @PostMapping("/refresh")
+  public AuthResponse refresh(HttpServletRequest request, HttpServletResponse response) {
+    var issued = authenticationService.refresh(refreshCookie(request), metadata(request));
+    setRefreshCookie(response, issued.refreshToken());
+    return issued.response();
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+    authenticationService.logout(refreshCookie(request), bearerToken(request));
+    clearRefreshCookie(response);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/forgot-password")
+  public ResponseEntity<Void> forgotPassword(
+      @Valid @RequestBody ForgotPasswordRequest request, HttpServletRequest servletRequest) {
+    forgotPasswordService.request(request.toCommand(), metadata(servletRequest));
+    return ResponseEntity.accepted().build();
+  }
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<Void> resetPassword(
+      @Valid @RequestBody ResetPasswordRequest request,
+      HttpServletRequest servletRequest,
+      HttpServletResponse servletResponse) {
+    resetPasswordService.reset(request.toCommand(), metadata(servletRequest));
+    clearRefreshCookie(servletResponse);
+    return ResponseEntity.noContent().build();
+  }
+
+  private RequestMetadata metadata(HttpServletRequest request) {
+    return new RequestMetadata(request.getRemoteAddr(), request.getHeader("User-Agent"));
+  }
+
+  private String refreshCookie(HttpServletRequest request) {
+    if (request.getCookies() == null) {
+      return null;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(
-            @Valid
-            @RequestBody RegisterRequest request
-    ) {
-
-        RegisterResponse response
-                = registerUserService.register(
-                        request.toCommand()
-                );
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+    for (Cookie cookie : request.getCookies()) {
+      if ("skillproof_refresh".equals(cookie.getName())) {
+        return cookie.getValue();
+      }
     }
+    return null;
+  }
 
-    @PostMapping("/verify-email")
-    public ResponseEntity<VerifyEmailResponse>
-            verifyEmail(
-                    @Valid
-                    @RequestBody VerifyEmailRequest request
-            ) {
+  private String bearerToken(HttpServletRequest request) {
+    String authorization = request.getHeader("Authorization");
+    return authorization != null && authorization.startsWith("Bearer ")
+        ? authorization.substring(7)
+        : null;
+  }
 
-        return ResponseEntity.ok(
-                verifyEmailService.verify(
-                        request.toCommand()
-                )
-        );
-    }
+  private void setRefreshCookie(HttpServletResponse response, String token) {
+    Cookie cookie = new Cookie("skillproof_refresh", token);
+    cookie.setHttpOnly(true);
+    cookie.setSecure(tokenProperties.isSecureCookie());
+    cookie.setPath("/api/v1/auth");
+    cookie.setMaxAge((int) tokenProperties.getRefreshTtl().toSeconds());
+    cookie.setAttribute("SameSite", "Lax");
+    response.addCookie(cookie);
+  }
 
-    @PostMapping("/resend-verification")
-    public ResponseEntity<Void>
-            resendVerification(
-                    @Valid
-                    @RequestBody ResendVerificationRequest request
-            ) {
-
-        resendEmailVerificationService.resend(
-                request.toCommand()
-        );
-
-        return ResponseEntity
-                .accepted()
-                .build();
-    }
-
-    @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest request,
-            HttpServletRequest servletRequest,
-            HttpServletResponse servletResponse) {
-        var issued = authenticationService.login(request.toCommand(), metadata(servletRequest));
-        setRefreshCookie(servletResponse, issued.refreshToken());
-        return issued.response();
-    }
-
-    @PostMapping("/refresh")
-    public AuthResponse refresh(HttpServletRequest request, HttpServletResponse response) {
-        var issued = authenticationService.refresh(refreshCookie(request), metadata(request));
-        setRefreshCookie(response, issued.refreshToken());
-        return issued.response();
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        authenticationService.logout(
-                refreshCookie(request),
-                bearerToken(request)
-        );
-        clearRefreshCookie(response);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(
-            @Valid @RequestBody ForgotPasswordRequest request,
-            HttpServletRequest servletRequest
-    ) {
-        forgotPasswordService.request(request.toCommand(), metadata(servletRequest));
-        return ResponseEntity.accepted().build();
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(
-            @Valid @RequestBody ResetPasswordRequest request,
-            HttpServletRequest servletRequest,
-            HttpServletResponse servletResponse
-    ) {
-        resetPasswordService.reset(request.toCommand(), metadata(servletRequest));
-        clearRefreshCookie(servletResponse);
-        return ResponseEntity.noContent().build();
-    }
-
-    private RequestMetadata metadata(HttpServletRequest request) {
-        return new RequestMetadata(request.getRemoteAddr(), request.getHeader("User-Agent"));
-    }
-
-    private String refreshCookie(HttpServletRequest request) {
-        if (request.getCookies() == null) {
-            return null;
-        }
-
-        for (Cookie cookie : request.getCookies()) {
-            if ("skillproof_refresh".equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-        return null;
-    }
-
-    private String bearerToken(HttpServletRequest request) {
-        String authorization = request.getHeader("Authorization");
-        return authorization != null && authorization.startsWith("Bearer ")
-                ? authorization.substring(7)
-                : null;
-    }
-
-    private void setRefreshCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie("skillproof_refresh", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(tokenProperties.isSecureCookie());
-        cookie.setPath("/api/v1/auth");
-        cookie.setMaxAge((int) tokenProperties.getRefreshTtl().toSeconds());
-        cookie.setAttribute("SameSite", "Lax");
-        response.addCookie(cookie);
-    }
-
-    private void clearRefreshCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("skillproof_refresh", "");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(tokenProperties.isSecureCookie());
-        cookie.setPath("/api/v1/auth");
-        cookie.setMaxAge(0);
-        cookie.setAttribute("SameSite", "Lax");
-        response.addCookie(cookie);
-    }
+  private void clearRefreshCookie(HttpServletResponse response) {
+    Cookie cookie = new Cookie("skillproof_refresh", "");
+    cookie.setHttpOnly(true);
+    cookie.setSecure(tokenProperties.isSecureCookie());
+    cookie.setPath("/api/v1/auth");
+    cookie.setMaxAge(0);
+    cookie.setAttribute("SameSite", "Lax");
+    response.addCookie(cookie);
+  }
 }

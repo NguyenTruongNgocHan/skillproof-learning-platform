@@ -1,31 +1,28 @@
-import { useCallback, useState } from "react";
-import { FileText, Plus } from "lucide-react";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { useAction, useRemote } from "@/shared/hooks/useRemote";
-import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
-import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog";
-import { libraryApi } from "../api/libraryApi";
-import type { LibraryResource } from "../types/library.types";
-import { LibraryEditor } from "../components/LibraryEditor";
+import { useCallback, useState } from "react"
+import { FileText, Plus } from "lucide-react"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { useAction, useRemote } from "@/shared/hooks/useRemote"
+import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog"
+import { libraryApi } from "../api/libraryApi"
+import type { LibraryResource } from "../types/library.types"
+import { LibraryEditor } from "../components/LibraryEditor"
 export default function OrganizationLibraryPage() {
-  const [editorBusy, setEditorBusy] = useState(false);
-  const { organization, grants } = useOrganizationContext();
-  const org = organization?.id ?? "";
+  const [editorBusy, setEditorBusy] = useState(false)
+  const { organization, grants } = useOrganizationContext()
+  const org = organization?.id ?? ""
   const remote = useRemote(
     useCallback(
-      () =>
-        grants.includes("MANAGE_CONTENT")
-          ? libraryApi.list(org)
-          : Promise.resolve([]),
+      () => (grants.includes("MANAGE_CONTENT") ? libraryApi.list(org) : Promise.resolve([])),
       [org, grants],
     ),
-  );
-  const action = useAction(remote.reload);
+  )
+  const action = useAction(remote.reload)
   const [search, setSearch] = useState(""),
     [create, setCreate] = useState(false),
-    [selected, setSelected] = useState<LibraryResource | null>(null);
+    [selected, setSelected] = useState<LibraryResource | null>(null)
   return (
     <OrganizerSurface
       title="Resource library"
@@ -41,8 +38,8 @@ export default function OrganizationLibraryPage() {
         />
         <Button
           onClick={() => {
-            setSelected(null);
-            setCreate(true);
+            setSelected(null)
+            setCreate(true)
           }}
         >
           <Plus size={16} /> Add resource
@@ -54,23 +51,15 @@ export default function OrganizationLibraryPage() {
         <section className="sporg-empty">
           <FileText size={32} />
           <h2>Your resource library</h2>
-          <p>
-            Create an article or attach learning files, then submit for review.
-          </p>
+          <p>Create an article or attach learning files, then submit for review.</p>
         </section>
       )}
       {remote.data
-        ?.filter((r) =>
-          (r.title + " " + r.summary)
-            .toLowerCase()
-            .includes(search.toLowerCase()),
-        )
+        ?.filter((r) => (r.title + " " + r.summary).toLowerCase().includes(search.toLowerCase()))
         .map((r) => (
           <section className="sporg-card sporg-assignment-row" key={r.id}>
             <div>
-              <span
-                className={`sporg-badge sporg-badge-${r.status.toLowerCase()}`}
-              >
+              <span className={`sporg-badge sporg-badge-${r.status.toLowerCase()}`}>
                 {r.status.toLowerCase()}
               </span>
               <h3>{r.title}</h3>
@@ -91,8 +80,8 @@ export default function OrganizationLibraryPage() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  setCreate(false);
-                  setSelected(r);
+                  setCreate(false)
+                  setSelected(r)
                 }}
               >
                 Open
@@ -101,15 +90,11 @@ export default function OrganizationLibraryPage() {
                 <Button
                   disabled={action.busy}
                   onClick={() => {
-                    if (
-                      window.confirm(
-                        "Submit this resource for administrator review?",
-                      )
-                    )
+                    if (window.confirm("Submit this resource for administrator review?"))
                       void action.run(
                         () => libraryApi.submit(r.id),
                         "Resource submitted for review.",
-                      );
+                      )
                   }}
                 >
                   Submit for review
@@ -124,8 +109,8 @@ export default function OrganizationLibraryPage() {
           title={selected?.title ?? "Create library resource"}
           close={() => {
             if (window.confirm("Close this resource editor?")) {
-              setCreate(false);
-              setSelected(null);
+              setCreate(false)
+              setSelected(null)
             }
           }}
         >
@@ -134,14 +119,14 @@ export default function OrganizationLibraryPage() {
             org={org}
             value={selected}
             created={(r) => {
-              setCreate(false);
-              setSelected(r);
-              remote.reload();
+              setCreate(false)
+              setSelected(r)
+              remote.reload()
             }}
             refresh={remote.reload}
           />
         </WorkspaceDialog>
       )}
     </OrganizerSurface>
-  );
+  )
 }

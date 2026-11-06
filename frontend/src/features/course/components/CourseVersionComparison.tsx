@@ -1,24 +1,22 @@
-import { useState, useCallback } from "react";
-import { courseApi } from "../api/courseApi";
-import { quizApi } from "@/features/quiz/api/quizApi";
-import { assignmentApi } from "@/features/assignment/api/assignmentApi";
-import { mediaApi } from "@/features/media/api/mediaApi";
-import type { CourseVersion } from "../types/course.types";
-import { useRemote } from "@/shared/hooks/useRemote";
-import { RemoteState } from "@/shared/ui/RemoteState";
+import { useState, useCallback } from "react"
+import { courseApi } from "../api/courseApi"
+import { quizApi } from "@/features/quiz/api/quizApi"
+import { assignmentApi } from "@/features/assignment/api/assignmentApi"
+import { mediaApi } from "@/features/media/api/mediaApi"
+import type { CourseVersion } from "../types/course.types"
+import { useRemote } from "@/shared/hooks/useRemote"
+import { RemoteState } from "@/shared/ui/RemoteState"
 async function snapshot(id: string) {
   const [outline, assessments, assignments] = await Promise.all([
     courseApi.outline(id),
     quizApi.assessments(id),
     assignmentApi.list(id),
-  ]);
-  const owners = new Map<string, string>([[outline.version.id, "COURSE"]]);
+  ])
+  const owners = new Map<string, string>([[outline.version.id, "COURSE"]])
   outline.modules.forEach((m) => {
-    owners.set(m.id, `MODULE:${m.position}`);
-    m.lessons.forEach((l) =>
-      owners.set(l.id, `MODULE:${m.position}/LESSON:${l.position}`),
-    );
-  });
+    owners.set(m.id, `MODULE:${m.position}`)
+    m.lessons.forEach((l) => owners.set(l.id, `MODULE:${m.position}/LESSON:${l.position}`))
+  })
   const modules = await Promise.all(
     outline.modules.map(async (m) => ({
       title: m.title,
@@ -46,7 +44,7 @@ async function snapshot(id: string) {
         })),
       ),
     })),
-  );
+  )
   const quiz = await Promise.all(
     assessments.map(async (a) => ({
       title: a.title,
@@ -63,7 +61,7 @@ async function snapshot(id: string) {
         position: q.position,
       })),
     })),
-  );
+  )
   return {
     metadata: {
       title: outline.version.title,
@@ -90,33 +88,30 @@ async function snapshot(id: string) {
         })),
       })),
     ),
-  };
+  }
 }
 export function CourseVersionComparison({
   versions,
   current,
 }: {
-  versions: CourseVersion[];
-  current: string;
+  versions: CourseVersion[]
+  current: string
 }) {
-  const [baseline, setBaseline] = useState("");
+  const [baseline, setBaseline] = useState("")
   const remote = useRemote(
     useCallback(
       async () =>
-        baseline
-          ? { before: await snapshot(baseline), after: await snapshot(current) }
-          : null,
+        baseline ? { before: await snapshot(baseline), after: await snapshot(current) } : null,
       [baseline, current],
     ),
-  );
+  )
   return (
     <section className="sporg-card">
       <h2>Compare course versions</h2>
       <p>
-        Compare saved content, question revisions, assignment rules, completion
-        policy and draft offers. File comparison uses SHA-256 when present, so
-        files with matching names and sizes but different bytes are
-        distinguished. Legacy files without a digest show null. Published
+        Compare saved content, question revisions, assignment rules, completion policy and draft
+        offers. File comparison uses SHA-256 when present, so files with matching names and sizes
+        but different bytes are distinguished. Legacy files without a digest show null. Published
         commercial price history is separate.
       </p>
       <label>
@@ -135,34 +130,27 @@ export function CourseVersionComparison({
       <RemoteState {...remote} retry={remote.reload} />
       {remote.data &&
         Object.keys(remote.data.before).map((key) => {
-          const name = key as keyof typeof remote.data.before;
+          const name = key as keyof typeof remote.data.before
           const before = remote.data!.before[name],
-            after = remote.data!.after[name];
+            after = remote.data!.after[name]
           return (
             <details key={key}>
               <summary>
-                {JSON.stringify(before) === JSON.stringify(after)
-                  ? "Unchanged"
-                  : "Changed"}{" "}
-                · {key}
+                {JSON.stringify(before) === JSON.stringify(after) ? "Unchanged" : "Changed"} · {key}
               </summary>
               <div className="sporg-grid">
                 <section>
                   <h3>Baseline</h3>
-                  <pre className="sporg-diff-json">
-                    {JSON.stringify(before, null, 2)}
-                  </pre>
+                  <pre className="sporg-diff-json">{JSON.stringify(before, null, 2)}</pre>
                 </section>
                 <section>
                   <h3>Current</h3>
-                  <pre className="sporg-diff-json">
-                    {JSON.stringify(after, null, 2)}
-                  </pre>
+                  <pre className="sporg-diff-json">{JSON.stringify(after, null, 2)}</pre>
                 </section>
               </div>
             </details>
-          );
+          )
         })}
     </section>
-  );
+  )
 }

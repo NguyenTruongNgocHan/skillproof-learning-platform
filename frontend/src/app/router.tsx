@@ -1,101 +1,95 @@
-import OrganizationPricingPage from "@/features/pricing/pages/OrganizationPricingPage";
-import PublicResourcePage from "@/features/library/pages/PublicResourcePage";
-import ResourceCatalogPage from "@/features/library/pages/ResourceCatalogPage";
-import LearnerCertificateFeedbackPage from "@/features/feedback/pages/LearnerCertificateFeedbackPage";
-import AdminCertificateGovernancePage from "@/features/admin/pages/AdminCertificateGovernancePage";
-import OrganizationGradingPage from "@/features/assignment/pages/OrganizationGradingPage";
-import CheckoutPage from "@/features/payment/pages/CheckoutPage";
-import PublicOrganizationPage from "@/features/organization/pages/PublicOrganizationPage";
-import AdminOrganizationStatusPage from "@/features/admin/pages/AdminOrganizationStatusPage";
-import CourseCatalogPage from "@/features/course/pages/CourseCatalogPage";
-import PublicCourseDetailPage from "@/features/course/pages/PublicCourseDetailPage";
-import AdminLibraryReviewPage from "@/features/admin/pages/AdminLibraryReviewPage";
-import AdminFeedbackModerationPage from "@/features/admin/pages/AdminFeedbackModerationPage";
-import AdminIssuerReviewPage from "@/features/admin/pages/AdminIssuerReviewPage";
-import OrganizationActivityPage from "@/features/operations/pages/OrganizationActivityPage";
-import OrganizationFeedbackPage from "@/features/feedback/pages/OrganizationFeedbackPage";
-import OrganizationAnalyticsPage from "@/features/analytics/pages/OrganizationAnalyticsPage";
-import OrganizationGovernancePage from "@/features/organization/pages/OrganizationGovernancePage";
-import { OrganizerAuthorityGuard } from "@/app/guards/OrganizerAuthorityGuard";
-import { ROUTES } from "@/app/config/appRoutes";
-import { AuthGuard } from "@/app/guards/AuthGuard";
-import { GuestGuard } from "@/app/guards/GuestGuard";
-import { OnboardingGuard } from "@/app/guards/OnboardingGuard";
-import { OrganizerVerificationGuard } from "@/app/guards/OrganizerVerificationGuard";
-import { RoleGuard } from "@/app/guards/RoleGuard";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import { lazy, Suspense } from "react";
-import { Route, Routes, useLocation, Navigate } from "react-router-dom";
+import PaymentOrdersPage from "@/features/payment/pages/PaymentOrdersPage"
+import AdminCourseModerationPage from "@/features/admin/pages/AdminCourseModerationPage"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import OrganizationPricingPage from "@/features/pricing/pages/OrganizationPricingPage"
+import PublicResourcePage from "@/features/library/pages/PublicResourcePage"
+import ResourceCatalogPage from "@/features/library/pages/ResourceCatalogPage"
+import LearnerCertificateFeedbackPage from "@/features/feedback/pages/LearnerCertificateFeedbackPage"
+import AdminCertificateGovernancePage from "@/features/admin/pages/AdminCertificateGovernancePage"
+import OrganizationGradingPage from "@/features/assignment/pages/OrganizationGradingPage"
+import CheckoutPage from "@/features/payment/pages/CheckoutPage"
+import PublicOrganizationPage from "@/features/organization/pages/PublicOrganizationPage"
+import AdminOrganizationStatusPage from "@/features/admin/pages/AdminOrganizationStatusPage"
+import CourseCatalogPage from "@/features/course/pages/CourseCatalogPage"
+import PublicCourseDetailPage from "@/features/course/pages/PublicCourseDetailPage"
+import AdminLibraryReviewPage from "@/features/admin/pages/AdminLibraryReviewPage"
+import AdminFeedbackModerationPage from "@/features/admin/pages/AdminFeedbackModerationPage"
+import AdminIssuerReviewPage from "@/features/admin/pages/AdminIssuerReviewPage"
+import OrganizationActivityPage from "@/features/operations/pages/OrganizationActivityPage"
+import OrganizationFeedbackPage from "@/features/feedback/pages/OrganizationFeedbackPage"
+import OrganizationAnalyticsPage from "@/features/analytics/pages/OrganizationAnalyticsPage"
+import OrganizationGovernancePage from "@/features/organization/pages/OrganizationGovernancePage"
+import { OrganizerAuthorityGuard } from "@/app/guards/OrganizerAuthorityGuard"
+import { ROUTES } from "@/app/config/appRoutes"
+import { AuthGuard } from "@/app/guards/AuthGuard"
+import { GuestGuard } from "@/app/guards/GuestGuard"
+import { OnboardingGuard } from "@/app/guards/OnboardingGuard"
+import { OrganizerVerificationGuard } from "@/app/guards/OrganizerVerificationGuard"
+import { RoleGuard } from "@/app/guards/RoleGuard"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import { lazy, Suspense } from "react"
+import { Route, Routes, useLocation, Navigate } from "react-router-dom"
 
-import VerifyPage from "@/features/certification/pages/VerifyPage";
-import CommunityPage from "@/features/community/pages/CommunityPage";
-import ComingSoonPage from "@/features/marketing/pages/ComingSoonPage";
-import LandingPage from "@/features/marketing/pages/LandingPage";
-import NotFoundPage from "@/features/marketing/pages/NotFoundPage";
-import PrivacyPage from "@/features/marketing/pages/PrivacyPage";
-import TermsPage from "@/features/marketing/pages/TermsPage";
-import ScrollToRoute from "@/shared/components/layout/ScrollToRoute";
+import VerifyPage from "@/features/certification/pages/VerifyPage"
+import ComingSoonPage from "@/features/marketing/pages/ComingSoonPage"
+import LandingPage from "@/features/marketing/pages/LandingPage"
+import NotFoundPage from "@/features/marketing/pages/NotFoundPage"
+import PrivacyPage from "@/features/marketing/pages/PrivacyPage"
+import TermsPage from "@/features/marketing/pages/TermsPage"
+import ScrollToRoute from "@/shared/components/layout/ScrollToRoute"
 
-import ForgotPasswordPage from "@/features/auth/pages/ForgotPasswordPage";
-import LoginPage from "@/features/auth/pages/LoginPage";
-import OAuthCallbackPage from "@/features/auth/pages/OAuthCallbackPage";
-import RegisterPage from "@/features/auth/pages/RegisterPage";
-import ResetPasswordPage from "@/features/auth/pages/ResetPasswordPage";
-import VerifyEmailPage from "@/features/auth/pages/VerifyEmailPage";
+import ForgotPasswordPage from "@/features/auth/pages/ForgotPasswordPage"
+import LoginPage from "@/features/auth/pages/LoginPage"
+import OAuthCallbackPage from "@/features/auth/pages/OAuthCallbackPage"
+import RegisterPage from "@/features/auth/pages/RegisterPage"
+import ResetPasswordPage from "@/features/auth/pages/ResetPasswordPage"
+import VerifyEmailPage from "@/features/auth/pages/VerifyEmailPage"
 
-import LearnerOnboardingPage from "@/features/profile/pages/LearnerOnboardingPage";
+import LearnerOnboardingPage from "@/features/profile/pages/LearnerOnboardingPage"
 
-import AdminPage from "@/features/admin/pages/AdminPage";
-import DashboardPage from "@/features/dashboard/pages/DashboardPage";
-import EligibilityPage from "@/features/eligibility/pages/EligibilityPage";
-import CoursePage from "@/features/learning/pages/CoursePage";
-import ExplorePathsPage from "@/features/learning/pages/ExplorePathsPage";
-import MyLearningPage from "@/features/learning/pages/MyLearningPage";
-import PathDetailPage from "@/features/learning/pages/PathDetailPage";
-import ProfilePage from "@/features/profile/pages/ProfilePage";
-import AttemptPage from "@/features/quiz/pages/AttemptPage";
-import PracticeHubPage from "@/features/quiz/pages/PracticeHubPage";
-import ChallengePage from "@/features/realtime/pages/ChallengePage";
+import AdminPage from "@/features/admin/pages/AdminPage"
+import AdminCourseReviewPage from "@/features/admin/pages/AdminCourseReviewPage"
+import AdminAccountsPage from "@/features/admin/pages/AdminAccountsPage"
+import DashboardPage from "@/features/dashboard/pages/DashboardPage"
+import EligibilityPage from "@/features/eligibility/pages/EligibilityPage"
+import CoursePage from "@/features/learning/pages/CoursePage"
+import ExplorePathsPage from "@/features/learning/pages/ExplorePathsPage"
+import MyLearningPage from "@/features/learning/pages/MyLearningPage"
+import PathDetailPage from "@/features/learning/pages/PathDetailPage"
+import ProfilePage from "@/features/profile/pages/ProfilePage"
+import AttemptPage from "@/features/quiz/pages/AttemptPage"
+import PracticeHubPage from "@/features/quiz/pages/PracticeHubPage"
 
 const OrganizerOnboardingPage = lazy(
   () => import("@/features/organization/pages/OrganizerOnboardingPage"),
-);
-const OrganizerPage = lazy(
-  () => import("@/features/organization/pages/OrganizerPage"),
-);
+)
+const OrganizerPage = lazy(() => import("@/features/organization/pages/OrganizerPage"))
 const OrganizerVerificationPendingPage = lazy(
-  () =>
-    import("@/features/organization/pages/OrganizerVerificationPendingPage"),
-);
-const OrganizerCoursesPage = lazy(
-  () => import("@/features/course/pages/OrganizerCoursesPage"),
-);
-const CourseStudioPage = lazy(
-  () => import("@/features/course/pages/CourseStudioPage"),
-);
-const QuestionBankPage = lazy(
-  () => import("@/features/quiz/pages/QuestionBankPage"),
-);
+  () => import("@/features/organization/pages/OrganizerVerificationPendingPage"),
+)
+const OrganizerCoursesPage = lazy(() => import("@/features/course/pages/OrganizerCoursesPage"))
+const CourseStudioPage = lazy(() => import("@/features/course/pages/CourseStudioPage"))
+const QuestionBankPage = lazy(() => import("@/features/quiz/pages/QuestionBankPage"))
 const CertificationProgramsPage = lazy(
   () => import("@/features/certification/pages/CertificationProgramsPage"),
-);
+)
 const AcceptInvitationPage = lazy(
   () => import("@/features/organization/pages/AcceptInvitationPage"),
-);
+)
 const OrganizationWorkspacePage = lazy(
   () => import("@/features/organization/pages/OrganizationWorkspacePage"),
-);
+)
 const CertificateDetailPage = lazy(
   () => import("@/features/certification/pages/CertificateDetailPage"),
-);
+)
 const AdminOrganizationReviewPage = lazy(
   () => import("@/features/admin/pages/AdminOrganizationReviewPage"),
-);
+)
 
 function RouteLoadingFrame() {
-  const { user } = useAuth();
-  const { pathname } = useLocation();
+  const { user } = useAuth()
+  const { pathname } = useLocation()
   if (user?.role === "ORGANIZER" && pathname.startsWith("/organizer")) {
     return (
       <OrganizerSurface title="Loading workspace…">
@@ -104,36 +98,33 @@ function RouteLoadingFrame() {
           <div className="sporg-skeleton" aria-hidden="true" />
         </section>
       </OrganizerSurface>
-    );
+    )
   }
   return (
     <main className="sporg" role="status">
       Loading workspace…
     </main>
-  );
+  )
 }
 
 const OrganizationLibraryPage = lazy(
   () => import("@/features/library/pages/OrganizationLibraryPage"),
-);
-const OrganizationAccessPage = lazy(
-  () => import("@/features/access/pages/OrganizationAccessPage"),
-);
+)
+const OrganizationAccessPage = lazy(() => import("@/features/access/pages/OrganizationAccessPage"))
 function LegacyCourseRedirect() {
-  const location = useLocation();
+  const location = useLocation()
   return (
-    <Navigate
-      to={location.pathname.replace("/organizer/paths", "/organizer/courses")}
-      replace
-    />
-  );
+    <Navigate to={location.pathname.replace("/organizer/paths", "/organizer/courses")} replace />
+  )
 }
 export function AppRouter() {
+  const { user } = useAuth()
+  const { organization } = useOrganizationContext()
   return (
     <>
       <ScrollToRoute />
       <Suspense fallback={<RouteLoadingFrame />}>
-        <Routes>
+        <Routes key={`${user?.id ?? "guest"}:${organization?.id ?? "none"}`}>
           <Route
             path="/admin/library"
             element={
@@ -154,10 +145,7 @@ export function AppRouter() {
               </AuthGuard>
             }
           />
-          <Route
-            path="/organizations/:id"
-            element={<PublicOrganizationPage />}
-          />
+          <Route path="/organizations/:id" element={<PublicOrganizationPage />} />
           <Route path="/catalog" element={<CourseCatalogPage />} />
           <Route path="/catalog/:id" element={<PublicCourseDetailPage />} />
           <Route
@@ -206,12 +194,17 @@ export function AppRouter() {
           />
           {/* Public */}
           <Route path={ROUTES.HOME} element={<LandingPage />} />
-          <Route path={ROUTES.COMMUNITY} element={<CommunityPage />} />
-          <Route path={ROUTES.VERIFY_CERT} element={<VerifyPage />} />
           <Route
-            path={`${ROUTES.VERIFY_CERT}/:certificateId`}
-            element={<VerifyPage />}
+            path={ROUTES.COMMUNITY}
+            element={
+              <ComingSoonPage
+                title="Community"
+                description="Community is the next learner workspace. This release completes Organization and Admin flows."
+              />
+            }
           />
+          <Route path={ROUTES.VERIFY_CERT} element={<VerifyPage />} />
+          <Route path={`${ROUTES.VERIFY_CERT}/:certificateId`} element={<VerifyPage />} />
           <Route
             path={ROUTES.EXPLORE}
             element={
@@ -227,10 +220,7 @@ export function AppRouter() {
           <Route
             path={ROUTES.CERTIFICATIONS}
             element={
-              <ComingSoonPage
-                title="Certifications"
-                description="Browse certification programs."
-              />
+              <ComingSoonPage title="Certifications" description="Browse certification programs." />
             }
           />
 
@@ -312,6 +302,26 @@ export function AppRouter() {
             }
           />
           <Route
+            path="/app/orders"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="LEARNER">
+                  <PaymentOrdersPage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/payments/return"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="LEARNER">
+                  <PaymentOrdersPage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
             path="/app/learning"
             element={
               <AuthGuard>
@@ -347,7 +357,10 @@ export function AppRouter() {
             element={
               <AuthGuard>
                 <RoleGuard allowedRole="LEARNER">
-                  <ChallengePage />
+                  <ComingSoonPage
+                    title="Realtime battle"
+                    description="Realtime battle is planned for a later release."
+                  />
                 </RoleGuard>
               </AuthGuard>
             }
@@ -364,10 +377,7 @@ export function AppRouter() {
           />
 
           <Route path="/organizer/paths" element={<LegacyCourseRedirect />} />
-          <Route
-            path="/organizer/paths/:id"
-            element={<LegacyCourseRedirect />}
-          />
+          <Route path="/organizer/paths/:id" element={<LegacyCourseRedirect />} />
           <Route
             path="/organizer/library"
             element={
@@ -597,6 +607,36 @@ export function AppRouter() {
             }
           />
           <Route
+            path="/admin/courses"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ADMIN">
+                  <AdminCourseModerationPage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/admin/course-review"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ADMIN">
+                  <AdminCourseReviewPage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/admin/accounts"
+            element={
+              <AuthGuard>
+                <RoleGuard allowedRole="ADMIN">
+                  <AdminAccountsPage />
+                </RoleGuard>
+              </AuthGuard>
+            }
+          />
+          <Route
             path="/admin/organizations"
             element={
               <AuthGuard>
@@ -623,5 +663,5 @@ export function AppRouter() {
         </Routes>
       </Suspense>
     </>
-  );
+  )
 }

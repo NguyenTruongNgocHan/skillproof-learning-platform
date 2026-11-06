@@ -5,17 +5,22 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record CertificationProgramResponse(
-        UUID id,
-        UUID organizationId,
-        UUID courseVersionId,
-        UUID completionPolicyId,
-        String name,
-        String status,
-        Instant createdAt) {
+    UUID id,
+    UUID organizationId,
+    UUID courseVersionId,
+    UUID completionPolicyId,
+    String name,
+    String status,
+    Instant createdAt) {
 
-    static CertificationProgramResponse from(CertificationProgram program) {
-        return new CertificationProgramResponse(
-                program.id(), program.organizationId(), program.courseVersionId(),
-                program.completionPolicyId(), program.name(), program.status().name(), program.createdAt());
-    }
+  static CertificationProgramResponse from(CertificationProgram program) {
+    return new CertificationProgramResponse(
+        program.id(),
+        program.organizationId(),
+        program.courseVersionId(),
+        program.completionPolicyId(),
+        program.name(),
+        program.status().name(),
+        program.createdAt());
+  }
 }

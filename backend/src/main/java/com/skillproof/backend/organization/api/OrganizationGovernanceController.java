@@ -1,9 +1,18 @@
 package com.skillproof.backend.organization.api;
 
+import com.skillproof.backend.organization.api.model.EvidenceDocumentResponse;
+import com.skillproof.backend.organization.api.model.IssuerApplicationResponse;
+import com.skillproof.backend.organization.application.IssuerAuthorizationService;
+import com.skillproof.backend.organization.application.OrganizationEvidenceService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,18 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.skillproof.backend.organization.application.IssuerAuthorizationService;
-import com.skillproof.backend.organization.application.OrganizationEvidenceService;
-import com.skillproof.backend.organization.infrastructure.EvidenceDocument;
-import com.skillproof.backend.organization.infrastructure.IssuerApplication;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -38,7 +35,9 @@ public class OrganizationGovernanceController {
 
   public record EvidenceInput(
       @NotNull UUID mediaId,
-      @Pattern(regexp = "LEGAL_IDENTITY|REPRESENTATIVE|TRAINING_CAPABILITY|SUPPORTING|COMPANY_IMAGE") @NotBlank
+      @Pattern(
+              regexp = "LEGAL_IDENTITY|REPRESENTATIVE|TRAINING_CAPABILITY|SUPPORTING|COMPANY_IMAGE")
+          @NotBlank
           String kind,
       @Pattern(regexp = "VERIFICATION|ISSUER") @NotBlank String purpose,
       @NotBlank @Size(max = 180) String title,
@@ -60,51 +59,67 @@ public class OrganizationGovernanceController {
       Instant validUntil) {}
 
   @GetMapping("/organizations/{org}/evidence")
-  public List<EvidenceDocument> list(Authentication a, @PathVariable UUID org) {
-    return evidence.list((UUID) a.getPrincipal(), org);
+  public List<EvidenceDocumentResponse> list(Authentication a, @PathVariable UUID org) {
+    return evidence.list((UUID) a.getPrincipal(), org).stream()
+        .map(EvidenceDocumentResponse::from)
+        .toList();
   }
 
   @PostMapping("/organizations/{org}/evidence")
-  public EvidenceDocument add(
+  public EvidenceDocumentResponse add(
       Authentication a, @PathVariable UUID org, @Valid @RequestBody EvidenceInput i) {
-    return evidence.add(
-        (UUID) a.getPrincipal(), org, i.mediaId(), i.kind(), i.purpose(), i.title(), i.expiresAt());
+    return EvidenceDocumentResponse.from(
+        evidence.add(
+            (UUID) a.getPrincipal(),
+            org,
+            i.mediaId(),
+            i.kind(),
+            i.purpose(),
+            i.title(),
+            i.expiresAt()));
   }
 
   @PostMapping("/admin/organizations/{org}/evidence/{id}/review")
-  public EvidenceDocument review(
+  public EvidenceDocumentResponse review(
       Authentication a,
       @PathVariable UUID org,
       @PathVariable UUID id,
       @Valid @RequestBody EvidenceDecision i) {
-    return evidence.review((UUID) a.getPrincipal(), org, id, i.status(), i.reason());
+    return EvidenceDocumentResponse.from(
+        evidence.review((UUID) a.getPrincipal(), org, id, i.status(), i.reason()));
   }
 
   @GetMapping("/organizations/{org}/issuer-applications")
-  public List<IssuerApplication> issuers(Authentication a, @PathVariable UUID org) {
-    return issuer.list((UUID) a.getPrincipal(), org);
+  public List<IssuerApplicationResponse> issuers(Authentication a, @PathVariable UUID org) {
+    return issuer.list((UUID) a.getPrincipal(), org).stream()
+        .map(IssuerApplicationResponse::from)
+        .toList();
   }
 
   @PostMapping("/organizations/{org}/issuer-applications")
-  public IssuerApplication apply(
+  public IssuerApplicationResponse apply(
       Authentication a, @PathVariable UUID org, @Valid @RequestBody IssuerInput i) {
-    return issuer.apply(
-        (UUID) a.getPrincipal(),
-        org,
-        i.scope(),
-        i.evidenceIds(),
-        i.scopeMode(),
-        i.courseVersionIds());
+    return IssuerApplicationResponse.from(
+        issuer.apply(
+            (UUID) a.getPrincipal(),
+            org,
+            i.scope(),
+            i.evidenceIds(),
+            i.scopeMode(),
+            i.courseVersionIds()));
   }
 
   @GetMapping("/admin/issuer-applications")
-  public List<IssuerApplication> pending(Authentication a) {
-    return issuer.pending((UUID) a.getPrincipal());
+  public List<IssuerApplicationResponse> pending(Authentication a) {
+    return issuer.pending((UUID) a.getPrincipal()).stream()
+        .map(IssuerApplicationResponse::from)
+        .toList();
   }
 
   @PostMapping("/admin/issuer-applications/{id}/review")
-  public IssuerApplication decide(
+  public IssuerApplicationResponse decide(
       Authentication a, @PathVariable UUID id, @Valid @RequestBody IssuerDecision i) {
-    return issuer.decide((UUID) a.getPrincipal(), id, i.status(), i.reason(), i.validUntil());
+    return IssuerApplicationResponse.from(
+        issuer.decide((UUID) a.getPrincipal(), id, i.status(), i.reason(), i.validUntil()));
   }
 }

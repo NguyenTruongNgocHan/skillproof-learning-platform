@@ -1,39 +1,36 @@
-import { OrganizationBrandingPanel } from "../components/OrganizationBrandingPanel";
-import { useState } from "react";
-import MediaPanel from "@/features/media/components/MediaPanel";
-import { ApplicationHistory } from "../components/ApplicationHistory";
-import { OrganizationProfilePanel } from "../components/OrganizationProfilePanel";
-import { OrganizationTeamPanel } from "../components/OrganizationTeamPanel";
-import { OrganizationIdentity } from "../components/OrganizationIdentity";
-import { OrganizerSurface } from "../components/OrganizerSurface";
-import { useOrganizationContext } from "../providers/OrganizationProvider";
+import { LegalReverificationPanel } from "../components/LegalReverificationPanel"
+import { OrganizationBrandingPanel } from "../components/OrganizationBrandingPanel"
+import { useState } from "react"
+import MediaPanel from "@/features/media/components/MediaPanel"
+import { ApplicationHistory } from "../components/ApplicationHistory"
+import { OrganizationProfilePanel } from "../components/OrganizationProfilePanel"
+import { OrganizationTeamPanel } from "../components/OrganizationTeamPanel"
+import { OrganizationIdentity } from "../components/OrganizationIdentity"
+import { OrganizerSurface } from "../components/OrganizerSurface"
+import { useOrganizationContext } from "../providers/OrganizationProvider"
 export default function OrganizationWorkspacePage() {
-  const { organization, grants } = useOrganizationContext();
-  const [tab, setTab] = useState("profile");
-  const [panelDirty, setPanelDirty] = useState(false);
+  const { organization, grants } = useOrganizationContext()
+  const [tab, setTab] = useState("profile")
+  const [panelDirty, setPanelDirty] = useState(false)
   const changeTab = (next: string) => {
-    if (next === tab) return;
-    if (panelDirty && !window.confirm("Discard unsaved changes?")) return;
-    setPanelDirty(false);
-    setTab(next);
-  };
+    if (next === tab) return
+    if (panelDirty && !window.confirm("Discard unsaved changes?")) return
+    setPanelDirty(false)
+    setTab(next)
+  }
   const tabs = [
     "profile",
     ...(grants.includes("MANAGE_MEMBERS") ? ["team"] : []),
     ...(grants.includes("MANAGE_PROFILE") ? ["branding", "images", "documents"] : []),
     ...(grants.includes("MANAGE_PROFILE") ? ["history"] : []),
-  ];
+  ]
   return (
     <OrganizerSurface
       title="Organization"
       description="Your verified identity, team and application records."
     >
       {organization && <OrganizationIdentity organization={organization} />}
-      <div
-        className="sporg-local-tabs"
-        role="tablist"
-        aria-label="Organization settings"
-      >
+      <div className="sporg-local-tabs" role="tablist" aria-label="Organization settings">
         {tabs.map((t) => (
           <button
             role="tab"
@@ -43,24 +40,17 @@ export default function OrganizationWorkspacePage() {
             key={t}
             onClick={() => changeTab(t)}
           >
-            {t === "history"
-              ? "Application history"
-              : t[0].toUpperCase() + t.slice(1)}
+            {t === "history" ? "Application history" : t[0].toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
       <div role="tabpanel" id="org-panel" aria-labelledby={`org-tab-${tab}`}>
+        {tab === "profile" && <LegalReverificationPanel />}
         {tab === "profile" && (
-          <OrganizationProfilePanel
-            key={organization?.id}
-            onDirtyChange={setPanelDirty}
-          />
+          <OrganizationProfilePanel key={organization?.id} onDirtyChange={setPanelDirty} />
         )}{" "}
         {tab === "team" && grants.includes("MANAGE_MEMBERS") && (
-          <OrganizationTeamPanel
-            key={organization?.id}
-            onDirtyChange={setPanelDirty}
-          />
+          <OrganizationTeamPanel key={organization?.id} onDirtyChange={setPanelDirty} />
         )}{" "}
         {tab === "branding" && organization && (
           <OrganizationBrandingPanel organizationId={organization.id} />
@@ -68,32 +58,32 @@ export default function OrganizationWorkspacePage() {
         {tab === "images" && organization && grants.includes("MANAGE_PROFILE") && (
           <section className="sporg-card">
             <h2>Organization images</h2>
-            <p>Manage organization media here. Verification images must also be attached as COMPANY_IMAGE evidence in the application before submission. Uploading here alone does not satisfy verification.</p>
+            <p>
+              Manage organization media here. Verification images must also be attached as
+              COMPANY_IMAGE evidence in the application before submission. Uploading here alone does
+              not satisfy verification.
+            </p>
             <MediaPanel scope="ORGANIZATION" target={organization.id} writable />
           </section>
         )}
-        {tab === "documents" &&
-          organization &&
-          grants.includes("MANAGE_PROFILE") && (
-            <section className="sporg-card">
-              <h2>Submitted documents</h2>
-              <p>
-                Supporting evidence is kept with application revisions. Approved
-                application documents are read-only.
-              </p>
-              <MediaPanel scope="ORGANIZATION" target={organization.id} />
-            </section>
-          )}
-        {tab === "history" &&
-          organization &&
-          grants.includes("MANAGE_PROFILE") && (
-            <ApplicationHistory
-              organizationId={organization.id}
-              refreshKey={organization.updatedAt}
-              documentsVisible={grants.includes("MANAGE_PROFILE")}
-            />
-          )}
+        {tab === "documents" && organization && grants.includes("MANAGE_PROFILE") && (
+          <section className="sporg-card">
+            <h2>Submitted documents</h2>
+            <p>
+              Supporting evidence is kept with application revisions. Approved application documents
+              are read-only.
+            </p>
+            <MediaPanel scope="ORGANIZATION" target={organization.id} />
+          </section>
+        )}
+        {tab === "history" && organization && grants.includes("MANAGE_PROFILE") && (
+          <ApplicationHistory
+            organizationId={organization.id}
+            refreshKey={organization.updatedAt}
+            documentsVisible={grants.includes("MANAGE_PROFILE")}
+          />
+        )}
       </div>
     </OrganizerSurface>
-  );
+  )
 }

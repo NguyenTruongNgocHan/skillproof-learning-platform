@@ -1,8 +1,8 @@
-import { brandingApi, publicImage } from "../api/brandingApi";
-import { useRemote } from "@/shared/hooks/useRemote";
-import { useState, useEffect, useCallback } from "react";
-import { ShieldCheck, Image } from "lucide-react";
-import type { Organization } from "../types/organization.types";
+import { brandingApi, publicImage } from "../api/brandingApi"
+import { useRemote } from "@/shared/hooks/useRemote"
+import { useState, useEffect, useCallback } from "react"
+import { ShieldCheck, Image } from "lucide-react"
+import type { Organization } from "../types/organization.types"
 // Branding URLs are intentionally optional until a dedicated backend contract exists.
 export function OrganizationIdentity({
   organization,
@@ -12,44 +12,41 @@ export function OrganizationIdentity({
   organization: Pick<
     Organization,
     "id" | "displayName" | "industry" | "country" | "website" | "status"
-  >;
-  logoUrl?: string;
-  coverUrl?: string;
+  >
+  logoUrl?: string
+  coverUrl?: string
 }) {
   const brand = useRemote(
-    useCallback(
-      () => brandingApi.publicProfile(organization.id),
-      [organization.id],
-    ),
-  );
-  const suffix = brand.data?.branding.updatedAt ?? "";
+    useCallback(() => brandingApi.publicProfile(organization.id), [organization.id]),
+  )
+  const suffix = brand.data?.branding.updatedAt ?? ""
   const logoUrl =
     suppliedLogo ??
     (brand.data?.branding.logoMediaId
       ? publicImage(
           `/public/organizations/${organization.id}/branding/logo?v=${encodeURIComponent(suffix)}`,
         )
-      : undefined);
+      : undefined)
   const coverUrl =
     suppliedCover ??
-    ((brand.data?.branding.coverMediaId || brand.data?.branding.logoMediaId)
+    (brand.data?.branding.coverMediaId || brand.data?.branding.logoMediaId
       ? publicImage(
           `/public/organizations/${organization.id}/branding/${brand.data?.branding.coverMediaId ? "cover" : "logo"}?v=${encodeURIComponent(suffix)}`,
         )
-      : undefined);
+      : undefined)
   const [logoFailed, setLogoFailed] = useState(false),
-    [coverFailed, setCoverFailed] = useState(false);
+    [coverFailed, setCoverFailed] = useState(false)
   useEffect(() => {
-    setLogoFailed(false);
-    setCoverFailed(false);
-  }, [logoUrl, coverUrl]);
+    setLogoFailed(false)
+    setCoverFailed(false)
+  }, [logoUrl, coverUrl])
   const initials = organization.displayName
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((s) => s[0])
     .join("")
-    .toUpperCase();
+    .toUpperCase()
   return (
     <section className="sporg-identity">
       <div className="sporg-identity-cover">
@@ -81,11 +78,7 @@ export function OrganizationIdentity({
           </p>
           {organization.website && (
             <a
-              href={
-                /^https?:\/\//i.test(organization.website)
-                  ? organization.website
-                  : undefined
-              }
+              href={/^https?:\/\//i.test(organization.website) ? organization.website : undefined}
               target="_blank"
               rel="noreferrer"
             >
@@ -93,13 +86,11 @@ export function OrganizationIdentity({
             </a>
           )}
         </div>
-        <span
-          className={`sporg-badge sporg-badge-${organization.status.toLowerCase()}`}
-        >
+        <span className={`sporg-badge sporg-badge-${organization.status.toLowerCase()}`}>
           {organization.status === "APPROVED" && <ShieldCheck size={14} />}{" "}
           {organization.status.toLowerCase()}
         </span>
       </div>
     </section>
-  );
+  )
 }

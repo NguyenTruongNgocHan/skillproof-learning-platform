@@ -28,6 +28,63 @@ vi.mock("../providers/OrganizationProvider", () => ({
     select: fixture.select,
   }),
 }))
+vi.mock("../api/governanceApi", () => ({
+  governanceApi: {
+    evidence: vi.fn(async () => [
+      ...[1, 2, 3].map((n) => ({
+        id: `e${n}`,
+        organizationId: "owned",
+        mediaId: `m${n}`,
+        kind: "COMPANY_IMAGE",
+        purpose: "VERIFICATION",
+        title: `Image ${n}`,
+        status: "UPLOADED",
+        expiresAt: null,
+      })),
+      {
+        id: "legal",
+        organizationId: "owned",
+        mediaId: "legal",
+        kind: "LEGAL_IDENTITY",
+        purpose: "VERIFICATION",
+        title: "Legal",
+        status: "UPLOADED",
+        expiresAt: null,
+      },
+      {
+        id: "rep",
+        organizationId: "owned",
+        mediaId: "rep",
+        kind: "REPRESENTATIVE",
+        purpose: "VERIFICATION",
+        title: "Representative",
+        status: "UPLOADED",
+        expiresAt: null,
+      },
+    ]),
+  },
+}))
+vi.mock("@/features/media/api/mediaApi", () => ({
+  mediaApi: {
+    list: vi.fn(async () => [
+      ...[1, 2, 3].map((n) => ({
+        id: `m${n}`,
+        name: `Image ${n}`,
+        mimeType: "image/png",
+        sha256: `hash${n}`,
+        size: 10,
+        createdAt: "2026-01-01",
+      })),
+      ...["legal", "rep"].map((id) => ({
+        id,
+        name: id,
+        mimeType: "application/pdf",
+        size: 10,
+        createdAt: "2026-01-01",
+      })),
+    ]),
+  },
+}))
 vi.mock("../api/organizationApi", () => ({ organizationApi: fixture.api }))
 vi.mock("@/features/auth/hooks/useAuth", () => ({
   useAuth: () => ({ user: { id: "owner", email: "owner@example.org" } }),
@@ -108,10 +165,17 @@ describe("Organization application activity flow", () => {
     await waitFor(() => expect(fixture.api.create).toHaveBeenCalledOnce())
     expect(fixture.api.submit).not.toHaveBeenCalled()
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Review saved application" })).not.toBeDisabled(),
+      expect(
+        screen.getByRole("button", {
+          name: "Review & submit",
+        }),
+      ).not.toBeDisabled(),
     )
-    fireEvent.click(screen.getByRole("button", { name: "Review saved application" }))
-    fireEvent.click(screen.getByRole("button", { name: "Submit for review" }))
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Review & submit" })).not.toBeDisabled(),
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Review & submit" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Submit for review" }))
     await waitFor(() => expect(fixture.api.submit).toHaveBeenCalledOnce())
     expect(await screen.findByText("Pending review screen")).toBeInTheDocument()
   })
@@ -128,19 +192,22 @@ describe("Organization application activity flow", () => {
     expect(fixture.api.create).not.toHaveBeenCalled()
     expect(fixture.api.submit).not.toHaveBeenCalled()
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Review saved application" })).not.toBeDisabled(),
+      expect(screen.getByRole("button", { name: "Review & submit" })).not.toBeDisabled(),
     )
   })
-  it("invalidates review when the draft is edited", () => {
+  it("invalidates review when the draft is edited", async () => {
     fixture.owned = org("DRAFT")
     open()
-    fireEvent.click(screen.getByRole("button", { name: "Review saved application" }))
-    expect(screen.getByRole("button", { name: "Submit for review" })).toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Review & submit" })).not.toBeDisabled(),
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Review & submit" }))
+    expect(await screen.findByRole("button", { name: "Submit for review" })).toBeInTheDocument()
     fireEvent.change(screen.getByLabelText("Display name"), {
       target: { value: "Changed" },
     })
     expect(screen.queryByRole("button", { name: "Submit for review" })).not.toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Review saved application" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Review & submit" })).toBeDisabled()
   })
   it("prevents duplicate saves while the server request is pending", async () => {
     fixture.owned = org("DRAFT")
@@ -169,10 +236,14 @@ describe("Organization application activity flow", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Access denied")
     expect(fixture.api.submit).not.toHaveBeenCalled()
   })
-  it("blocks submission while supporting documents are uploading", () => {
+  it("blocks submission while supporting documents are uploading", async () => {
     fixture.owned = org("DRAFT")
     open()
-    fireEvent.click(screen.getByRole("button", { name: "Review saved application" }))
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Review & submit" })).not.toBeDisabled(),
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Review & submit" }))
+    await screen.findByRole("button", { name: "Submit for review" })
     fireEvent.click(screen.getByRole("button", { name: "Start attachment upload" }))
     expect(screen.getByRole("button", { name: "Submit for review" })).toBeDisabled()
     expect(fixture.api.submit).not.toHaveBeenCalled()

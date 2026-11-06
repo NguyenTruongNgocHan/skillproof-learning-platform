@@ -1,277 +1,129 @@
-import { FeedbackPanel } from "@/features/feedback/components/FeedbackPanel";
-import { learningApi } from "@/features/learning/api/learningApi";
-import type {
-  Course,
-  Resource,
-} from "@/features/learning/types/learning.types";
-import MediaPanel from "@/features/media/components/MediaPanel";
-import { quizApi } from "@/features/quiz/api/quizApi";
-import type {
-  Assessment,
-  AttemptHistory,
-} from "@/features/quiz/types/quiz.types";
-import LearnerShell from "@/shared/components/layout/LearnerShell";
-import Button from "@/shared/ui/Button";
-import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useCallback } from "react"
+import { Link, useParams } from "react-router-dom"
+import LearnerShell from "@/shared/components/layout/LearnerShell"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import { learningApi } from "../api/learningApi"
+import MediaPanel from "@/features/media/components/MediaPanel"
+import { quizApi } from "@/features/quiz/api/quizApi"
+import { useNavigate } from "react-router-dom"
+/** Existing learner content is adapted to the nested contract; learner assignment authoring is outside this release. */
 export default function CoursePage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [course, setCourse] = useState<Course | null>(null),
-    [assessments, setAssessments] = useState<Assessment[]>([]),
-    [history, setHistory] = useState<AttemptHistory[]>([]),
-    [selected, setSelected] = useState<Resource | null>(null),
-    [error, setError] = useState(""),
-    [loading, setLoading] = useState(true),
-    [busy, setBusy] = useState(false);
-  const load = useCallback(async () => {
-    if (!id) return;
-    setLoading(true);
-    try {
-      const [c, a, h] = await Promise.all([
-        learningApi.course(id),
-        quizApi.available(id),
-        quizApi.history(id),
-      ]);
-      setCourse(c);
-      setAssessments(a);
-      setHistory(h);
-      setSelected(
-        (previous) =>
-          c.modules
-            .flatMap((m) => m.resources)
-            .find((r) => r.id === previous?.id) ??
-          c.modules[0]?.resources[0] ??
-          null,
-      );
-      setError("");
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Unable to load your enrollment",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-  useEffect(() => {
-    void load();
-  }, [load]);
-  async function complete() {
-    if (!id || !selected) return;
-    setBusy(true);
-    try {
-      await learningApi.complete(id, selected.id);
-      await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not save progress");
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function begin(a: Assessment) {
-    if (!id) return;
-    setBusy(true);
-    setError("");
-    try {
-      const view = await quizApi.start(a.id, id);
-      navigate(`/app/attempts/${view.attempt.id}`);
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Unable to start this assessment",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
+  const { id = "" } = useParams()
+  const navigate = useNavigate()
+  const remote = useRemote(useCallback(() => learningApi.course(id), [id]))
+  const assessments = useRemote(useCallback(() => quizApi.available(id), [id]))
+  const action = useAction(remote.reload)
   return (
     <LearnerShell>
-      <div className="learner-page learner-page--course">
-        <Link to="/app/learning" className="profile-back">
-          ← Your paths
-        </Link>
-        {loading && !course ? (
-          <p role="status">Loading lessons…</p>
-        ) : error && !course ? (
-          <div role="alert" className="org-error">
-            {error}{" "}
-            <Button variant="outline" onClick={() => void load()}>
-              Retry
-            </Button>
-          </div>
-        ) : (
-          course && (
-            <>
-              <header className="v7-hero">
-                <span className="course-hero__context">
-                  Version {course.enrollment.version_no} ·{" "}
-                  {course.enrollment.status === "COMPLETED"
-                    ? "Completed"
-                    : "In progress"}
-                </span>
-                <h1>{course.enrollment.title}</h1>
-                <p>{course.enrollment.summary}</p>
-                <div
-                  className="v7-progress"
-                  role="progressbar"
-                  aria-valuenow={course.progress.completedResources}
-                  aria-valuemin={0}
-                  aria-valuemax={course.progress.totalResources}
-                >
-                  <span
-                    style={{
-                      width: `${
-                        course.progress.totalResources
-                          ? (100 * course.progress.completedResources) /
-                            course.progress.totalResources
-                          : 0
-                      }%`,
-                    }}
-                  />
-                </div>
-                <p>
-                  {course.progress.completedResources} /{" "}
-                  {course.progress.totalResources} resources ·{" "}
-                  {course.progress.passedAssessments} /{" "}
-                  {course.progress.officialAssessments} official assessments
-                  passed
-                </p>
-              </header>
-              {error && (
-                <div role="alert" className="org-error">
-                  {error}{" "}
-                  <Button variant="outline" onClick={() => void load()}>
-                    Retry
-                  </Button>
-                </div>
-              )}
-              <div className="v7-course">
-                <nav className="v7-card" aria-label="Course modules">
-                  <h2>Learning journey</h2>
-                  {course.modules.map((m) => (
-                    <div key={m.id}>
-                      <h3>
-                        {m.position}. {m.title}
-                      </h3>
-                      {m.resources.map((r) => (
-                        <button
-                          className={`v7-row ${selected?.id === r.id ? "v7-row-active" : ""}`}
-                          key={r.id}
-                          onClick={() => setSelected(r)}
-                        >
-                          {r.completed ? "✓ " : "â—‹ "}
-                          {r.title}
-                        </button>
-                      ))}
-                    </div>
-                  ))}
-                </nav>
-                <section className="v7-card" aria-live="polite">
-                  {selected ? (
-                    <>
-                      <h2>{selected.title}</h2>
-                      {selected.kind === "ARTICLE" ? (
-                        <div className="v7-article">{selected.body}</div>
-                      ) : selected.kind === "FILE" ||
-                        selected.kind === "AUDIO" ? (
-                        <p>Download the lesson attachment below.</p>
-                      ) : (
-                        <p>
-                          Open the {selected.kind.toLowerCase()} resource in a
-                          new tab:{" "}
-                          <a
-                            href={selected.url ?? "#"}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {selected.title} â†—
+      <section className="sporg">
+        <Link to="/app/learning">← My learning</Link>
+        <RemoteState {...remote} retry={remote.reload} />
+        <ActionNotice {...action} />
+        {remote.data && (
+          <>
+            <header className="sporg-heading">
+              <h1>{remote.data.enrollment.title}</h1>
+              <p>{remote.data.enrollment.summary}</p>
+              <p>
+                Version {remote.data.enrollment.version_no} · {remote.data.enrollment.status}
+              </p>
+            </header>
+            <p>
+              Required resources: {remote.data.progress.completedResources}/
+              {remote.data.progress.totalResources}. Completion is evaluated by the server from
+              lessons, required resources and required activities.
+            </p>
+            {remote.data.modules.map((module) => (
+              <section key={module.id} className="sporg-card">
+                <h2>
+                  {module.position}. {module.title}
+                </h2>
+                {module.lessons.map((lesson) => (
+                  <section key={lesson.id} className="platform-stack">
+                    <h3>
+                      {lesson.position}. {lesson.title}
+                    </h3>
+                    <p className="sporg-lesson-body">{lesson.body}</p>
+                    {lesson.resources.map((resource) => (
+                      <article key={resource.id} className="sporg-card">
+                        <h4>{resource.title}</h4>
+                        <small>
+                          {resource.required ? "Required" : "Optional"} ·{" "}
+                          {resource.completed ? "Completed" : "Not completed"}
+                        </small>
+                        <p className="sporg-lesson-body">{resource.body}</p>
+                        {resource.url && /^https?:\/\//i.test(resource.url) && (
+                          <a href={resource.url} target="_blank" rel="noreferrer">
+                            Open resource
                           </a>
-                        </p>
-                      )}
-                      <MediaPanel
-                        key={selected.id}
-                        scope="RESOURCE"
-                        target={selected.id}
-                      />
-                      <Button
-                        disabled={busy || selected.completed}
-                        onClick={() => void complete()}
-                      >
-                        {selected.completed
-                          ? "Completed"
-                          : "Mark this resource complete"}
-                      </Button>
-                    </>
-                  ) : (
-                    <p>No resources in this version.</p>
-                  )}
-                </section>
-              </div>
-              <section className="v7-section">
-                <h2>Practice and assessments</h2>
-                {assessments.length === 0 ? (
-                  <p>No assessments published for this version.</p>
-                ) : (
-                  <div className="v7-grid">
-                    {assessments.map((a) => (
-                      <article className="v7-card" key={a.id}>
-                        <span className="org-eyebrow">{a.kind}</span>
-                        <h3>{a.title}</h3>
-                        <p>
-                          {Math.ceil(a.duration_seconds / 60)} minutes ·{" "}
-                          {a.max_attempts} attempts · Pass at {a.pass_percent}%
-                        </p>
-                        <p>
-                          {a.kind === "OFFICIAL"
-                            ? "Passing counts toward completion."
-                            : "Your score is practice feedback and does not count as an official assessment."}
-                        </p>
-                        <Button disabled={busy} onClick={() => void begin(a)}>
-                          Start {a.kind.toLowerCase()}
+                        )}
+                        {["FILE", "VIDEO", "AUDIO", "IMAGE"].includes(resource.kind) && (
+                          <MediaPanel scope="RESOURCE" target={resource.id} />
+                        )}
+                        <Button
+                          variant="outline"
+                          disabled={action.busy || resource.completed}
+                          onClick={() =>
+                            void action.run(
+                              () => learningApi.complete(id, resource.id),
+                              "Resource completion recorded.",
+                            )
+                          }
+                        >
+                          Complete resource
                         </Button>
                       </article>
                     ))}
-                  </div>
-                )}
+                    <Button
+                      disabled={
+                        action.busy ||
+                        lesson.completed ||
+                        lesson.resources.some((r) => r.required && !r.completed)
+                      }
+                      onClick={() =>
+                        void action.run(
+                          () => learningApi.completeLesson(id, lesson.id),
+                          "Lesson completion recorded.",
+                        )
+                      }
+                    >
+                      {lesson.completed ? "Lesson completed" : "Complete lesson"}
+                    </Button>
+                  </section>
+                ))}
               </section>
-              <section className="v7-section">
-                <h2>Your attempt history</h2>
-                {history.length === 0 ? (
-                  <p>
-                    No attempts yet. Your answers and results will appear here
-                    after you begin.
-                  </p>
-                ) : (
-                  <div className="v7-grid">
-                    {history.map((h) => (
-                      <article className="v7-card" key={h.id}>
-                        <span className="org-eyebrow">
-                          {h.kind} · {h.status}
-                        </span>
-                        <h3>{h.title}</h3>
-                        <p>
-                          {h.score_percent === null
-                            ? "In progress"
-                            : `Score ${h.score_percent}% · ${h.passed ? "Passed" : "Not passed"}`}
-                        </p>
-                        <Button asChild variant="outline">
-                          <Link to={`/app/attempts/${h.id}`}>
-                            {h.status === "SCORED"
-                              ? "Review result"
-                              : "Resume attempt"}
-                          </Link>
-                        </Button>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </section>
-            </>
-          )
+            ))}
+          </>
         )}
-      </div>
-      {course && (
-        <FeedbackPanel type="COURSE" target={course.enrollment.version_id} />
-      )}
+        <section className="sporg-card">
+          <h2>Assessments</h2>
+          <RemoteState {...assessments} retry={assessments.reload} />
+          {assessments.data?.length === 0 && <p>No assessments available.</p>}
+          {assessments.data?.map((a) => (
+            <div className="sporg-row" key={a.id}>
+              <div>
+                <strong>{a.title}</strong>
+                <small>
+                  {a.kind} · {a.required ? "Required" : "Optional"}
+                </small>
+              </div>
+              <Button
+                disabled={action.busy}
+                onClick={() =>
+                  void action.run(async () => {
+                    const result = await quizApi.start(a.id, id)
+                    navigate(`/app/attempts/${result.attempt.id}`)
+                  }, "Attempt ready.")
+                }
+              >
+                Start / resume
+              </Button>
+            </div>
+          ))}
+        </section>
+      </section>
     </LearnerShell>
-  );
+  )
 }

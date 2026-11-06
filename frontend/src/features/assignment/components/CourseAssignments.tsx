@@ -1,31 +1,37 @@
-import { useCallback, useState } from "react";
-import type { ActivityOwner } from "@/features/course/types/course.types";
-import { useAction, useRemote } from "@/shared/hooks/useRemote";
-import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState";
-import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import { assignmentApi } from "../api/assignmentApi";
-import type { Assignment } from "../types/assignment.types";
-import { AssignmentRubricEditor } from "./AssignmentRubricEditor";
-import { AssignmentSubmissions } from "./AssignmentSubmissions";
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { useCallback, useState } from "react"
+import type { ActivityOwner } from "@/features/course/types/course.types"
+import { useAction, useRemote } from "@/shared/hooks/useRemote"
+import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState"
+import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
+import { assignmentApi } from "../api/assignmentApi"
+import type { Assignment } from "../types/assignment.types"
+import { AssignmentRubricEditor } from "./AssignmentRubricEditor"
+import { AssignmentSubmissions } from "./AssignmentSubmissions"
 export function CourseAssignments({
   versionId,
   owners,
   editable,
+  onChanged,
 }: {
-  versionId: string;
-  owners: ActivityOwner[];
-  editable: boolean;
+  versionId: string
+  owners: ActivityOwner[]
+  editable: boolean
+  onChanged?: () => void
 }) {
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editorBusy, setEditorBusy] = useState(false);
-  const remote = useRemote(
-    useCallback(() => assignmentApi.list(versionId), [versionId]),
-  );
-  const action = useAction(remote.reload);
+  const { grants } = useOrganizationContext()
+  const canGrade = grants.includes("GRADE_ASSIGNMENTS")
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editorBusy, setEditorBusy] = useState(false)
+  const remote = useRemote(useCallback(() => assignmentApi.list(versionId), [versionId]))
+  const action = useAction(() => {
+    remote.reload()
+    onChanged?.()
+  })
   const [open, setOpen] = useState(false),
-    [selected, setSelected] = useState<Assignment | null>(null);
+    [selected, setSelected] = useState<Assignment | null>(null)
   const [form, setForm] = useState({
     title: "",
     instructions: "",
@@ -34,7 +40,7 @@ export function CourseAssignments({
     passPercent: 60,
     maxSubmissions: 3,
     dueAt: "",
-  });
+  })
   return (
     <>
       <div className="sporg-toolbar">
@@ -45,7 +51,7 @@ export function CourseAssignments({
         {editable && (
           <Button
             onClick={() => {
-              setEditingId(null);
+              setEditingId(null)
               setForm({
                 title: "",
                 instructions: "",
@@ -54,8 +60,8 @@ export function CourseAssignments({
                 passPercent: 60,
                 maxSubmissions: 3,
                 dueAt: "",
-              });
-              setOpen(true);
+              })
+              setOpen(true)
             }}
           >
             Add assignment
@@ -74,26 +80,26 @@ export function CourseAssignments({
         <section className="sporg-card sporg-assignment-row" key={a.id}>
           <div>
             <h3>{a.title}</h3>
-            <span className="sporg-tag">
-              {a.required ? "Required" : "Optional"}
-            </span>
+            <span className="sporg-tag">{a.required ? "Required" : "Optional"}</span>
             <p>
-              {owners.find((o) => o.id === a.ownerId)?.label ?? a.ownerScope} ·
-              Pass {a.passPercent}% · {a.maxSubmissions} submissions
+              {owners.find((o) => o.id === a.ownerId)?.label ?? a.ownerScope} · Pass {a.passPercent}
+              % · {a.maxSubmissions} submissions
             </p>
             <p className="sporg-lesson-body">{a.instructions}</p>
             {a.dueAt && <small>Due {new Date(a.dueAt).toLocaleString()}</small>}
           </div>
           <AssignmentRubricEditor assignmentId={a.id} editable={editable} />
           <div className="sporg-actions">
-            <Button variant="outline" onClick={() => setSelected(a)}>
-              Review submissions
-            </Button>
+            {canGrade && (
+              <Button variant="outline" onClick={() => setSelected(a)}>
+                Review submissions
+              </Button>
+            )}
             {editable && (
               <Button
                 variant="outline"
                 onClick={() => {
-                  setEditingId(a.id);
+                  setEditingId(a.id)
                   setForm({
                     title: a.title,
                     instructions: a.instructions,
@@ -109,8 +115,8 @@ export function CourseAssignments({
                           .toISOString()
                           .slice(0, 16)
                       : "",
-                  });
-                  setOpen(true);
+                  })
+                  setOpen(true)
                 }}
               >
                 Edit assignment
@@ -122,10 +128,7 @@ export function CourseAssignments({
                 disabled={action.busy}
                 onClick={() => {
                   if (window.confirm("Delete this assignment?"))
-                    void action.run(
-                      () => assignmentApi.remove(a.id),
-                      "Assignment deleted.",
-                    );
+                    void action.run(() => assignmentApi.remove(a.id), "Assignment deleted.")
                 }}
               >
                 Delete
@@ -140,10 +143,7 @@ export function CourseAssignments({
           title={selected.title + " · submissions"}
           close={() => setSelected(null)}
         >
-          <AssignmentSubmissions
-            onBusyChange={setEditorBusy}
-            assignment={selected}
-          />
+          <AssignmentSubmissions onBusyChange={setEditorBusy} assignment={selected} />
         </WorkspaceDialog>
       )}
       {open && (
@@ -151,36 +151,32 @@ export function CourseAssignments({
           title={editingId ? "Edit assignment" : "Add assignment"}
           busy={action.busy}
           close={() => {
-            if (window.confirm("Discard this assignment?")) setOpen(false);
+            if (window.confirm("Discard this assignment?")) setOpen(false)
           }}
         >
           <form
             className="sporg-form"
             onSubmit={(e) => {
-              e.preventDefault();
-              const owner = owners.find((o) => o.id === form.ownerId);
-              if (!owner) return;
+              e.preventDefault()
+              const owner = owners.find((o) => o.id === form.ownerId)
+              if (!owner) return
               void action.run(
                 async () => {
                   await (editingId
                     ? assignmentApi.edit(editingId, {
                         ...form,
                         ownerScope: owner.scope,
-                        dueAt: form.dueAt
-                          ? new Date(form.dueAt).toISOString()
-                          : null,
+                        dueAt: form.dueAt ? new Date(form.dueAt).toISOString() : null,
                       })
                     : assignmentApi.create(versionId, {
                         ...form,
                         ownerScope: owner.scope,
-                        dueAt: form.dueAt
-                          ? new Date(form.dueAt).toISOString()
-                          : null,
-                      }));
-                  setOpen(false);
+                        dueAt: form.dueAt ? new Date(form.dueAt).toISOString() : null,
+                      }))
+                  setOpen(false)
                 },
                 editingId ? "Assignment updated." : "Assignment created.",
-              );
+              )
             }}
           >
             <Input
@@ -196,9 +192,7 @@ export function CourseAssignments({
                 required
                 maxLength={20000}
                 value={form.instructions}
-                onChange={(e) =>
-                  setForm({ ...form, instructions: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, instructions: e.target.value })}
               />
             </label>
             <label>
@@ -222,9 +216,7 @@ export function CourseAssignments({
                 min={1}
                 max={100}
                 value={form.passPercent}
-                onChange={(e) =>
-                  setForm({ ...form, passPercent: Number(e.target.value) })
-                }
+                onChange={(e) => setForm({ ...form, passPercent: Number(e.target.value) })}
               />
               <Input
                 label="Maximum submissions"
@@ -233,9 +225,7 @@ export function CourseAssignments({
                 min={1}
                 max={20}
                 value={form.maxSubmissions}
-                onChange={(e) =>
-                  setForm({ ...form, maxSubmissions: Number(e.target.value) })
-                }
+                onChange={(e) => setForm({ ...form, maxSubmissions: Number(e.target.value) })}
               />
               <Input
                 label="Due date (optional, your local time)"
@@ -248,9 +238,7 @@ export function CourseAssignments({
               <input
                 type="checkbox"
                 checked={form.required}
-                onChange={(e) =>
-                  setForm({ ...form, required: e.target.checked })
-                }
+                onChange={(e) => setForm({ ...form, required: e.target.checked })}
               />{" "}
               Required for completion
             </label>
@@ -262,5 +250,5 @@ export function CourseAssignments({
         </WorkspaceDialog>
       )}
     </>
-  );
+  )
 }

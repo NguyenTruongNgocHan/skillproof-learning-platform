@@ -1,4 +1,4 @@
-import LegalLayout from "@/features/marketing/pages/LegalLayout"
+import LegalLayout from "@/features/marketing/components/LegalLayout"
 export default function TermsPage() {
   return (
     <LegalLayout

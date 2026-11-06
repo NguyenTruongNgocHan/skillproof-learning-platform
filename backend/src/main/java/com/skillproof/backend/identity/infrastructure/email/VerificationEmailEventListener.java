@@ -1,5 +1,7 @@
 package com.skillproof.backend.identity.infrastructure.email;
 
+import com.skillproof.backend.identity.application.VerificationEmailRequestedEvent;
+import com.skillproof.backend.identity.application.port.VerificationEmailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.MailException;
@@ -7,69 +9,46 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import com.skillproof.backend.identity.application.VerificationEmailRequestedEvent;
-import com.skillproof.backend.identity.application.port.VerificationEmailSender;
-
 @Component
 public class VerificationEmailEventListener {
 
-    private static final Logger log
-            = LoggerFactory.getLogger(
-                    VerificationEmailEventListener.class
-            );
+  private static final Logger log = LoggerFactory.getLogger(VerificationEmailEventListener.class);
 
-    private final VerificationEmailSender emailSender;
+  private final VerificationEmailSender emailSender;
 
-    public VerificationEmailEventListener(
-            VerificationEmailSender emailSender
-    ) {
-        this.emailSender = emailSender;
+  public VerificationEmailEventListener(VerificationEmailSender emailSender) {
+    this.emailSender = emailSender;
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void handle(VerificationEmailRequestedEvent event) {
+
+    try {
+
+      emailSender.sendVerificationEmail(
+          event.email(), event.displayName(), event.rawToken(), event.expiresAt());
+
+    } catch (MailException exception) {
+
+      log.error("Verification email delivery failed for {}", maskEmail(event.email()), exception);
+
+    } catch (RuntimeException exception) {
+
+      log.error(
+          "Unexpected verification email delivery failure for {}",
+          maskEmail(event.email()),
+          exception);
+    }
+  }
+
+  private String maskEmail(String email) {
+
+    int atIndex = email.indexOf('@');
+
+    if (atIndex <= 1) {
+      return "***";
     }
 
-    @TransactionalEventListener(
-            phase = TransactionPhase.AFTER_COMMIT
-    )
-    public void handle(
-            VerificationEmailRequestedEvent event
-    ) {
-
-        try {
-
-            emailSender.sendVerificationEmail(
-                    event.email(),
-                    event.displayName(),
-                    event.rawToken(),
-                    event.expiresAt()
-            );
-
-        } catch (MailException exception) {
-
-            log.error(
-                    "Verification email delivery failed for {}",
-                    maskEmail(event.email()),
-                    exception
-            );
-
-        } catch (RuntimeException exception) {
-
-            log.error(
-                    "Unexpected verification email delivery failure for {}",
-                    maskEmail(event.email()),
-                    exception
-            );
-        }
-    }
-
-    private String maskEmail(String email) {
-
-        int atIndex = email.indexOf('@');
-
-        if (atIndex <= 1) {
-            return "***";
-        }
-
-        return email.charAt(0)
-                + "***"
-                + email.substring(atIndex);
-    }
+    return email.charAt(0) + "***" + email.substring(atIndex);
+  }
 }

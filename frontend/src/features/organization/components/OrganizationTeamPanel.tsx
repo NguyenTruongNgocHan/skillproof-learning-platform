@@ -1,15 +1,15 @@
-import { organizationApi } from "@/features/organization/api/organizationApi";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
+import { organizationApi } from "@/features/organization/api/organizationApi"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
 import type {
   Authority,
   Invitation,
   Member,
-} from "@/features/organization/types/organization.types";
-import { organizerError } from "@/features/organization/utils/errorMessage";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import { useToast } from "@/shared/ui/Toast";
-import { useEffect, useState } from "react";
+} from "@/features/organization/types/organization.types"
+import { organizerError } from "@/features/organization/utils/errorMessage"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
+import { useToast } from "@/shared/ui/Toast"
+import { useEffect, useState } from "react"
 const authorities: Authority[] = [
   "MANAGE_PROFILE",
   "MANAGE_MEMBERS",
@@ -19,7 +19,7 @@ const authorities: Authority[] = [
   "MANAGE_PRICING",
   "MANAGE_FEEDBACK",
   "GRADE_ASSIGNMENTS",
-];
+]
 const labels: Record<Authority, string> = {
   MANAGE_PROFILE: "Manage profile",
   MANAGE_MEMBERS: "Manage team",
@@ -29,12 +29,12 @@ const labels: Record<Authority, string> = {
   MANAGE_PRICING: "Manage pricing",
   MANAGE_FEEDBACK: "Manage feedback",
   GRADE_ASSIGNMENTS: "Grade assignments",
-};
+}
 export function OrganizationTeamPanel({
   onDirtyChange,
 }: { onDirtyChange?: (dirty: boolean) => void } = {}) {
-  const { organization, refresh, setDirty } = useOrganizationContext();
-  const { toast } = useToast();
+  const { organization, refresh, setDirty } = useOrganizationContext()
+  const { toast } = useToast()
   const [members, setMembers] = useState<Member[]>([]),
     [invitations, setInvitations] = useState<Invitation[]>([]),
     [email, setEmail] = useState(""),
@@ -42,66 +42,62 @@ export function OrganizationTeamPanel({
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
-    [reload, setReload] = useState(0);
+    [reload, setReload] = useState(0)
   useEffect(() => {
-    onDirtyChange?.(Boolean(email));
-    return () => onDirtyChange?.(false);
-  }, [email, onDirtyChange]);
+    onDirtyChange?.(Boolean(email))
+    return () => onDirtyChange?.(false)
+  }, [email, onDirtyChange])
   useEffect(() => {
-    setDirty("invitation", Boolean(email));
-    return () => setDirty("invitation", false);
-  }, [email, setDirty]);
+    setDirty("invitation", Boolean(email))
+    return () => setDirty("invitation", false)
+  }, [email, setDirty])
   useEffect(() => {
-    let live = true;
-    if (!organization) return;
-    setLoading(true);
+    let live = true
+    if (!organization) return
+    setLoading(true)
     Promise.all([
       organizationApi.members(organization.id),
       organizationApi.invitations(organization.id),
     ])
       .then(([m, i]) => {
         if (live) {
-          setMembers(m);
-          setInvitations(i);
-          setError("");
+          setMembers(m)
+          setInvitations(i)
+          setError("")
         }
       })
       .catch((e) => {
-        if (live) setError(e.message);
+        if (live) setError(e.message)
       })
       .finally(() => {
-        if (live) setLoading(false);
-      });
+        if (live) setLoading(false)
+      })
     return () => {
-      live = false;
-    };
-  }, [organization, reload]);
-  async function run(
-    action: () => Promise<unknown>,
-    message: string,
-    permissions = false,
-  ) {
-    if (busy) return;
-    setBusy(true);
-    setError("");
+      live = false
+    }
+  }, [organization, reload])
+  async function run(action: () => Promise<unknown>, message: string, permissions = false) {
+    if (busy) return
+    setBusy(true)
+    setError("")
     try {
-      await action();
-      setReload((x) => x + 1);
-      toast("success", message);
-      if (permissions) await refresh();
+      await action()
+      setReload((x) => x + 1)
+      toast("success", message)
+      if (permissions) await refresh()
     } catch (e) {
-      setError(organizerError(e, "Action failed"));
+      setError(organizerError(e, "Action failed"))
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
-  if (!organization) return null;
+  if (!organization) return null
   return (
     <section className="sporg-card">
       <h2>Team and access</h2>
       <p>
-        Invite an existing active Organizer. After acceptance, assign the
-        permissions needed for their work. Owner permissions are protected.
+        Invite an existing active Organizer. After acceptance, assign the permissions needed for
+        their work. Owner permissions are protected.
       </p>
       {error && (
         <div role="alert" className="sporg-alert">
@@ -114,12 +110,12 @@ export function OrganizationTeamPanel({
       <form
         className="sporg-form"
         onSubmit={(e) => {
-          e.preventDefault();
+          e.preventDefault()
           void run(async () => {
-            await organizationApi.invite(organization.id, email.trim());
-            setEmail("");
-            setDirty("invitation", false);
-          }, "Invitation sent.");
+            await organizationApi.invite(organization.id, email.trim())
+            setEmail("")
+            setDirty("invitation", false)
+          }, "Invitation sent.")
         }}
       >
         <Input
@@ -165,20 +161,12 @@ export function OrganizationTeamPanel({
                     variant="destructive"
                     disabled={busy}
                     onClick={() => {
-                      if (
-                        window.confirm(
-                          `Remove ${m.email} from this organization?`,
-                        )
-                      )
+                      if (window.confirm(`Remove ${m.email} from this organization?`))
                         void run(
-                          () =>
-                            organizationApi.removeMember(
-                              organization.id,
-                              m.user_id,
-                            ),
+                          () => organizationApi.removeMember(organization.id, m.user_id),
                           "Member removed.",
                           true,
-                        );
+                        )
                     }}
                   >
                     Remove
@@ -191,20 +179,11 @@ export function OrganizationTeamPanel({
                     <input
                       type="checkbox"
                       checked={m.grants.includes(a)}
-                      disabled={
-                        busy ||
-                        !m.active ||
-                        m.user_id === organization.ownerUserId
-                      }
+                      disabled={busy || !m.active || m.user_id === organization.ownerUserId}
                       onChange={(e) =>
                         void run(
                           () =>
-                            organizationApi.grant(
-                              organization.id,
-                              m.user_id,
-                              a,
-                              e.target.checked,
-                            ),
+                            organizationApi.grant(organization.id, m.user_id, a, e.target.checked),
                           "Permission updated.",
                           true,
                         )
@@ -234,10 +213,7 @@ export function OrganizationTeamPanel({
                 disabled={busy}
                 onClick={() => {
                   if (window.confirm(`Revoke invitation to ${i.email}?`))
-                    void run(
-                      () => organizationApi.revokeInvitation(i.id),
-                      "Invitation revoked.",
-                    );
+                    void run(() => organizationApi.revokeInvitation(i.id), "Invitation revoked.")
                 }}
               >
                 Revoke
@@ -261,5 +237,5 @@ export function OrganizationTeamPanel({
         </div>
       ))}
     </section>
-  );
+  )
 }

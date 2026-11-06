@@ -13,7 +13,7 @@ export interface Path {
 
 export interface Version {
   id: string
-  path_id: string
+  course_id: string
   version_no: number
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
   published_at?: string | null
@@ -21,27 +21,35 @@ export interface Version {
 
 export interface Resource {
   id: string
-  module_id: string
+  module_id?: string
   position: number
-  kind: "ARTICLE" | "LINK" | "VIDEO" | "FILE" | "AUDIO"
+  kind: "ARTICLE" | "LINK" | "VIDEO" | "FILE" | "AUDIO" | "IMAGE"
   title: string
   body: string | null
   url: string | null
+  required: boolean
   completed?: boolean
 }
 
 export interface Module {
   id: string
-  version_id: string
+  version_id?: string
   position: number
   title: string
-  resources: Resource[]
+  lessons: {
+    id: string
+    position: number
+    title: string
+    body: string
+    completed: boolean
+    resources: Resource[]
+  }[]
 }
 
 export interface Enrollment {
   id: string
   learner_id: string
-  path_id: string
+  course_id: string
   version_id: string
   status: "ACTIVE" | "COMPLETED"
   title: string

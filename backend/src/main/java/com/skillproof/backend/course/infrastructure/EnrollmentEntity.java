@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -12,86 +11,81 @@ import java.util.UUID;
 @Table(name = "enrollment")
 public class EnrollmentEntity {
 
-    @Id private UUID id;
+  @Id private UUID id;
 
-    @Column(name = "learner_id", nullable = false)
-    private UUID learnerId;
+  @Column(name = "learner_id", nullable = false)
+  private UUID learnerId;
 
-    @Column(name = "course_id", nullable = false)
-    private UUID courseId;
+  @Column(name = "course_id", nullable = false)
+  private UUID courseId;
 
-    @Column(name = "version_id", nullable = false)
-    private UUID versionId;
+  @Column(name = "version_id", nullable = false)
+  private UUID versionId;
 
-    @Column(nullable = false, length = 12)
-    private String status;
+  @Column(nullable = false, length = 12)
+  private String status;
 
-    @Column(name = "enrolled_at", nullable = false)
-    private Instant enrolledAt;
+  @Column(name = "enrolled_at", nullable = false)
+  private Instant enrolledAt;
 
-    @Column(name = "completed_at")
-    private Instant completedAt;
+  @Column(name = "completed_at")
+  private Instant completedAt;
 
-    @Column(name = "retained_free_access", nullable = false)
-    private boolean retainedFreeAccess;
+  @Column(name = "retained_free_access", nullable = false)
+  private boolean retainedFreeAccess;
 
-    public Instant getCompletedAt() {
-        return completedAt;
+  public Instant getCompletedAt() {
+    return completedAt;
+  }
+
+  public boolean isRetainedFreeAccess() {
+    return retainedFreeAccess;
+  }
+
+  public void retainFreeAccess(boolean value) {
+    retainedFreeAccess = value;
+  }
+
+  protected EnrollmentEntity() {}
+
+  public EnrollmentEntity(
+      UUID id, UUID learnerId, UUID courseId, UUID versionId, String status, Instant enrolledAt) {
+    this.id = id;
+    this.learnerId = learnerId;
+    this.courseId = courseId;
+    this.versionId = versionId;
+    this.status = status;
+    this.enrolledAt = enrolledAt;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public UUID getCourseId() {
+    return courseId;
+  }
+
+  public UUID getLearnerId() {
+    return learnerId;
+  }
+
+  public UUID getVersionId() {
+    return versionId;
+  }
+
+  public Instant getEnrolledAt() {
+    return enrolledAt;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  void complete(Instant now) {
+    status = "COMPLETED";
+    if (completedAt == null) {
+      completedAt = now;
     }
-
-    public boolean isRetainedFreeAccess() {
-        return retainedFreeAccess;
-    }
-
-    public void retainFreeAccess(boolean value) {
-        retainedFreeAccess = value;
-    }
-
-    protected EnrollmentEntity() {}
-
-    public EnrollmentEntity(
-            UUID id,
-            UUID learnerId,
-            UUID courseId,
-            UUID versionId,
-            String status,
-            Instant enrolledAt) {
-        this.id = id;
-        this.learnerId = learnerId;
-        this.courseId = courseId;
-        this.versionId = versionId;
-        this.status = status;
-        this.enrolledAt = enrolledAt;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getCourseId() {
-        return courseId;
-    }
-
-    public UUID getLearnerId() {
-        return learnerId;
-    }
-
-    public UUID getVersionId() {
-        return versionId;
-    }
-
-    public Instant getEnrolledAt() {
-        return enrolledAt;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    void complete(Instant now) {
-        status = "COMPLETED";
-        if (completedAt == null) {
-            completedAt = now;
-        }
-    }
+  }
 }

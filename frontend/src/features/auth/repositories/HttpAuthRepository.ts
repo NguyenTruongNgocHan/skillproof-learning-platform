@@ -21,7 +21,7 @@ async function toUser(session: SessionResponse): Promise<User> {
     role: session.user.role,
     emailVerificationStatus:
       session.user.status === "PENDING_VERIFICATION" ? "UNVERIFIED" : "VERIFIED",
-    onboardingStatus: "COMPLETED",
+    onboardingStatus: session.user.onboardingStatus,
   }
 }
 

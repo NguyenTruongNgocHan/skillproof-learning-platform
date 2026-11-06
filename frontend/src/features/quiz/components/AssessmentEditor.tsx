@@ -1,69 +1,67 @@
-import { useCallback, useState, useEffect } from "react";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import type { ActivityOwner } from "@/features/course/types/course.types";
-import { useAction, useRemote } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import type { Assessment } from "../types/quiz.types";
-import { quizApi } from "../api/quizApi";
+import { useCallback, useState, useEffect } from "react"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import type { ActivityOwner } from "@/features/course/types/course.types"
+import { useAction, useRemote } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
+import type { Assessment } from "../types/quiz.types"
+import { quizApi } from "../api/quizApi"
 export function AssessmentEditor({
   onBusyChange,
   assessment,
   owners,
-  editable,
+  editable: parentEditable,
+  onChanged,
   refresh,
 }: {
-  onBusyChange?: (busy: boolean) => void;
-  assessment: Assessment;
-  owners: ActivityOwner[];
-  editable: boolean;
-  refresh: () => void;
+  onBusyChange?: (busy: boolean) => void
+  assessment: Assessment
+  owners: ActivityOwner[]
+  editable: boolean
+  onChanged?: () => void
+  refresh: () => void
 }) {
-  const { organization } = useOrganizationContext();
-  const org = organization?.id ?? "";
+  const editable = parentEditable && assessment.status === "DRAFT"
+  const { organization } = useOrganizationContext()
+  const org = organization?.id ?? ""
   const links = useRemote(
-    useCallback(
-      () => quizApi.assessmentQuestions(assessment.id),
-      [assessment.id],
-    ),
-  );
-  const banks = useRemote(useCallback(() => quizApi.banks(org), [org]));
+    useCallback(() => quizApi.assessmentQuestions(assessment.id), [assessment.id]),
+  )
+  const banks = useRemote(useCallback(() => quizApi.banks(org), [org]))
   const [bank, setBank] = useState(""),
     [question, setQuestion] = useState(""),
-    [points, setPoints] = useState(1);
+    [points, setPoints] = useState(1)
   const questions = useRemote(
-    useCallback(
-      () => (bank ? quizApi.questions(bank) : Promise.resolve([])),
-      [bank],
-    ),
-  );
-  const action = useAction(links.reload);
+    useCallback(() => (bank ? quizApi.questions(bank) : Promise.resolve([])), [bank]),
+  )
+  const action = useAction(() => {
+    links.reload()
+    onChanged?.()
+  })
   useEffect(() => {
-    onBusyChange?.(action.busy);
-    return () => onBusyChange?.(false);
-  }, [action.busy, onBusyChange]);
+    onBusyChange?.(action.busy)
+    return () => onBusyChange?.(false)
+  }, [action.busy, onBusyChange])
   const [form, setForm] = useState({
     title: assessment.title,
     durationSeconds: assessment.duration_seconds,
     passPercent: assessment.pass_percent,
     maxAttempts: assessment.max_attempts,
-  });
+  })
   const [owner, setOwner] = useState(assessment.ownerId ?? owners[0]?.id ?? ""),
-    [required, setRequired] = useState(
-      assessment.required ?? assessment.kind === "OFFICIAL",
-    );
+    [required, setRequired] = useState(assessment.required ?? assessment.kind === "OFFICIAL")
   return (
     <>
       <ActionNotice {...action} />
       <form
         className="sporg-form"
         onSubmit={(e) => {
-          e.preventDefault();
+          e.preventDefault()
           void action.run(
             () => quizApi.editAssessment(assessment.id, form),
             "Assessment settings saved.",
-          );
+          )
         }}
       >
         <Input
@@ -83,9 +81,7 @@ export function AssessmentEditor({
             required
             disabled={!editable || action.busy}
             value={form.durationSeconds}
-            onChange={(e) =>
-              setForm({ ...form, durationSeconds: Number(e.target.value) })
-            }
+            onChange={(e) => setForm({ ...form, durationSeconds: Number(e.target.value) })}
           />
           <Input
             label="Pass score (%)"
@@ -95,9 +91,7 @@ export function AssessmentEditor({
             required
             disabled={!editable || action.busy}
             value={form.passPercent}
-            onChange={(e) =>
-              setForm({ ...form, passPercent: Number(e.target.value) })
-            }
+            onChange={(e) => setForm({ ...form, passPercent: Number(e.target.value) })}
           />
           <Input
             label="Maximum attempts"
@@ -107,9 +101,7 @@ export function AssessmentEditor({
             required
             disabled={!editable || action.busy}
             value={form.maxAttempts}
-            onChange={(e) =>
-              setForm({ ...form, maxAttempts: Number(e.target.value) })
-            }
+            onChange={(e) => setForm({ ...form, maxAttempts: Number(e.target.value) })}
           />
         </div>
         {editable && (
@@ -122,8 +114,8 @@ export function AssessmentEditor({
       <form
         className="sporg-form"
         onSubmit={(e) => {
-          e.preventDefault();
-          const o = owners.find((x) => x.id === owner);
+          e.preventDefault()
+          const o = owners.find((x) => x.id === owner)
           if (o)
             void action.run(
               () =>
@@ -133,7 +125,7 @@ export function AssessmentEditor({
                   required,
                 }),
               "Location saved.",
-            );
+            )
         }}
       >
         <label>
@@ -154,9 +146,7 @@ export function AssessmentEditor({
           <input
             type="checkbox"
             checked={required}
-            disabled={
-              !editable || action.busy || assessment.kind !== "OFFICIAL"
-            }
+            disabled={!editable || action.busy || assessment.kind !== "OFFICIAL"}
             onChange={(e) => setRequired(e.target.checked)}
           />{" "}
           Required for completion
@@ -200,14 +190,13 @@ export function AssessmentEditor({
           <form
             className="sporg-form"
             onSubmit={(e) => {
-              e.preventDefault();
-              if (links.loading || links.error || !links.data) return;
+              e.preventDefault()
+              if (links.loading || links.error || !links.data) return
               void action.run(async () => {
-                const position =
-                  Math.max(0, ...(links.data ?? []).map((q) => q.position)) + 1;
-                await quizApi.attach(assessment.id, question, position, points);
-                setQuestion("");
-              }, "Question attached.");
+                const position = Math.max(0, ...(links.data ?? []).map((q) => q.position)) + 1
+                await quizApi.attach(assessment.id, question, position, points)
+                setQuestion("")
+              }, "Question attached.")
             }}
           >
             <label>
@@ -216,16 +205,18 @@ export function AssessmentEditor({
                 required
                 value={bank}
                 onChange={(e) => {
-                  setBank(e.target.value);
-                  setQuestion("");
+                  setBank(e.target.value)
+                  setQuestion("")
                 }}
               >
                 <option value="">Choose bank</option>
-                {banks.data?.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.title}
-                  </option>
-                ))}
+                {banks.data
+                  ?.filter((b) => !b.archived)
+                  .map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.title}
+                    </option>
+                  ))}
               </select>
             </label>
             <RemoteState
@@ -235,18 +226,13 @@ export function AssessmentEditor({
             />
             <label>
               Question version
-              <select
-                required
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-              >
+              <select required value={question} onChange={(e) => setQuestion(e.target.value)}>
                 <option value="">Choose question</option>
                 {questions.data
                   ?.filter(
                     (q) =>
-                      !links.data?.some(
-                        (l) => l.question_version_id === q.version_id,
-                      ),
+                      !q.archived &&
+                      !links.data?.some((l) => l.question_version_id === q.version_id),
                   )
                   .map((q) => (
                     <option key={q.version_id} value={q.version_id}>
@@ -266,21 +252,14 @@ export function AssessmentEditor({
             />
             <Button
               type="submit"
-              disabled={
-                action.busy ||
-                !question ||
-                links.loading ||
-                Boolean(links.error)
-              }
+              disabled={action.busy || !question || links.loading || Boolean(links.error)}
             >
               Attach question
             </Button>
           </form>
           <div className="sporg-actions">
             <Button
-              disabled={
-                action.busy || !links.data?.length || Boolean(links.error)
-              }
+              disabled={action.busy || !links.data?.length || Boolean(links.error)}
               onClick={() => {
                 if (
                   window.confirm(
@@ -288,9 +267,9 @@ export function AssessmentEditor({
                   )
                 )
                   void action.run(async () => {
-                    await quizApi.publish(assessment.id);
-                    refresh();
-                  }, "Assessment published.");
+                    await quizApi.publish(assessment.id)
+                    refresh()
+                  }, "Assessment published.")
               }}
             >
               Publish assessment
@@ -299,5 +278,5 @@ export function AssessmentEditor({
         </>
       )}
     </>
-  );
+  )
 }

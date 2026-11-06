@@ -7,17 +7,16 @@ import org.springframework.context.annotation.Primary;
 @TestConfiguration(proxyBeanMethods = false)
 public class IdentityTestMailConfig {
 
-    @Bean
-    @Primary
-    CapturingVerificationEmailSender
-            capturingVerificationEmailSender() {
+  @Bean
+  @Primary
+  CapturingVerificationEmailSender capturingVerificationEmailSender() {
 
-        return new CapturingVerificationEmailSender();
-    }
+    return new CapturingVerificationEmailSender();
+  }
 
-    @Bean
-    @Primary
-    CapturingPasswordResetEmailSender capturingPasswordResetEmailSender() {
-        return new CapturingPasswordResetEmailSender();
-    }
+  @Bean
+  @Primary
+  CapturingPasswordResetEmailSender capturingPasswordResetEmailSender() {
+    return new CapturingPasswordResetEmailSender();
+  }
 }

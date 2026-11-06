@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AssignmentSubmissionService {
   @org.springframework.beans.factory.annotation.Autowired
+  private com.skillproof.backend.analytics.contract.LearningSignalJournal signals;
+
+  @org.springframework.beans.factory.annotation.Autowired
   private com.skillproof.backend.operations.contract.ActivityJournal journal;
 
   @org.springframework.beans.factory.annotation.Autowired
@@ -89,7 +92,8 @@ public class AssignmentSubmissionService {
     if (pending.isPresent()) {
       return pending.get();
     }
-    if (previous.size() >= a.getMaxSubmissions()) {
+    if (previous.stream().filter(s -> s.getSubmittedAt() != null).count()
+        >= a.getMaxSubmissions()) {
       throw new ConflictException("SUBMISSION_LIMIT", "No submissions remaining");
     }
     return submissions.save(
@@ -150,6 +154,7 @@ public class AssignmentSubmissionService {
       throw new BadRequestException("SUBMISSION_EMPTY", "Submit text, a link or an uploaded file");
     }
     s.submit(Instant.now());
+    signals.record(learner, a.getVersionId(), "ASSIGNMENT_SUBMITTED", s.getId(), Map.of());
     var org = workspace.context(a.getVersionId()).organizationId();
     if (org != null)
       for (UUID recipient : recipients.forAuthority(org, "GRADE_ASSIGNMENTS"))
@@ -211,6 +216,12 @@ public class AssignmentSubmissionService {
     s.grade(
         score, SubmissionRules.passes(score, a.getPassPercent()), feedback, actor, Instant.now());
     submissions.saveAndFlush(s);
+    signals.record(
+        s.getLearnerId(),
+        a.getVersionId(),
+        "ASSIGNMENT_GRADED",
+        s.getId(),
+        Map.of("scorePercent", score, "passed", s.getPassed()));
     completion.evaluate(s.getEnrollmentId(), 0, 0);
     return s;
   }
@@ -225,7 +236,8 @@ public class AssignmentSubmissionService {
 
   @Transactional(readOnly = true)
   public List<AssignmentSubmissionEntity> mine(UUID learner, UUID assignmentId, UUID enrollment) {
-    courses.requireEnrollment(learner, enrollment, assignment(assignmentId).getVersionId(), false);
+    courses.requireHistoricalEnrollment(
+        learner, enrollment, assignment(assignmentId).getVersionId());
     return submissions.findByAssignmentIdAndEnrollmentIdOrderByCreatedAtDesc(
         assignmentId, enrollment);
   }
@@ -301,8 +313,8 @@ public class AssignmentSubmissionService {
             .orElseThrow(
                 () -> new NotFoundException("SUBMISSION_NOT_FOUND", "Submission not found"));
     if (actor.equals(s.getLearnerId()))
-      courses.requireEnrollment(
-          actor, s.getEnrollmentId(), assignment(s.getAssignmentId()).getVersionId(), false);
+      courses.requireHistoricalEnrollment(
+          actor, s.getEnrollmentId(), assignment(s.getAssignmentId()).getVersionId());
     else workspace.requireGrader(actor, assignment(s.getAssignmentId()).getVersionId());
     return criterionGrades.findBySubmissionId(id);
   }

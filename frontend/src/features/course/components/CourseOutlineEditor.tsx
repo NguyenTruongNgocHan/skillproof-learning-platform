@@ -1,66 +1,50 @@
-import { useState } from "react";
-import {
-  Plus,
-  ChevronUp,
-  ChevronDown,
-  FileText,
-  BookOpen,
-  Paperclip,
-} from "lucide-react";
-import { useAction } from "@/shared/hooks/useRemote";
-import { ActionNotice } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog";
-import MediaPanel from "@/features/media/components/MediaPanel";
-import { courseApi } from "../api/courseApi";
-import type {
-  CourseOutline,
-  CourseModule,
-  Lesson,
-  CourseResource,
-} from "../types/course.types";
-import { ResourceEditor } from "./ResourceEditor";
+import { useState } from "react"
+import { Plus, ChevronUp, ChevronDown, FileText, BookOpen, Paperclip } from "lucide-react"
+import { useAction } from "@/shared/hooks/useRemote"
+import { ActionNotice } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
+import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog"
+import MediaPanel from "@/features/media/components/MediaPanel"
+import { courseApi } from "../api/courseApi"
+import type { CourseOutline, CourseModule, Lesson, CourseResource } from "../types/course.types"
+import { ResourceEditor } from "./ResourceEditor"
 interface Edit {
-  kind: "module" | "lesson";
-  parent: string;
-  id?: string;
-  position: number;
-  title: string;
-  body: string;
+  kind: "module" | "lesson"
+  parent: string
+  id?: string
+  position: number
+  title: string
+  body: string
 }
 export function CourseOutlineEditor({
   outline,
   refresh,
 }: {
-  outline: CourseOutline;
-  refresh: () => void;
+  outline: CourseOutline
+  refresh: () => void
 }) {
-  const editable = outline.version.status === "DRAFT";
-  const action = useAction(refresh);
-  const [edit, setEdit] = useState<Edit | null>(null);
+  const editable = outline.version.status === "DRAFT"
+  const action = useAction(refresh)
+  const [edit, setEdit] = useState<Edit | null>(null)
   const [resource, setResource] = useState<{
-    lesson: string;
-    position: number;
-    value?: CourseResource;
-  } | null>(null);
-  const [media, setMedia] = useState<CourseResource | null>(null);
-  const [uploading, setUploading] = useState(false);
+    lesson: string
+    position: number
+    value?: CourseResource
+  } | null>(null)
+  const [media, setMedia] = useState<CourseResource | null>(null)
+  const [uploading, setUploading] = useState(false)
   function reorder(
     ids: string[],
     index: number,
     delta: number,
     save: (ids: string[]) => Promise<unknown>,
   ) {
-    const next = [...ids];
-    [next[index], next[index + delta]] = [next[index + delta], next[index]];
-    void action.run(() => save(next), "Order updated.");
+    const next = [...ids]
+    ;[next[index], next[index + delta]] = [next[index + delta], next[index]]
+    void action.run(() => save(next), "Order updated.")
   }
-  function arrows(
-    ids: string[],
-    index: number,
-    save: (ids: string[]) => Promise<unknown>,
-  ) {
+  function arrows(ids: string[], index: number, save: (ids: string[]) => Promise<unknown>) {
     return (
       editable && (
         <span className="sporg-reorder">
@@ -80,11 +64,10 @@ export function CourseOutlineEditor({
           </button>
         </span>
       )
-    );
+    )
   }
   function remove(kind: "module" | "lesson" | "resource", id: string) {
-    if (!window.confirm(`Delete this ${kind} and its dependent draft content?`))
-      return;
+    if (!window.confirm(`Delete this ${kind} and its dependent draft content?`)) return
     void action.run(
       () =>
         kind === "module"
@@ -93,7 +76,7 @@ export function CourseOutlineEditor({
             ? courseApi.deleteLesson(id)
             : courseApi.deleteResource(id),
       "Content deleted.",
-    );
+    )
   }
   function lessonForm(m: CourseModule, l?: Lesson) {
     setEdit({
@@ -103,13 +86,9 @@ export function CourseOutlineEditor({
       position: l?.position ?? m.lessons.length + 1,
       title: l?.title ?? "",
       body: l?.body ?? "",
-    });
+    })
   }
-  function resourceRow(
-    r: CourseResource,
-    lessonResources: CourseResource[],
-    index: number,
-  ) {
+  function resourceRow(r: CourseResource, lessonResources: CourseResource[], index: number) {
     return (
       <div className="sporg-resource-row" key={r.id}>
         <FileText size={17} />
@@ -166,7 +145,7 @@ export function CourseOutlineEditor({
           )}
         </div>
       </div>
-    );
+    )
   }
   return (
     <>
@@ -195,9 +174,7 @@ export function CourseOutlineEditor({
         <section className="sporg-empty">
           <BookOpen size={32} />
           <h3>Build your course structure</h3>
-          <p>
-            Add a module, then lessons with articles, links or uploaded media.
-          </p>
+          <p>Add a module, then lessons with articles, links or uploaded media.</p>
         </section>
       )}
       {outline.modules.map((m, mi) => (
@@ -238,11 +215,7 @@ export function CourseOutlineEditor({
                   >
                     Delete
                   </Button>
-                  <Button
-                    variant="outline"
-                    disabled={action.busy}
-                    onClick={() => lessonForm(m)}
-                  >
+                  <Button variant="outline" disabled={action.busy} onClick={() => lessonForm(m)}>
                     Add lesson
                   </Button>
                 </>
@@ -251,22 +224,15 @@ export function CourseOutlineEditor({
           </header>
           {m.lessons.length === 0 && <p>No lessons yet.</p>}
           {m.lessons.map((l, li) => {
-            const rows = m.resources.filter((r) => r.lesson_id === l.id);
+            const rows = m.resources.filter((r) => r.lesson_id === l.id)
             return (
-              <details
-                className="sporg-lesson"
-                id={`lesson-${l.id}`}
-                key={l.id}
-                open
-              >
+              <details className="sporg-lesson" id={`lesson-${l.id}`} key={l.id} open>
                 <summary>
                   {l.title}
                   <small>{rows.length} resources</small>
                 </summary>
                 <div className="sporg-toolbar">
-                  <p className="sporg-lesson-body">
-                    {l.body || "No lesson introduction."}
-                  </p>
+                  <p className="sporg-lesson-body">{l.body || "No lesson introduction."}</p>
                   <div className="sporg-actions">
                     {arrows(
                       m.lessons.map((x) => x.id),
@@ -307,11 +273,9 @@ export function CourseOutlineEditor({
                 </div>
                 {rows.map((r, i) => resourceRow(r, rows, i))}
               </details>
-            );
+            )
           })}
-          {m.resources
-            .filter((r) => !r.lesson_id)
-            .map((r, i) => resourceRow(r, [], i))}
+          {m.resources.filter((r) => !r.lesson_id).map((r, i) => resourceRow(r, [], i))}
         </section>
       ))}
       {edit && (
@@ -319,28 +283,28 @@ export function CourseOutlineEditor({
           title={edit.id ? `Edit ${edit.kind}` : `Add ${edit.kind}`}
           busy={action.busy}
           close={() => {
-            if (window.confirm("Discard this editor?")) setEdit(null);
+            if (window.confirm("Discard this editor?")) setEdit(null)
           }}
         >
           <form
             className="sporg-form"
             onSubmit={(e) => {
-              e.preventDefault();
+              e.preventDefault()
               void action.run(async () => {
                 const input = {
                   title: edit.title,
                   position: edit.position,
                   body: edit.body,
-                };
-                if (edit.kind === "module") {
-                  if (edit.id) await courseApi.editModule(edit.id, input);
-                  else await courseApi.module(edit.parent, input);
-                } else {
-                  if (edit.id) await courseApi.editLesson(edit.id, input);
-                  else await courseApi.lesson(edit.parent, input);
                 }
-                setEdit(null);
-              });
+                if (edit.kind === "module") {
+                  if (edit.id) await courseApi.editModule(edit.id, input)
+                  else await courseApi.module(edit.parent, input)
+                } else {
+                  if (edit.id) await courseApi.editLesson(edit.id, input)
+                  else await courseApi.lesson(edit.parent, input)
+                }
+                setEdit(null)
+              })
             }}
           >
             <Input
@@ -356,9 +320,7 @@ export function CourseOutlineEditor({
               required
               min={1}
               value={edit.position}
-              onChange={(e) =>
-                setEdit({ ...edit, position: Number(e.target.value) })
-              }
+              onChange={(e) => setEdit({ ...edit, position: Number(e.target.value) })}
             />
             {edit.kind === "lesson" && (
               <label>
@@ -402,5 +364,5 @@ export function CourseOutlineEditor({
         </WorkspaceDialog>
       )}
     </>
-  );
+  )
 }

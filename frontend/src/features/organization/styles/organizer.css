@@ -278,7 +278,6 @@
 }
 
 @media (max-width: 760px) {
-
   .sporg-grid,
   .sporg-fields,
   .sporg .v7-grid {
@@ -400,7 +399,6 @@
 }
 
 @media (max-width: 760px) {
-
   .sporg .org-form-grid,
   .sporg .org-detail-grid {
     grid-template-columns: 1fr;
@@ -566,7 +564,7 @@
   border-top: 1px solid var(--border, #e5e5ed);
 }
 
-.sporg-review-step>h2 {
+.sporg-review-step > h2 {
   margin-top: 0;
 }
 
@@ -588,7 +586,7 @@
   min-width: 0;
 }
 
-.sporg-review-step .sporg-review-group>h3 {
+.sporg-review-step .sporg-review-group > h3 {
   margin: 0;
 }
 
@@ -714,11 +712,10 @@
   scroll-margin-top: 24px;
 }
 
-
 /* Organization onboarding: scoped spacing and confirmation dialog. */
 /* Các card trong onboarding không bị nội dung đẩy rộng */
 .sporg-page-flow,
-.sporg-page-flow>*,
+.sporg-page-flow > *,
 .sporg-review-step {
   min-width: 0;
   max-width: 100%;
@@ -741,7 +738,7 @@
   --sporg-space: 24px;
 }
 
-.sporg-onboarding>.sporg-progress {
+.sporg-onboarding > .sporg-progress {
   margin-bottom: var(--sporg-space);
 }
 
@@ -749,7 +746,7 @@
   align-items: start;
 }
 
-.sporg-onboarding-grid>.sporg-card {
+.sporg-onboarding-grid > .sporg-card {
   min-width: 0;
 }
 
@@ -780,7 +777,7 @@
   gap: 16px;
 }
 
-.sporg-progress-heading>strong {
+.sporg-progress-heading > strong {
   font-size: 26px;
   color: var(--org-accent);
 }
@@ -797,10 +794,10 @@
   overflow: hidden;
 }
 
-.sporg-progress-track>div {
+.sporg-progress-track > div {
   height: 100%;
   background: var(--org-accent);
-  transition: width .2s ease;
+  transition: width 0.2s ease;
 }
 
 .sporg-checklist {
@@ -817,12 +814,12 @@
   min-width: 0;
 }
 
-.sporg-check-item>span {
+.sporg-check-item > span {
   color: var(--org-accent);
   font-weight: 700;
 }
 
-.sporg-check-item>div {
+.sporg-check-item > div {
   display: grid;
   min-width: 0;
 }

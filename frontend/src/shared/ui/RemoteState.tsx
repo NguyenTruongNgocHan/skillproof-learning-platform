@@ -1,12 +1,12 @@
-import Button from "./Button";
+import Button from "./Button"
 export function RemoteState({
   loading,
   error,
   retry,
 }: {
-  loading?: boolean;
-  error?: string;
-  retry?: () => void;
+  loading?: boolean
+  error?: string
+  retry?: () => void
 }) {
   if (error)
     return (
@@ -18,7 +18,7 @@ export function RemoteState({
           </Button>
         )}
       </div>
-    );
+    )
   if (loading)
     return (
       <div className="sporg-card" role="status" aria-busy="true">
@@ -26,16 +26,10 @@ export function RemoteState({
         <div className="sporg-skeleton" />
         <div className="sporg-skeleton sporg-skeleton-short" />
       </div>
-    );
-  return null;
+    )
+  return null
 }
-export function ActionNotice({
-  error,
-  success,
-}: {
-  error: string;
-  success: string;
-}) {
+export function ActionNotice({ error, success }: { error: string; success: string }) {
   return (
     <>
       {error && (
@@ -49,5 +43,5 @@ export function ActionNotice({
         </p>
       )}
     </>
-  );
+  )
 }

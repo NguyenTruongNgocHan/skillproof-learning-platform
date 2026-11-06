@@ -1,64 +1,66 @@
 package com.skillproof.backend.quiz.infrastructure.persistence;
 
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.UUID;
 
 @Entity
 @Table(name = "question_option")
 public class QuizOption {
 
-    @Id
-    private UUID id;
-    @Column(name = "question_version_id", nullable = false)
-    private UUID questionVersionId;
-    @Column(nullable = false)
-    private String body;
-    @Column(nullable = false)
-    private boolean correct;
-    @Column(nullable = false)
-    private int position;
+  @Id private UUID id;
 
-    public UUID getId() {
-        return id;
-    }
+  @Column(name = "question_version_id", nullable = false)
+  private UUID questionVersionId;
 
-    public void setId(UUID value) {
-        id = value;
-    }
+  @Column(nullable = false)
+  private String body;
 
-    public UUID getQuestionVersionId() {
-        return questionVersionId;
-    }
+  @Column(nullable = false)
+  private boolean correct;
 
-    public void setQuestionVersionId(UUID value) {
-        questionVersionId = value;
-    }
+  @Column(nullable = false)
+  private int position;
 
-    public String getBody() {
-        return body;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public void setBody(String value) {
-        body = value;
-    }
+  public void setId(UUID value) {
+    id = value;
+  }
 
-    public boolean getCorrect() {
-        return correct;
-    }
+  public UUID getQuestionVersionId() {
+    return questionVersionId;
+  }
 
-    public void setCorrect(boolean value) {
-        correct = value;
-    }
+  public void setQuestionVersionId(UUID value) {
+    questionVersionId = value;
+  }
 
-    public int getPosition() {
-        return position;
-    }
+  public String getBody() {
+    return body;
+  }
 
-    public void setPosition(int value) {
-        position = value;
-    }
+  public void setBody(String value) {
+    body = value;
+  }
+
+  public boolean getCorrect() {
+    return correct;
+  }
+
+  public void setCorrect(boolean value) {
+    correct = value;
+  }
+
+  public int getPosition() {
+    return position;
+  }
+
+  public void setPosition(int value) {
+    position = value;
+  }
 }

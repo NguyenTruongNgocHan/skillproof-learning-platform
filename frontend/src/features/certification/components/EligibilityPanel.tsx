@@ -1,82 +1,80 @@
-import { certificationApi } from "@/features/certification/api/certificationApi";
+import { certificationApi } from "@/features/certification/api/certificationApi"
 import type {
   Certificate,
   Eligibility,
   Enrollment,
   Page,
   Program,
-} from "@/features/certification/types/certification.types";
-import { organizerError } from "@/features/organization/utils/errorMessage";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import { useToast } from "@/shared/ui/Toast";
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+} from "@/features/certification/types/certification.types"
+import { organizerError } from "@/features/organization/utils/errorMessage"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
+import { useToast } from "@/shared/ui/Toast"
+import { useEffect, useRef, useState } from "react"
+import { Link } from "react-router-dom"
 export function EligibilityPanel({
   program,
   onIssued,
 }: {
-  program: Program;
-  onIssued: () => void;
+  program: Program
+  onIssued: () => void
 }) {
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState<Page<Enrollment> | null>(null);
-  const [index, setIndex] = useState(0);
-  const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
-  const [eligibility, setEligibility] = useState<Eligibility | null>(null);
-  const [certificate, setCertificate] = useState<Certificate | null>(null);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const generation = useRef(0);
-  const { toast } = useToast();
+  const [query, setQuery] = useState("")
+  const [page, setPage] = useState<Page<Enrollment> | null>(null)
+  const [index, setIndex] = useState(0)
+  const [enrollment, setEnrollment] = useState<Enrollment | null>(null)
+  const [eligibility, setEligibility] = useState<Eligibility | null>(null)
+  const [certificate, setCertificate] = useState<Certificate | null>(null)
+  const [error, setError] = useState("")
+  const [busy, setBusy] = useState(false)
+  const generation = useRef(0)
+  const { toast } = useToast()
   useEffect(
     () => () => {
-      generation.current++;
+      generation.current++
     },
     [],
-  );
+  )
   function choose(row: Enrollment) {
-    generation.current++;
-    setEnrollment(row);
-    setEligibility(null);
-    setCertificate(null);
-    setError("");
+    generation.current++
+    setEnrollment(row)
+    setEligibility(null)
+    setCertificate(null)
+    setError("")
   }
   async function search(next = 0) {
-    const req = ++generation.current;
-    setBusy(true);
-    setError("");
-    setEnrollment(null);
-    setEligibility(null);
-    setCertificate(null);
+    const req = ++generation.current
+    setBusy(true)
+    setError("")
+    setEnrollment(null)
+    setEligibility(null)
+    setCertificate(null)
     try {
-      const rows = await certificationApi.enrollments(program.id, query, next);
+      const rows = await certificationApi.enrollments(program.id, query, next)
       if (req === generation.current) {
-        setPage(rows);
-        setIndex(next);
+        setPage(rows)
+        setIndex(next)
       }
     } catch (e) {
-      if (req === generation.current)
-        setError(organizerError(e, "Search failed"));
+      if (req === generation.current) setError(organizerError(e, "Search failed"))
     } finally {
-      if (req === generation.current) setBusy(false);
+      if (req === generation.current) setBusy(false)
     }
   }
   async function evaluate() {
-    if (!enrollment) return;
-    const req = ++generation.current;
-    setBusy(true);
-    setError("");
-    setEligibility(null);
-    setCertificate(null);
+    if (!enrollment) return
+    const req = ++generation.current
+    setBusy(true)
+    setError("")
+    setEligibility(null)
+    setCertificate(null)
     try {
-      const result = await certificationApi.evaluate(program.id, enrollment.id);
-      if (req === generation.current) setEligibility(result);
+      const result = await certificationApi.evaluate(program.id, enrollment.id)
+      if (req === generation.current) setEligibility(result)
     } catch (e) {
-      if (req === generation.current)
-        setError(organizerError(e, "Evaluation failed"));
+      if (req === generation.current) setError(organizerError(e, "Evaluation failed"))
     } finally {
-      if (req === generation.current) setBusy(false);
+      if (req === generation.current) setBusy(false)
     }
   }
   async function issue() {
@@ -86,44 +84,42 @@ export function EligibilityPanel({
       !enrollment ||
       eligibility.enrollmentId !== enrollment.id
     )
-      return;
-    if (!window.confirm(`Issue ${program.name} to ${enrollment.learnerEmail}?`))
-      return;
-    const req = ++generation.current;
-    setBusy(true);
-    setError("");
+      return
+    if (!window.confirm(`Issue ${program.name} to ${enrollment.learnerEmail}?`)) return
+    const req = ++generation.current
+    setBusy(true)
+    setError("")
     try {
-      const result = await certificationApi.issue(eligibility.id);
+      const result = await certificationApi.issue(eligibility.id)
       if (req === generation.current) {
-        setCertificate(result);
-        onIssued();
+        setCertificate(result)
+        onIssued()
         toast(
           "success",
           result.status === "REVOKED"
             ? "An existing revoked certificate was found. It cannot be issued again."
             : "Certificate issuance complete.",
-        );
+        )
       }
     } catch (e) {
-      if (req === generation.current)
-        setError(organizerError(e, "Issuance failed"));
+      if (req === generation.current) setError(organizerError(e, "Issuance failed"))
     } finally {
-      if (req === generation.current) setBusy(false);
+      if (req === generation.current) setBusy(false)
     }
   }
   let evidence: {
-    totalResources?: number;
-    completedResources?: number;
-    requiredAssessments?: number;
-    passedAssessments?: number;
-    requiredAssignments?: number;
-    passedAssignments?: number;
-    requiredLessons?: number;
-    completedLessons?: number;
-    completed?: boolean;
-  } | null = null;
+    totalResources?: number
+    completedResources?: number
+    requiredAssessments?: number
+    passedAssessments?: number
+    requiredAssignments?: number
+    passedAssignments?: number
+    requiredLessons?: number
+    completedLessons?: number
+    completed?: boolean
+  } | null = null
   try {
-    if (eligibility) evidence = JSON.parse(eligibility.evidenceSnapshotJson);
+    if (eligibility) evidence = JSON.parse(eligibility.evidenceSnapshotJson)
   } catch {
     /* Invalid evidence is not interpreted as passing. */
   }
@@ -139,8 +135,8 @@ export function EligibilityPanel({
       <form
         className="sporg-form"
         onSubmit={(e) => {
-          e.preventDefault();
-          void search();
+          e.preventDefault()
+          void search()
         }}
       >
         <Input
@@ -216,13 +212,11 @@ export function EligibilityPanel({
               </dd>
               <dt>Lessons</dt>
               <dd>
-                {evidence.completedLessons ?? "—"} /{" "}
-                {evidence.requiredLessons ?? "—"}
+                {evidence.completedLessons ?? "—"} / {evidence.requiredLessons ?? "—"}
               </dd>
               <dt>Required assignments</dt>
               <dd>
-                {evidence.passedAssignments ?? "—"} /{" "}
-                {evidence.requiredAssignments ?? "—"}
+                {evidence.passedAssignments ?? "—"} / {evidence.requiredAssignments ?? "—"}
               </dd>
               <dt>Official assessments</dt>
               <dd>
@@ -230,9 +224,7 @@ export function EligibilityPanel({
               </dd>
             </dl>
           ) : (
-            <p>
-              Evidence details are unavailable. Contact support before issuing.
-            </p>
+            <p>Evidence details are unavailable. Contact support before issuing.</p>
           )}
           <p>Evaluated {new Date(eligibility.evaluatedAt).toLocaleString()}</p>
           {eligibility.status === "ELIGIBLE" && !certificate && (
@@ -250,5 +242,5 @@ export function EligibilityPanel({
         </p>
       )}
     </section>
-  );
+  )
 }

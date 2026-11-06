@@ -1,64 +1,55 @@
-import { AccessImportPanel } from "../components/AccessImportPanel";
-import { exportPagedCsv } from "@/shared/utils/exportPagedCsv";
-import { useCallback, useState } from "react";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { courseApi } from "@/features/course/api/courseApi";
-import { libraryApi } from "@/features/library/api/libraryApi";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import { accessApi } from "../api/accessApi";
-import type { AccessGrant, ProductType } from "../types/access.types";
-const uuidPattern =
-  "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+import { AccessImportPanel } from "../components/AccessImportPanel"
+import { exportPagedCsv } from "@/shared/utils/exportPagedCsv"
+import { useCallback, useState } from "react"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { courseApi } from "@/features/course/api/courseApi"
+import { libraryApi } from "@/features/library/api/libraryApi"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
+import { accessApi } from "../api/accessApi"
+import type { AccessGrant, ProductType } from "../types/access.types"
+const uuidPattern = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 export default function OrganizationAccessPage() {
-  const { organization, grants } = useOrganizationContext();
-  const org = organization?.id ?? "";
+  const { organization, grants } = useOrganizationContext()
+  const org = organization?.id ?? ""
   const remote = useRemote(
     useCallback(async () => {
-      if (!grants.includes("MANAGE_CONTENT"))
-        return { courses: [], resources: [] };
-      const [courses, resources] = await Promise.all([
-        courseApi.list(org),
-        libraryApi.list(org),
-      ]);
+      if (!grants.includes("MANAGE_CONTENT")) return { courses: [], resources: [] }
+      const [courses, resources] = await Promise.all([courseApi.list(org), libraryApi.list(org)])
       const versions = await Promise.all(
         courses.map(async (c) =>
           (await courseApi.versions(c.id))
             .filter((v) => v.status === "PUBLISHED")
             .map((v) => ({ id: v.id, label: `${c.title} · v${v.version_no}` })),
         ),
-      );
+      )
       return {
         courses: versions.flat(),
         resources: resources
           .filter((r) => r.status === "PUBLISHED")
           .map((r) => ({ id: r.id, label: r.title })),
-      };
+      }
     }, [org, grants]),
-  );
+  )
   const [page, setPage] = useState(0),
     [search, setSearch] = useState(""),
-    [status, setStatus] = useState("");
+    [status, setStatus] = useState("")
   const register = useRemote(
-    useCallback(
-      () => accessApi.list(org, page, search, status),
-      [org, page, search, status],
-    ),
-  );
-  const action = useAction(register.reload);
+    useCallback(() => accessApi.list(org, page, search, status), [org, page, search, status]),
+  )
+  const action = useAction(register.reload)
   const [form, setForm] = useState({
     learnerId: "",
     type: "COURSE" as ProductType,
     productId: "",
     expiresAt: "",
-  });
+  })
   const [created, setCreated] = useState<AccessGrant | null>(null),
-    [revokeId, setRevokeId] = useState("");
-  const products =
-    form.type === "RESOURCE" ? remote.data?.resources : remote.data?.courses;
+    [revokeId, setRevokeId] = useState("")
+  const products = form.type === "RESOURCE" ? remote.data?.resources : remote.data?.courses
   return (
     <OrganizerSurface
       title="Learner access"
@@ -73,22 +64,20 @@ export default function OrganizationAccessPage() {
           <form
             className="sporg-form"
             onSubmit={(e) => {
-              e.preventDefault();
+              e.preventDefault()
               if (
                 !window.confirm(
                   `Grant ${form.type.toLowerCase()} access to learner ${form.learnerId}?`,
                 )
               )
-                return;
+                return
               void action.run(async () => {
                 const g = await accessApi.grant(org, {
                   ...form,
-                  expiresAt: form.expiresAt
-                    ? new Date(form.expiresAt).toISOString()
-                    : null,
-                });
-                setCreated(g);
-              }, "Access granted.");
+                  expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
+                })
+                setCreated(g)
+              }, "Access granted.")
             }}
           >
             <Input
@@ -98,10 +87,7 @@ export default function OrganizationAccessPage() {
               value={form.learnerId}
               onChange={(e) => setForm({ ...form, learnerId: e.target.value })}
             />
-            <p>
-              Use the learner's account UUID. This API does not support email
-              lookup.
-            </p>
+            <p>Use the learner's account UUID. This API does not support email lookup.</p>
             <label>
               Access type
               <select
@@ -115,9 +101,7 @@ export default function OrganizationAccessPage() {
                 }
               >
                 <option value="COURSE">Learning access</option>
-                <option value="CERTIFICATION">
-                  Certification participation
-                </option>
+                <option value="CERTIFICATION">Certification participation</option>
                 <option value="RESOURCE">Library resource access</option>
               </select>
             </label>
@@ -127,9 +111,7 @@ export default function OrganizationAccessPage() {
                 required
                 value={form.productId}
                 disabled={remote.loading || Boolean(remote.error)}
-                onChange={(e) =>
-                  setForm({ ...form, productId: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, productId: e.target.value })}
               >
                 <option value="">Choose published content</option>
                 {products?.map((c) => (
@@ -146,17 +128,12 @@ export default function OrganizationAccessPage() {
               onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
             />
             <p>
-              Certification access requires an active certification program. It
-              does not grant learning access or guarantee issuance.
+              Certification access requires an active certification program. It does not grant
+              learning access or guarantee issuance.
             </p>
             <Button
               type="submit"
-              disabled={
-                action.busy ||
-                remote.loading ||
-                Boolean(remote.error) ||
-                !form.productId
-              }
+              disabled={action.busy || remote.loading || Boolean(remote.error) || !form.productId}
             >
               Grant access
             </Button>
@@ -175,19 +152,19 @@ export default function OrganizationAccessPage() {
         <section className="sporg-card">
           <h2>Revoke a grant</h2>
           <p>
-            Revoke a grant below or use its ID. Revocation does not remove
-            historical enrollment records.
+            Revoke a grant below or use its ID. Revocation does not remove historical enrollment
+            records.
           </p>
           <form
             className="sporg-form"
             onSubmit={(e) => {
-              e.preventDefault();
+              e.preventDefault()
               if (window.confirm("Revoke this Organization grant?"))
                 void action.run(async () => {
-                  await accessApi.revoke(org, revokeId);
-                  if (created?.id === revokeId) setCreated(null);
-                  setRevokeId("");
-                }, "Grant revoked.");
+                  await accessApi.revoke(org, revokeId)
+                  if (created?.id === revokeId) setCreated(null)
+                  setRevokeId("")
+                }, "Grant revoked.")
             }}
           >
             <Input
@@ -207,9 +184,7 @@ export default function OrganizationAccessPage() {
         org={org}
         type={form.type}
         productId={form.productId}
-        expiresAt={
-          form.expiresAt ? new Date(form.expiresAt).toISOString() : null
-        }
+        expiresAt={form.expiresAt ? new Date(form.expiresAt).toISOString() : null}
         changed={register.reload}
       />
       <section className="sporg-card">
@@ -219,8 +194,8 @@ export default function OrganizationAccessPage() {
             label="UUID / product / group"
             value={search}
             onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
+              setSearch(e.target.value)
+              setPage(0)
             }}
           />
           <label>
@@ -228,8 +203,8 @@ export default function OrganizationAccessPage() {
             <select
               value={status}
               onChange={(e) => {
-                setStatus(e.target.value);
-                setPage(0);
+                setStatus(e.target.value)
+                setPage(0)
               }}
             >
               <option value="">All</option>
@@ -257,9 +232,7 @@ export default function OrganizationAccessPage() {
           </Button>
         </div>
         <RemoteState {...register} retry={register.reload} />
-        {register.data?.content.length === 0 && (
-          <p>No organization grants yet.</p>
-        )}
+        {register.data?.content.length === 0 && <p>No organization grants yet.</p>}
         <div className="sporg-table-scroll">
           <table className="sporg-table">
             <thead>
@@ -283,11 +256,7 @@ export default function OrganizationAccessPage() {
                     <br />
                     <code>{g.productId}</code>
                   </td>
-                  <td>
-                    {g.expiresAt
-                      ? new Date(g.expiresAt).toLocaleString()
-                      : "No expiry"}
-                  </td>
+                  <td>{g.expiresAt ? new Date(g.expiresAt).toLocaleString() : "No expiry"}</td>
                   <td>
                     {g.revokedAt
                       ? "Revoked"
@@ -301,10 +270,7 @@ export default function OrganizationAccessPage() {
                       disabled={action.busy || Boolean(g.revokedAt)}
                       onClick={() => {
                         if (window.confirm("Revoke this grant?"))
-                          void action.run(
-                            () => accessApi.revoke(org, g.id),
-                            "Grant revoked.",
-                          );
+                          void action.run(() => accessApi.revoke(org, g.id), "Grant revoked.")
                       }}
                     >
                       Revoke
@@ -328,11 +294,7 @@ export default function OrganizationAccessPage() {
           </span>
           <Button
             variant="outline"
-            disabled={
-              !register.data ||
-              page + 1 >= register.data.totalPages ||
-              register.loading
-            }
+            disabled={!register.data || page + 1 >= register.data.totalPages || register.loading}
             onClick={() => setPage(page + 1)}
           >
             Next
@@ -340,5 +302,5 @@ export default function OrganizationAccessPage() {
         </div>
       </section>
     </OrganizerSurface>
-  );
+  )
 }

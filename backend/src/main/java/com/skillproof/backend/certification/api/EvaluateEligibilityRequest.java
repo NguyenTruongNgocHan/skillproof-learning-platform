@@ -1,10 +1,6 @@
 package com.skillproof.backend.certification.api;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotNull;
-
-public record EvaluateEligibilityRequest(@NotNull
-        UUID enrollmentId) {
-
-}
+public record EvaluateEligibilityRequest(@NotNull UUID enrollmentId) {}

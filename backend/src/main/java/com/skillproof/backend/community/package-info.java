@@ -1,6 +1,6 @@
 /**
  * Community module.
  *
- * Owns discussion and community interactions.
+ * <p>Owns discussion and community interactions.
  */
 package com.skillproof.backend.community;

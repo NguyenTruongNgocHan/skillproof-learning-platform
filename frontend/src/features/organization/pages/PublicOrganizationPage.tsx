@@ -1,22 +1,20 @@
-import { useCallback, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import PublicHeader from "@/shared/components/layout/PublicHeader";
-import PublicFooter from "@/shared/components/layout/PublicFooter";
-import { OrganizationIdentity } from "../components/OrganizationIdentity";
-import { brandingApi } from "../api/brandingApi";
-import { apiClient } from "@/shared/api/apiClient";
-import { useRemote } from "@/shared/hooks/useRemote";
-import { RemoteState } from "@/shared/ui/RemoteState";
-import { useMarketingEvent } from "@/features/analytics/hooks/useMarketingEvent";
-import type { CatalogCourse } from "@/features/course/types/catalog.types";
-import Button from "@/shared/ui/Button";
-import "../styles/organizer.css";
+import { useCallback, useState } from "react"
+import { Link, useParams } from "react-router-dom"
+import PublicHeader from "@/shared/components/layout/PublicHeader"
+import PublicFooter from "@/shared/components/layout/PublicFooter"
+import { OrganizationIdentity } from "../components/OrganizationIdentity"
+import { brandingApi } from "../api/brandingApi"
+import { apiClient } from "@/shared/api/apiClient"
+import { useRemote } from "@/shared/hooks/useRemote"
+import { RemoteState } from "@/shared/ui/RemoteState"
+import { useMarketingEvent } from "@/features/analytics/hooks/useMarketingEvent"
+import type { CatalogCourse } from "@/features/course/types/catalog.types"
+import Button from "@/shared/ui/Button"
+import "../styles/organizer.css"
 export default function PublicOrganizationPage() {
-  const { id = "" } = useParams();
-  const [page, setPage] = useState(0);
-  const profile = useRemote(
-    useCallback(() => brandingApi.publicProfile(id), [id]),
-  );
+  const { id = "" } = useParams()
+  const [page, setPage] = useState(0)
+  const profile = useRemote(useCallback(() => brandingApi.publicProfile(id), [id]))
   const courses = useRemote(
     useCallback(
       () =>
@@ -25,8 +23,8 @@ export default function PublicOrganizationPage() {
         ),
       [id, page],
     ),
-  );
-  useMarketingEvent(profile.data?.id, undefined, "ORG_VIEW");
+  )
+  useMarketingEvent(profile.data?.id, undefined, "ORG_VIEW")
   return (
     <>
       <PublicHeader />
@@ -40,8 +38,8 @@ export default function PublicOrganizationPage() {
               <h2>Verified organization</h2>
               <p>{profile.data.legalName}</p>
               <p>
-                Organization verification confirms the reviewed application.
-                Certificate issuance requires a separate active authorization.
+                Organization verification confirms the reviewed application. Certificate issuance
+                requires a separate active authorization.
               </p>
             </section>
             <h2>Public courses</h2>
@@ -55,9 +53,7 @@ export default function PublicOrganizationPage() {
                 </article>
               ))}
             </div>
-            {courses.data?.length === 0 && (
-              <p>No public courses on this page.</p>
-            )}
+            {courses.data?.length === 0 && <p>No public courses on this page.</p>}
             <div className="sporg-actions">
               <Button disabled={page === 0} onClick={() => setPage(page - 1)}>
                 Previous
@@ -74,5 +70,5 @@ export default function PublicOrganizationPage() {
       </main>
       <PublicFooter />
     </>
-  );
+  )
 }

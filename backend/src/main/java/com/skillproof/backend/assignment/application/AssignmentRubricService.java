@@ -37,7 +37,7 @@ public class AssignmentRubricService {
     try {
       workspace.requireGrader(actor, a.getVersionId());
     } catch (org.springframework.security.access.AccessDeniedException denied) {
-      courses.requireVersionAuthor(actor, a.getVersionId());
+      courses.requireVersionReader(actor, a.getVersionId());
     }
     return rubric.findByAssignmentIdOrderByPosition(id);
   }

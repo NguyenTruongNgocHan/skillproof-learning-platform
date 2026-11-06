@@ -12,71 +12,72 @@ import com.skillproof.backend.course.infrastructure.ResourceProgressJpaRepositor
 import com.skillproof.backend.course.infrastructure.persistence.LessonProgressEntity;
 import com.skillproof.backend.course.infrastructure.persistence.LessonProgressRepository;
 import com.skillproof.backend.course.infrastructure.persistence.LessonRepository;
-
+import java.time.Instant;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.UUID;
-
 @Service
 public class LessonProgressService {
+  @org.springframework.beans.factory.annotation.Autowired
+  private com.skillproof.backend.analytics.contract.LearningSignalJournal signals;
 
-    @org.springframework.beans.factory.annotation.Autowired
-    private com.skillproof.backend.analytics.contract.MarketingJournal marketing;
+  @org.springframework.beans.factory.annotation.Autowired
+  private com.skillproof.backend.analytics.contract.MarketingJournal marketing;
 
-    private final LessonRepository lessons;
-    private final LessonProgressRepository progress;
-    private final CourseModuleJpaRepository modules;
-    private final CourseResourceJpaRepository resources;
-    private final ResourceProgressJpaRepository resourceProgress;
-    private final CourseStructureQuery structure;
-    private final CompletionEvidenceQuery completion;
+  private final LessonRepository lessons;
+  private final LessonProgressRepository progress;
+  private final CourseModuleJpaRepository modules;
+  private final CourseResourceJpaRepository resources;
+  private final ResourceProgressJpaRepository resourceProgress;
+  private final CourseStructureQuery structure;
+  private final CompletionEvidenceQuery completion;
 
-    public LessonProgressService(
-            LessonRepository lessons,
-            LessonProgressRepository progress,
-            CourseModuleJpaRepository modules,
-            CourseResourceJpaRepository resources,
-            ResourceProgressJpaRepository resourceProgress,
-            CourseStructureQuery structure,
-            CompletionEvidenceQuery completion) {
-        this.lessons = lessons;
-        this.progress = progress;
-        this.modules = modules;
-        this.resources = resources;
-        this.resourceProgress = resourceProgress;
-        this.structure = structure;
-        this.completion = completion;
+  public LessonProgressService(
+      LessonRepository lessons,
+      LessonProgressRepository progress,
+      CourseModuleJpaRepository modules,
+      CourseResourceJpaRepository resources,
+      ResourceProgressJpaRepository resourceProgress,
+      CourseStructureQuery structure,
+      CompletionEvidenceQuery completion) {
+    this.lessons = lessons;
+    this.progress = progress;
+    this.modules = modules;
+    this.resources = resources;
+    this.resourceProgress = resourceProgress;
+    this.structure = structure;
+    this.completion = completion;
+  }
+
+  @Transactional
+  public CompletionEvidenceQuery.Evidence complete(UUID learner, UUID enrollment, UUID lessonId) {
+    var lesson =
+        lessons
+            .findById(lessonId)
+            .orElseThrow(() -> new NotFoundException("LESSON_NOT_FOUND", "Lesson not found"));
+    UUID version = modules.findById(lesson.getModuleId()).orElseThrow().getVersionId();
+    structure.requireEnrollment(learner, enrollment, version, true);
+    boolean ready =
+        resources.findByLessonIdOrderByPosition(lessonId).stream()
+            .filter(CourseResourceEntity::isRequiredForCompletion)
+            .allMatch(
+                r -> resourceProgress.existsById(new ResourceProgressId(enrollment, r.getId())));
+    if (!ready) {
+      throw new ConflictException(
+          "LESSON_RESOURCES_INCOMPLETE", "Complete the required lesson resources first");
     }
-
-    @Transactional
-    public CompletionEvidenceQuery.Evidence complete(UUID learner, UUID enrollment, UUID lessonId) {
-        var lesson =
-                lessons.findById(lessonId)
-                        .orElseThrow(
-                                () ->
-                                        new NotFoundException(
-                                                "LESSON_NOT_FOUND", "Lesson not found"));
-        UUID version = modules.findById(lesson.getModuleId()).orElseThrow().getVersionId();
-        structure.requireEnrollment(learner, enrollment, version, true);
-        boolean ready =
-                resources.findByLessonIdOrderByPosition(lessonId).stream()
-                        .filter(CourseResourceEntity::isRequiredForCompletion)
-                        .allMatch(
-                                r ->
-                                        resourceProgress.existsById(
-                                                new ResourceProgressId(enrollment, r.getId())));
-        if (!ready) {
-            throw new ConflictException(
-                    "LESSON_RESOURCES_INCOMPLETE", "Complete the required lesson resources first");
-        }
-        if (!progress.existsByEnrollmentIdAndLessonId(enrollment, lessonId)) {
-            progress.saveAndFlush(
-                    new LessonProgressEntity(
-                            UUID.randomUUID(), enrollment, lessonId, Instant.now()));
-        }
-        marketing.conversion(learner, version, "LEARNING", enrollment);
-        return completion.evaluate(enrollment, 0, 0);
+    if (!progress.existsByEnrollmentIdAndLessonId(enrollment, lessonId)) {
+      progress.saveAndFlush(
+          new LessonProgressEntity(UUID.randomUUID(), enrollment, lessonId, Instant.now()));
     }
+    marketing.conversion(learner, version, "LEARNING", enrollment);
+    signals.record(
+        learner,
+        version,
+        "LESSON_COMPLETED",
+        lessonId,
+        java.util.Map.of("enrollmentId", enrollment));
+    return completion.evaluate(enrollment, 0, 0);
+  }
 }

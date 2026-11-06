@@ -1,80 +1,68 @@
 package com.skillproof.backend.identity.application;
 
-import java.time.Instant;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.skillproof.backend.common.exception.BadRequestException;
 import com.skillproof.backend.identity.application.model.ResetPasswordCommand;
 import com.skillproof.backend.identity.infrastructure.AuthSessionRepository;
 import com.skillproof.backend.identity.infrastructure.PasswordResetTokenRepository;
 import com.skillproof.backend.identity.infrastructure.UserAccountRepository;
+import java.time.Instant;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ResetPasswordService {
 
-    private final PasswordResetTokenRepository tokens;
-    private final PasswordResetTokenCodec codec;
-    private final UserAccountRepository users;
-    private final AuthSessionRepository sessions;
-    private final PasswordEncoder passwordEncoder;
-    private final AuditService audit;
+  private final PasswordResetTokenRepository tokens;
+  private final PasswordResetTokenCodec codec;
+  private final UserAccountRepository users;
+  private final AuthSessionRepository sessions;
+  private final PasswordEncoder passwordEncoder;
+  private final AuditService audit;
 
-    public ResetPasswordService(
-            PasswordResetTokenRepository tokens,
-            PasswordResetTokenCodec codec,
-            UserAccountRepository users,
-            AuthSessionRepository sessions,
-            PasswordEncoder passwordEncoder,
-            AuditService audit
-    ) {
-        this.tokens = tokens;
-        this.codec = codec;
-        this.users = users;
-        this.sessions = sessions;
-        this.passwordEncoder = passwordEncoder;
-        this.audit = audit;
+  public ResetPasswordService(
+      PasswordResetTokenRepository tokens,
+      PasswordResetTokenCodec codec,
+      UserAccountRepository users,
+      AuthSessionRepository sessions,
+      PasswordEncoder passwordEncoder,
+      AuditService audit) {
+    this.tokens = tokens;
+    this.codec = codec;
+    this.users = users;
+    this.sessions = sessions;
+    this.passwordEncoder = passwordEncoder;
+    this.audit = audit;
+  }
+
+  @Transactional
+  public void reset(ResetPasswordCommand request, RequestMetadata metadata) {
+    Instant now = Instant.now();
+    var token = tokens.findByTokenHash(codec.hash(request.token())).orElseThrow(this::invalidToken);
+
+    if (!token.isUsable(now)) {
+      throw invalidToken();
     }
 
-    @Transactional
-    public void reset(ResetPasswordCommand request, RequestMetadata metadata) {
-        Instant now = Instant.now();
-        var token = tokens.findByTokenHash(codec.hash(request.token()))
-                .orElseThrow(this::invalidToken);
-
-        if (!token.isUsable(now)) {
-            throw invalidToken();
-        }
-
-        var user = users.findByIdForUpdate(token.getUserAccountId()).orElseThrow(this::invalidToken);
-        now = Instant.now();
-        if (tokens.consumeIfUsable(token.getId(), now) != 1) {
-            throw invalidToken();
-        }
-        // consumeIfUsable clears the persistence context, but the database lock remains held.
-        user = users.findById(token.getUserAccountId()).orElseThrow(this::invalidToken);
-
-        user.changePassword(passwordEncoder.encode(request.newPassword()));
-        for (var session : sessions.findAllByUserAccountId(user.getId())) {
-            session.revoke(now);
-        }
-        tokens.invalidateOutstandingTokens(user.getId(), now);
-        audit.record(
-                user.getId(),
-                "PASSWORD_RESET_SUCCEEDED",
-                "SUCCESS",
-                user.getEmail(),
-                metadata,
-                null
-        );
+    var user = users.findByIdForUpdate(token.getUserAccountId()).orElseThrow(this::invalidToken);
+    now = Instant.now();
+    if (tokens.consumeIfUsable(token.getId(), now) != 1) {
+      throw invalidToken();
     }
+    // consumeIfUsable clears the persistence context, but the database lock remains held.
+    user = users.findById(token.getUserAccountId()).orElseThrow(this::invalidToken);
 
-    private BadRequestException invalidToken() {
-        return new BadRequestException(
-                "IDENTITY_PASSWORD_RESET_INVALID",
-                "The password reset link is invalid or has expired."
-        );
+    user.changePassword(passwordEncoder.encode(request.newPassword()));
+    for (var session : sessions.findAllByUserAccountId(user.getId())) {
+      session.revoke(now);
     }
+    tokens.invalidateOutstandingTokens(user.getId(), now);
+    audit.record(
+        user.getId(), "PASSWORD_RESET_SUCCEEDED", "SUCCESS", user.getEmail(), metadata, null);
+  }
+
+  private BadRequestException invalidToken() {
+    return new BadRequestException(
+        "IDENTITY_PASSWORD_RESET_INVALID", "The password reset link is invalid or has expired.");
+  }
 }

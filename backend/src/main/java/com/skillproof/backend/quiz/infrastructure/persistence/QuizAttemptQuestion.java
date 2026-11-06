@@ -1,54 +1,55 @@
 package com.skillproof.backend.quiz.infrastructure.persistence;
 
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.util.UUID;
 
 @Entity
 @Table(name = "attempt_question")
 public class QuizAttemptQuestion {
 
-    @EmbeddedId
-    private QuizAttemptQuestionId id;
-    @Column(nullable = false)
-    private int position;
-    @Column(name = "points", nullable = false)
-    private int points;
-    @Column(name = "selected_option_id")
-    private UUID selectedOptionId;
+  @EmbeddedId private QuizAttemptQuestionId id;
 
-    public QuizAttemptQuestionId getId() {
-        return id;
-    }
+  @Column(nullable = false)
+  private int position;
 
-    public void setId(QuizAttemptQuestionId value) {
-        id = value;
-    }
+  @Column(name = "points", nullable = false)
+  private int points;
 
-    public int getPosition() {
-        return position;
-    }
+  @Column(name = "selected_option_id")
+  private UUID selectedOptionId;
 
-    public void setPosition(int value) {
-        position = value;
-    }
+  public QuizAttemptQuestionId getId() {
+    return id;
+  }
 
-    public int getPoints() {
-        return points;
-    }
+  public void setId(QuizAttemptQuestionId value) {
+    id = value;
+  }
 
-    public void setPoints(int value) {
-        points = value;
-    }
+  public int getPosition() {
+    return position;
+  }
 
-    public UUID getSelectedOptionId() {
-        return selectedOptionId;
-    }
+  public void setPosition(int value) {
+    position = value;
+  }
 
-    public void setSelectedOptionId(UUID value) {
-        selectedOptionId = value;
-    }
+  public int getPoints() {
+    return points;
+  }
+
+  public void setPoints(int value) {
+    points = value;
+  }
+
+  public UUID getSelectedOptionId() {
+    return selectedOptionId;
+  }
+
+  public void setSelectedOptionId(UUID value) {
+    selectedOptionId = value;
+  }
 }

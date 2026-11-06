@@ -152,7 +152,9 @@ public class OrganizationService {
           "DRAFT_STATE_INVALID", "Only a draft application can be submitted");
     }
     Organization submitted = find(draft.id());
-    organizations.createRevision(submitted, documents.documentIds(submitted.id()), now);
+    var revision =
+        organizations.createRevision(submitted, documents.documentIds(submitted.id()), now);
+    evidence.capture(revision.getId(), submitted.id(), revision.getDocumentMediaIds());
     journal.record(
         actor,
         submitted.id(),
@@ -280,8 +282,7 @@ public class OrganizationService {
       throw new ConflictException("STALE_APPLICATION_REVISION", "Review the current submission");
     }
     if (input.decision() == Organization.Status.APPROVED)
-      evidence.requireApprovedEvidence(
-          revision.getOrganizationId(), revision.getDocumentMediaIds());
+      evidence.requireApprovedSnapshot(revisionId);
     if (organizations.reviewRevision(
             revisionId, actor, input.decision(), input.reason(), Instant.now())
         != 1) {
@@ -369,6 +370,7 @@ public class OrganizationService {
         input.industry().trim(),
         input.contactPhone(),
         Instant.now());
+    journal.record(actor, id, "ORGANIZATION_PROFILE_UPDATED", id, "Public profile updated");
     return find(id);
   }
 
@@ -404,6 +406,12 @@ public class OrganizationService {
       throw new BadRequestException("OWNER_PROTECTED", "Owner authority cannot be revoked");
     }
     organizations.grant(id, member, input.authority().name(), actor, input.active(), Instant.now());
+    journal.record(
+        actor,
+        id,
+        input.active() ? "MEMBER_AUTHORITY_GRANTED" : "MEMBER_AUTHORITY_REVOKED",
+        member,
+        input.authority().name());
   }
 
   @Transactional
@@ -416,11 +424,45 @@ public class OrganizationService {
     if (organizations.deactivate(id, member) == 0) {
       throw new NotFoundException("MEMBER_NOT_FOUND", "Member not found");
     }
+    journal.record(actor, id, "MEMBER_REMOVED", member, "Membership deactivated");
   }
 
   public boolean can(UUID id, UUID actor, String authority) {
     return (users.find(actor).filter(u -> "ORGANIZER".equals(u.role()) && u.active()).isPresent()
         && organizations.hasGrant(id, actor, authority));
+  }
+
+  @Transactional(readOnly = true)
+  public List<OrganizationEvidenceService.SnapshotView> evidenceSnapshot(
+      UUID actor, UUID revisionId) {
+    var revision =
+        organizations
+            .applicationRevision(revisionId)
+            .orElseThrow(
+                () ->
+                    new NotFoundException("APPLICATION_REVISION_NOT_FOUND", "Revision not found"));
+    evidence.requireRead(actor, revision.getOrganizationId());
+    return evidence.snapshot(revisionId);
+  }
+
+  /** Legal changes withdraw the current approval until a new snapshot is approved. */
+  @Transactional
+  public Organization beginLegalReverification(UUID actor, UUID id) {
+    var current =
+        organizations
+            .lockApplication(id)
+            .orElseThrow(
+                () -> new NotFoundException("ORGANIZATION_NOT_FOUND", "Organization not found"));
+    organizer(actor);
+    if (!current.ownerUserId().equals(actor))
+      throw new AccessDeniedException("Organization owner required");
+    if (current.status() != Organization.Status.APPROVED)
+      throw new ConflictException(
+          "ORGANIZATION_STATE", "Only an approved organization can request legal reverification");
+    organizations.openReverification(id, Instant.now());
+    journal.record(
+        actor, id, "LEGAL_REVERIFICATION_OPENED", id, "Approval withdrawn pending legal review");
+    return find(id);
   }
 
   public record Create(

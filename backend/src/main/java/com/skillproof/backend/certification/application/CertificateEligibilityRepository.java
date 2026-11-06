@@ -1,15 +1,14 @@
 package com.skillproof.backend.certification.application;
 
+import com.skillproof.backend.certification.domain.CertificateEligibility;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.skillproof.backend.certification.domain.CertificateEligibility;
-
 public interface CertificateEligibilityRepository {
 
-    CertificateEligibility save(CertificateEligibility eligibility);
+  CertificateEligibility save(CertificateEligibility eligibility);
 
-    Optional<CertificateEligibility> findLatest(UUID programId, UUID learnerId);
+  Optional<CertificateEligibility> findLatest(UUID programId, UUID learnerId);
 
-    Optional<CertificateEligibility> findById(UUID id);
+  Optional<CertificateEligibility> findById(UUID id);
 }

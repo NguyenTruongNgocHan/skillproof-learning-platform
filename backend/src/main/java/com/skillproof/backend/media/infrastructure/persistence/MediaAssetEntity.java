@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -12,160 +11,160 @@ import java.util.UUID;
 @Table(name = "media_asset")
 public class MediaAssetEntity {
 
-    @Column(name = "course_id")
-    private UUID courseId;
+  @Column(name = "course_id")
+  private UUID courseId;
 
-    public UUID getCourseId() {
-        return courseId;
-    }
+  public UUID getCourseId() {
+    return courseId;
+  }
 
-    public void setCourseId(UUID value) {
-        courseId = value;
-    }
+  public void setCourseId(UUID value) {
+    courseId = value;
+  }
 
-    @Id private UUID id;
+  @Id private UUID id;
 
-    @Column(name = "owner_user_id", nullable = false)
-    private UUID ownerUserId;
+  @Column(name = "owner_user_id", nullable = false)
+  private UUID ownerUserId;
 
-    @Column(nullable = false)
-    private String scope;
+  @Column(nullable = false)
+  private String scope;
 
-    private UUID organizationId;
-    private UUID resourceId;
-    private UUID libraryResourceId;
-    private UUID submissionId;
+  private UUID organizationId;
+  private UUID resourceId;
+  private UUID libraryResourceId;
+  private UUID submissionId;
 
-    public UUID getLibraryResourceId() {
-        return libraryResourceId;
-    }
+  public UUID getLibraryResourceId() {
+    return libraryResourceId;
+  }
 
-    public void setLibraryResourceId(UUID value) {
-        libraryResourceId = value;
-    }
+  public void setLibraryResourceId(UUID value) {
+    libraryResourceId = value;
+  }
 
-    public UUID getSubmissionId() {
-        return submissionId;
-    }
+  public UUID getSubmissionId() {
+    return submissionId;
+  }
 
-    public void setSubmissionId(UUID value) {
-        submissionId = value;
-    }
+  public void setSubmissionId(UUID value) {
+    submissionId = value;
+  }
 
-    @Column(name = "original_name", nullable = false)
-    private String originalName;
+  @Column(name = "original_name", nullable = false)
+  private String originalName;
 
-    @Column(name = "storage_key", nullable = false)
-    private UUID storageKey;
+  @Column(name = "storage_key", nullable = false)
+  private UUID storageKey;
 
-    @Column(name = "mime_type", nullable = false)
-    private String mimeType;
+  @Column(name = "mime_type", nullable = false)
+  private String mimeType;
 
-    @Column(name = "size_bytes", nullable = false)
-    private long sizeBytes;
+  @Column(name = "size_bytes", nullable = false)
+  private long sizeBytes;
 
-    @Column(nullable = false, length = 64)
-    private String sha256;
+  @Column(nullable = false, length = 64)
+  private String sha256;
 
-    @Column(name = "application_attachment_active", nullable = false)
-    private boolean applicationAttachmentActive = true;
+  @Column(name = "application_attachment_active", nullable = false)
+  private boolean applicationAttachmentActive = true;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+  @Column(name = "created_at", nullable = false)
+  private Instant createdAt;
 
-    public UUID getId() {
-        return id;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public void setId(UUID value) {
-        id = value;
-    }
+  public void setId(UUID value) {
+    id = value;
+  }
 
-    public UUID getOwnerUserId() {
-        return ownerUserId;
-    }
+  public UUID getOwnerUserId() {
+    return ownerUserId;
+  }
 
-    public void setOwnerUserId(UUID value) {
-        ownerUserId = value;
-    }
+  public void setOwnerUserId(UUID value) {
+    ownerUserId = value;
+  }
 
-    public String getScope() {
-        return scope;
-    }
+  public String getScope() {
+    return scope;
+  }
 
-    public void setScope(String value) {
-        scope = value;
-    }
+  public void setScope(String value) {
+    scope = value;
+  }
 
-    public UUID getOrganizationId() {
-        return organizationId;
-    }
+  public UUID getOrganizationId() {
+    return organizationId;
+  }
 
-    public void setOrganizationId(UUID value) {
-        organizationId = value;
-    }
+  public void setOrganizationId(UUID value) {
+    organizationId = value;
+  }
 
-    public UUID getResourceId() {
-        return resourceId;
-    }
+  public UUID getResourceId() {
+    return resourceId;
+  }
 
-    public void setResourceId(UUID value) {
-        resourceId = value;
-    }
+  public void setResourceId(UUID value) {
+    resourceId = value;
+  }
 
-    public String getOriginalName() {
-        return originalName;
-    }
+  public String getOriginalName() {
+    return originalName;
+  }
 
-    public void setOriginalName(String value) {
-        originalName = value;
-    }
+  public void setOriginalName(String value) {
+    originalName = value;
+  }
 
-    public UUID getStorageKey() {
-        return storageKey;
-    }
+  public UUID getStorageKey() {
+    return storageKey;
+  }
 
-    public void setStorageKey(UUID value) {
-        storageKey = value;
-    }
+  public void setStorageKey(UUID value) {
+    storageKey = value;
+  }
 
-    public String getMimeType() {
-        return mimeType;
-    }
+  public String getMimeType() {
+    return mimeType;
+  }
 
-    public void setMimeType(String value) {
-        mimeType = value;
-    }
+  public void setMimeType(String value) {
+    mimeType = value;
+  }
 
-    public long getSizeBytes() {
-        return sizeBytes;
-    }
+  public long getSizeBytes() {
+    return sizeBytes;
+  }
 
-    public void setSizeBytes(long value) {
-        sizeBytes = value;
-    }
+  public void setSizeBytes(long value) {
+    sizeBytes = value;
+  }
 
-    public String getSha256() {
-        return sha256;
-    }
+  public String getSha256() {
+    return sha256;
+  }
 
-    public void setSha256(String value) {
-        sha256 = value;
-    }
+  public void setSha256(String value) {
+    sha256 = value;
+  }
 
-    public boolean getApplicationAttachmentActive() {
-        return applicationAttachmentActive;
-    }
+  public boolean getApplicationAttachmentActive() {
+    return applicationAttachmentActive;
+  }
 
-    public void setApplicationAttachmentActive(boolean value) {
-        applicationAttachmentActive = value;
-    }
+  public void setApplicationAttachmentActive(boolean value) {
+    applicationAttachmentActive = value;
+  }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
 
-    public void setCreatedAt(Instant value) {
-        createdAt = value;
-    }
+  public void setCreatedAt(Instant value) {
+    createdAt = value;
+  }
 }

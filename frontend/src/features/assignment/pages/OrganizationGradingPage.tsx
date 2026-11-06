@@ -1,40 +1,36 @@
-import { useState, useCallback } from "react";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog";
-import { apiClient } from "@/shared/api/apiClient";
-import { useRemote } from "@/shared/hooks/useRemote";
-import { RemoteState } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
-import type { Assignment, Submission } from "../types/assignment.types";
-import { AssignmentSubmissions } from "../components/AssignmentSubmissions";
+import { useState, useCallback } from "react"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog"
+import { apiClient } from "@/shared/api/apiClient"
+import { useRemote } from "@/shared/hooks/useRemote"
+import { RemoteState } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import type { Assignment, Submission } from "../types/assignment.types"
+import { AssignmentSubmissions } from "../components/AssignmentSubmissions"
 export default function OrganizationGradingPage() {
-  const { organization } = useOrganizationContext();
-  const [queuePage, setQueuePage] = useState(0);
-  const [initialSubmission, setInitialSubmission] = useState<
-      Submission | undefined
-    >(),
-    [status, setStatus] = useState("SUBMITTED");
+  const { organization } = useOrganizationContext()
+  const [queuePage, setQueuePage] = useState(0)
+  const [initialSubmission, setInitialSubmission] = useState<Submission | undefined>(),
+    [status, setStatus] = useState("SUBMITTED")
   const queue = useRemote(
     useCallback(
       () =>
         apiClient.get<{
           content: {
-            assignment: Assignment;
-            submission: Submission;
-            email: string;
-          }[];
-          totalPages: number;
-          totalElements: number;
-        }>(
-          `/organizations/${organization?.id}/grading/queue?status=${status}&page=${queuePage}`,
-        ),
+            assignment: Assignment
+            submission: Submission
+            email: string
+          }[]
+          totalPages: number
+          totalElements: number
+        }>(`/organizations/${organization?.id}/grading/queue?status=${status}&page=${queuePage}`),
       [organization?.id, status, queuePage],
     ),
-  );
+  )
   const [page, setPage] = useState(0),
     [selected, setSelected] = useState<Assignment | null>(null),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false)
   const remote = useRemote(
     useCallback(
       () =>
@@ -43,7 +39,7 @@ export default function OrganizationGradingPage() {
         ),
       [organization?.id, page],
     ),
-  );
+  )
   return (
     <OrganizerSurface
       title="Assignment grading"
@@ -57,8 +53,8 @@ export default function OrganizationGradingPage() {
           <select
             value={status}
             onChange={(e) => {
-              setStatus(e.target.value);
-              setQueuePage(0);
+              setStatus(e.target.value)
+              setQueuePage(0)
             }}
           >
             <option value="SUBMITTED">Awaiting grade</option>
@@ -79,17 +75,15 @@ export default function OrganizationGradingPage() {
             </div>
             <Button
               onClick={() => {
-                setInitialSubmission(row.submission);
-                setSelected(row.assignment);
+                setInitialSubmission(row.submission)
+                setSelected(row.assignment)
               }}
             >
               Review submission
             </Button>
           </div>
         ))}
-        {queue.data?.content.length === 0 && (
-          <p>No submissions in this queue.</p>
-        )}
+        {queue.data?.content.length === 0 && <p>No submissions in this queue.</p>}
         <div className="sporg-actions">
           <Button
             variant="outline"
@@ -100,11 +94,7 @@ export default function OrganizationGradingPage() {
           </Button>
           <Button
             variant="outline"
-            disabled={
-              !queue.data ||
-              queuePage + 1 >= queue.data.totalPages ||
-              queue.loading
-            }
+            disabled={!queue.data || queuePage + 1 >= queue.data.totalPages || queue.loading}
             onClick={() => setQueuePage(queuePage + 1)}
           >
             Next queue page
@@ -125,8 +115,8 @@ export default function OrganizationGradingPage() {
           </p>
           <Button
             onClick={() => {
-              setInitialSubmission(undefined);
-              setSelected(a);
+              setInitialSubmission(undefined)
+              setSelected(a)
             }}
           >
             Review submissions
@@ -149,8 +139,8 @@ export default function OrganizationGradingPage() {
           title={selected.title}
           busy={busy}
           close={() => {
-            setSelected(null);
-            queue.reload();
+            setSelected(null)
+            queue.reload()
           }}
         >
           <AssignmentSubmissions
@@ -161,5 +151,5 @@ export default function OrganizationGradingPage() {
         </WorkspaceDialog>
       )}
     </OrganizerSurface>
-  );
+  )
 }

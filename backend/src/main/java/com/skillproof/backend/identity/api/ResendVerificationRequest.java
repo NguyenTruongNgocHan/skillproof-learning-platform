@@ -4,14 +4,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record ResendVerificationRequest(
-        @NotBlank
-        @Email
-        @Size(max = 320)
-        String email
-        ) {
+public record ResendVerificationRequest(@NotBlank @Email @Size(max = 320) String email) {
 
-    public com.skillproof.backend.identity.application.model.ResendVerificationCommand toCommand() {
-        return new com.skillproof.backend.identity.application.model.ResendVerificationCommand(email);
-    }
+  public com.skillproof.backend.identity.application.model.ResendVerificationCommand toCommand() {
+    return new com.skillproof.backend.identity.application.model.ResendVerificationCommand(email);
+  }
 }

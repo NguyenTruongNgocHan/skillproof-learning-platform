@@ -126,9 +126,13 @@ public class CoursePricingService implements CourseSaleQuery {
         "offer",
         sale(version, c.accessMode(), c.price(), c.certificationPrice()),
         "history",
-        changes.findByCourseIdOrderByCreatedAtDesc(c.courseId()),
+        changes.findByCourseIdOrderByCreatedAtDesc(c.courseId()).stream()
+            .map(PriceHistory::from)
+            .toList(),
         "promotions",
-        promotions.findByCourseIdOrderByStartsAtDesc(c.courseId()));
+        promotions.findByCourseIdOrderByStartsAtDesc(c.courseId()).stream()
+            .map(PromotionView::from)
+            .toList());
   }
 
   @Transactional
@@ -200,5 +204,53 @@ public class CoursePricingService implements CourseSaleQuery {
 
   private long discount(long price, int percent) {
     return price == 0 ? 0 : Math.max(5000, price * (100 - percent) / 100);
+  }
+
+  public record PriceHistory(
+      UUID id,
+      UUID courseId,
+      UUID actorId,
+      String accessMode,
+      long previousPrice,
+      long priceVnd,
+      long previousCertificationPrice,
+      long certificationPriceVnd,
+      String reason,
+      Instant createdAt) {
+    static PriceHistory from(PriceChange p) {
+      return new PriceHistory(
+          p.getId(),
+          p.getCourseId(),
+          p.getActorId(),
+          p.getAccessMode(),
+          p.getPreviousPrice(),
+          p.getPriceVnd(),
+          p.getPreviousCertificationPrice(),
+          p.getCertificationPriceVnd(),
+          p.getReason(),
+          p.getCreatedAt());
+    }
+  }
+
+  public record PromotionView(
+      UUID id,
+      UUID courseId,
+      String name,
+      int percent,
+      Instant startsAt,
+      Instant endsAt,
+      boolean active,
+      UUID createdBy) {
+    static PromotionView from(CoursePromotion p) {
+      return new PromotionView(
+          p.getId(),
+          p.getCourseId(),
+          p.getName(),
+          p.getPercent(),
+          p.getStartsAt(),
+          p.getEndsAt(),
+          p.getActive(),
+          p.getCreatedBy());
+    }
   }
 }

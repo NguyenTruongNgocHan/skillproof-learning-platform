@@ -33,7 +33,7 @@ export default function MyLearningPage() {
 
   return (
     <LearnerShell>
-      <main className="learner-page learner-page--learning">
+      <section className="learner-page learner-page--learning">
         <header className="learner-page__hero">
           <div>
             <p className="learner-page__intro">Your learning</p>
@@ -135,7 +135,7 @@ export default function MyLearningPage() {
             ) : null}
           </>
         )}
-      </main>
+      </section>
     </LearnerShell>
   )
 }

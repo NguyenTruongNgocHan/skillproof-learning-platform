@@ -1,121 +1,131 @@
 package com.skillproof.backend.quiz.infrastructure.persistence;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "assessment_attempt")
 public class QuizAttempt {
 
-    @Id
-    private UUID id;
-    @Column(name = "assessment_id", nullable = false)
-    private UUID assessmentId;
-    @Column(name = "enrollment_id", nullable = false)
-    private UUID enrollmentId;
-    @Column(name = "learner_id", nullable = false)
-    private UUID learnerId;
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AttemptStatus status;
-    @Column(name = "started_at", nullable = false)
-    private Instant startedAt;
-    @Column(name = "deadline_at", nullable = false)
-    private Instant deadlineAt;
-    @Column(name = "submitted_at")
-    private Instant submittedAt;
-    @Column(name = "score_percent")
-    private Integer scorePercent;
-    private Boolean passed;
+  @Id private UUID id;
 
-    public enum AttemptStatus {
-        IN_PROGRESS, SUBMITTED, TIMED_OUT, SCORED
-    }
+  @Column(name = "assessment_id", nullable = false)
+  private UUID assessmentId;
 
-    public UUID getId() {
-        return id;
-    }
+  @Column(name = "enrollment_id", nullable = false)
+  private UUID enrollmentId;
 
-    public void setId(UUID value) {
-        id = value;
-    }
+  @Column(name = "learner_id", nullable = false)
+  private UUID learnerId;
 
-    public UUID getAssessmentId() {
-        return assessmentId;
-    }
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private AttemptStatus status;
 
-    public void setAssessmentId(UUID value) {
-        assessmentId = value;
-    }
+  @Column(name = "started_at", nullable = false)
+  private Instant startedAt;
 
-    public UUID getEnrollmentId() {
-        return enrollmentId;
-    }
+  @Column(name = "deadline_at", nullable = false)
+  private Instant deadlineAt;
 
-    public void setEnrollmentId(UUID value) {
-        enrollmentId = value;
-    }
+  @Column(name = "submitted_at")
+  private Instant submittedAt;
 
-    public UUID getLearnerId() {
-        return learnerId;
-    }
+  @Column(name = "score_percent")
+  private Integer scorePercent;
 
-    public void setLearnerId(UUID value) {
-        learnerId = value;
-    }
+  private Boolean passed;
 
-    public AttemptStatus getStatus() {
-        return status;
-    }
+  public enum AttemptStatus {
+    IN_PROGRESS,
+    SUBMITTED,
+    TIMED_OUT,
+    SCORED
+  }
 
-    public void setStatus(AttemptStatus value) {
-        status = value;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public Instant getStartedAt() {
-        return startedAt;
-    }
+  public void setId(UUID value) {
+    id = value;
+  }
 
-    public void setStartedAt(Instant value) {
-        startedAt = value;
-    }
+  public UUID getAssessmentId() {
+    return assessmentId;
+  }
 
-    public Instant getDeadlineAt() {
-        return deadlineAt;
-    }
+  public void setAssessmentId(UUID value) {
+    assessmentId = value;
+  }
 
-    public void setDeadlineAt(Instant value) {
-        deadlineAt = value;
-    }
+  public UUID getEnrollmentId() {
+    return enrollmentId;
+  }
 
-    public Instant getSubmittedAt() {
-        return submittedAt;
-    }
+  public void setEnrollmentId(UUID value) {
+    enrollmentId = value;
+  }
 
-    public void setSubmittedAt(Instant value) {
-        submittedAt = value;
-    }
+  public UUID getLearnerId() {
+    return learnerId;
+  }
 
-    public Integer getScorePercent() {
-        return scorePercent;
-    }
+  public void setLearnerId(UUID value) {
+    learnerId = value;
+  }
 
-    public void setScorePercent(Integer value) {
-        scorePercent = value;
-    }
+  public AttemptStatus getStatus() {
+    return status;
+  }
 
-    public Boolean getPassed() {
-        return passed;
-    }
+  public void setStatus(AttemptStatus value) {
+    status = value;
+  }
 
-    public void setPassed(Boolean value) {
-        passed = value;
-    }
+  public Instant getStartedAt() {
+    return startedAt;
+  }
+
+  public void setStartedAt(Instant value) {
+    startedAt = value;
+  }
+
+  public Instant getDeadlineAt() {
+    return deadlineAt;
+  }
+
+  public void setDeadlineAt(Instant value) {
+    deadlineAt = value;
+  }
+
+  public Instant getSubmittedAt() {
+    return submittedAt;
+  }
+
+  public void setSubmittedAt(Instant value) {
+    submittedAt = value;
+  }
+
+  public Integer getScorePercent() {
+    return scorePercent;
+  }
+
+  public void setScorePercent(Integer value) {
+    scorePercent = value;
+  }
+
+  public Boolean getPassed() {
+    return passed;
+  }
+
+  public void setPassed(Boolean value) {
+    passed = value;
+  }
 }

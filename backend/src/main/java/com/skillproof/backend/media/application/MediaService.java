@@ -374,6 +374,24 @@ public class MediaService
     cleanup.save(new MediaCleanupTask(asset.getStorageKey()));
   }
 
+  @Transactional(readOnly = true)
+  public List<Map<String, Object>> publicPreviewFiles(UUID resourceId) {
+    resources.requirePublicPreview(resourceId);
+    return repo.findByScopeAndResourceIdOrderByCreatedAtDesc("RESOURCE", resourceId).stream()
+        .map(this::meta)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public Download publicPreview(UUID resourceId, UUID assetId) {
+    resources.requirePublicPreview(resourceId);
+    var asset = one(assetId);
+    if (!"RESOURCE".equals(asset.getScope()) || !resourceId.equals(asset.getResourceId()))
+      throw new NotFoundException("MEDIA_NOT_FOUND", "Preview file not found");
+    return new Download(
+        asset.getStorageKey(), asset.getOriginalName(), asset.getMimeType(), asset.getSizeBytes());
+  }
+
   public InputStream open(UUID key) {
     return objects.open(key);
   }

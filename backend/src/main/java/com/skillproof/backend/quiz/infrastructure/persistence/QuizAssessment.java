@@ -1,158 +1,170 @@
 package com.skillproof.backend.quiz.infrastructure.persistence;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "assessment")
 public class QuizAssessment {
 
-    @Id
-    private UUID id;
-    @Column(name = "organization_id")
-    private UUID organizationId;
-    @Column(name = "version_id", nullable = false)
-    private UUID versionId;
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status;
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Kind kind;
-    @Column(nullable = false)
-    private String title;
-    @Column(name = "duration_seconds", nullable = false)
-    private int durationSeconds;
-    @Column(name = "pass_percent", nullable = false)
-    private int passPercent;
-    @Column(name = "max_attempts", nullable = false)
-    private int maxAttempts;
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+  @Id private UUID id;
 
-    @Column(name = "owner_scope", nullable = false, length = 12)
-    private String ownerScope = "COURSE";
-    @Column(name = "owner_id", nullable = false)
-    private UUID ownerId;
-    @Column(name = "required_for_completion", nullable = false)
-    private boolean requiredForCompletion;
+  @Column(name = "organization_id")
+  private UUID organizationId;
 
-    public String getOwnerScope() {
-        return ownerScope;
-    }
+  @Column(name = "version_id", nullable = false)
+  private UUID versionId;
 
-    public void setOwnerScope(String scope) {
-        ownerScope = scope;
-    }
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Status status;
 
-    public UUID getOwnerId() {
-        return ownerId;
-    }
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Kind kind;
 
-    public void setOwnerId(UUID owner) {
-        ownerId = owner;
-    }
+  @Column(nullable = false)
+  private String title;
 
-    public boolean isRequiredForCompletion() {
-        return requiredForCompletion;
-    }
+  @Column(name = "duration_seconds", nullable = false)
+  private int durationSeconds;
 
-    public void setRequiredForCompletion(boolean value) {
-        requiredForCompletion = value;
-    }
+  @Column(name = "pass_percent", nullable = false)
+  private int passPercent;
 
-    public enum Status {
-        DRAFT, PUBLISHED
-    }
+  @Column(name = "max_attempts", nullable = false)
+  private int maxAttempts;
 
-    public enum Kind {
-        PRACTICE, MOCK, OFFICIAL
-    }
+  @Column(name = "created_at", nullable = false)
+  private Instant createdAt;
 
-    public UUID getId() {
-        return id;
-    }
+  @Column(name = "owner_scope", nullable = false, length = 12)
+  private String ownerScope = "COURSE";
 
-    public void setId(UUID value) {
-        id = value;
-    }
+  @Column(name = "owner_id", nullable = false)
+  private UUID ownerId;
 
-    public UUID getOrganizationId() {
-        return organizationId;
-    }
+  @Column(name = "required_for_completion", nullable = false)
+  private boolean requiredForCompletion;
 
-    public void setOrganizationId(UUID value) {
-        organizationId = value;
-    }
+  public String getOwnerScope() {
+    return ownerScope;
+  }
 
-    public UUID getVersionId() {
-        return versionId;
-    }
+  public void setOwnerScope(String scope) {
+    ownerScope = scope;
+  }
 
-    public void setVersionId(UUID value) {
-        versionId = value;
-    }
+  public UUID getOwnerId() {
+    return ownerId;
+  }
 
-    public Status getStatus() {
-        return status;
-    }
+  public void setOwnerId(UUID owner) {
+    ownerId = owner;
+  }
 
-    public void setStatus(Status value) {
-        status = value;
-    }
+  public boolean isRequiredForCompletion() {
+    return requiredForCompletion;
+  }
 
-    public Kind getKind() {
-        return kind;
-    }
+  public void setRequiredForCompletion(boolean value) {
+    requiredForCompletion = value;
+  }
 
-    public void setKind(Kind value) {
-        kind = value;
-    }
+  public enum Status {
+    DRAFT,
+    PUBLISHED
+  }
 
-    public String getTitle() {
-        return title;
-    }
+  public enum Kind {
+    PRACTICE,
+    MOCK,
+    OFFICIAL
+  }
 
-    public void setTitle(String value) {
-        title = value;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public int getDurationSeconds() {
-        return durationSeconds;
-    }
+  public void setId(UUID value) {
+    id = value;
+  }
 
-    public void setDurationSeconds(int value) {
-        durationSeconds = value;
-    }
+  public UUID getOrganizationId() {
+    return organizationId;
+  }
 
-    public int getPassPercent() {
-        return passPercent;
-    }
+  public void setOrganizationId(UUID value) {
+    organizationId = value;
+  }
 
-    public void setPassPercent(int value) {
-        passPercent = value;
-    }
+  public UUID getVersionId() {
+    return versionId;
+  }
 
-    public int getMaxAttempts() {
-        return maxAttempts;
-    }
+  public void setVersionId(UUID value) {
+    versionId = value;
+  }
 
-    public void setMaxAttempts(int value) {
-        maxAttempts = value;
-    }
+  public Status getStatus() {
+    return status;
+  }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+  public void setStatus(Status value) {
+    status = value;
+  }
 
-    public void setCreatedAt(Instant value) {
-        createdAt = value;
-    }
+  public Kind getKind() {
+    return kind;
+  }
+
+  public void setKind(Kind value) {
+    kind = value;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String value) {
+    title = value;
+  }
+
+  public int getDurationSeconds() {
+    return durationSeconds;
+  }
+
+  public void setDurationSeconds(int value) {
+    durationSeconds = value;
+  }
+
+  public int getPassPercent() {
+    return passPercent;
+  }
+
+  public void setPassPercent(int value) {
+    passPercent = value;
+  }
+
+  public int getMaxAttempts() {
+    return maxAttempts;
+  }
+
+  public void setMaxAttempts(int value) {
+    maxAttempts = value;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(Instant value) {
+    createdAt = value;
+  }
 }

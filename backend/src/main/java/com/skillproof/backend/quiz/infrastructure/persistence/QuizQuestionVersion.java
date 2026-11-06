@@ -1,65 +1,67 @@
 package com.skillproof.backend.quiz.infrastructure.persistence;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "question_version")
 public class QuizQuestionVersion {
 
-    @Id
-    private UUID id;
-    @Column(name = "question_id", nullable = false)
-    private UUID questionId;
-    @Column(name = "version_no", nullable = false)
-    private int versionNo;
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-    @Column(nullable = false)
-    private String stem;
+  @Id private UUID id;
 
-    public UUID getId() {
-        return id;
-    }
+  @Column(name = "question_id", nullable = false)
+  private UUID questionId;
 
-    public void setId(UUID value) {
-        id = value;
-    }
+  @Column(name = "version_no", nullable = false)
+  private int versionNo;
 
-    public UUID getQuestionId() {
-        return questionId;
-    }
+  @Column(name = "created_at", nullable = false)
+  private Instant createdAt;
 
-    public void setQuestionId(UUID value) {
-        questionId = value;
-    }
+  @Column(nullable = false)
+  private String stem;
 
-    public int getVersionNo() {
-        return versionNo;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public void setVersionNo(int value) {
-        versionNo = value;
-    }
+  public void setId(UUID value) {
+    id = value;
+  }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+  public UUID getQuestionId() {
+    return questionId;
+  }
 
-    public void setCreatedAt(Instant value) {
-        createdAt = value;
-    }
+  public void setQuestionId(UUID value) {
+    questionId = value;
+  }
 
-    public String getStem() {
-        return stem;
-    }
+  public int getVersionNo() {
+    return versionNo;
+  }
 
-    public void setStem(String value) {
-        stem = value;
-    }
+  public void setVersionNo(int value) {
+    versionNo = value;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(Instant value) {
+    createdAt = value;
+  }
+
+  public String getStem() {
+    return stem;
+  }
+
+  public void setStem(String value) {
+    stem = value;
+  }
 }

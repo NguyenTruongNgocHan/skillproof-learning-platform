@@ -1,16 +1,13 @@
-import { useState, useCallback } from "react";
-import { feedbackApi } from "../api/feedbackApi";
-import { useRemote } from "@/shared/hooks/useRemote";
-import { RemoteState } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
+import { useState, useCallback } from "react"
+import { feedbackApi } from "../api/feedbackApi"
+import { useRemote } from "@/shared/hooks/useRemote"
+import { RemoteState } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
 export function ReviewModerationHistory({ id }: { id: string }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
   const remote = useRemote(
-    useCallback(
-      () => (open ? feedbackApi.history(id) : Promise.resolve(null)),
-      [id, open],
-    ),
-  );
+    useCallback(() => (open ? feedbackApi.history(id) : Promise.resolve(null)), [id, open]),
+  )
   return (
     <section>
       <Button variant="ghost" onClick={() => setOpen(!open)}>
@@ -19,9 +16,7 @@ export function ReviewModerationHistory({ id }: { id: string }) {
       {open && (
         <>
           <RemoteState {...remote} retry={remote.reload} />
-          {remote.data?.length === 0 && (
-            <p>No moderation decisions recorded.</p>
-          )}
+          {remote.data?.length === 0 && <p>No moderation decisions recorded.</p>}
           {remote.data?.map((r) => (
             <p key={r.id}>
               {r.decision} · {r.reason}
@@ -33,5 +28,5 @@ export function ReviewModerationHistory({ id }: { id: string }) {
         </>
       )}
     </section>
-  );
+  )
 }

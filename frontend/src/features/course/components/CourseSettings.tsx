@@ -1,74 +1,50 @@
-import { useState, useEffect } from "react";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { useAction } from "@/shared/hooks/useRemote";
-import { ActionNotice } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import type { CourseRecord, CourseOutline } from "../types/course.types";
-import { courseApi } from "../api/courseApi";
+import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { useAction } from "@/shared/hooks/useRemote"
+import { ActionNotice } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
+import type { CourseRecord, CourseOutline } from "../types/course.types"
+import { courseApi } from "../api/courseApi"
 export function CourseSettings({
   course,
   outline,
   refresh,
   onDirtyChange,
 }: {
-  course: CourseRecord;
-  outline: CourseOutline;
-  refresh: () => void;
-  onDirtyChange?: (dirty: boolean) => void;
+  course: CourseRecord
+  outline: CourseOutline
+  refresh: () => void
+  onDirtyChange?: (dirty: boolean) => void
 }) {
-  const action = useAction(refresh);
-  const editable = outline.version.status === "DRAFT";
+  const editable = outline.version.status === "DRAFT"
   const [title, setTitle] = useState(course.title),
-    [summary, setSummary] = useState(course.summary);
-  const [resources, setResources] = useState(
-      outline.policy.require_all_resources,
-    ),
-    [assessments, setAssessments] = useState(
-      outline.policy.require_official_assessments,
-    );
-  const [mode, setMode] = useState(outline.offer.accessMode),
-    [price, setPrice] = useState(String(outline.offer.priceVnd)),
-    [certPrice, setCertPrice] = useState(
-      String(outline.offer.certificationPriceVnd),
-    );
-  const { setDirty } = useOrganizationContext();
-  const dirty =
-    title !== course.title ||
-    summary !== course.summary ||
-    resources !== outline.policy.require_all_resources ||
-    assessments !== outline.policy.require_official_assessments ||
-    mode !== outline.offer.accessMode ||
-    price !== String(outline.offer.priceVnd) ||
-    certPrice !== String(outline.offer.certificationPriceVnd);
+    [summary, setSummary] = useState(course.summary)
+  const [official, setOfficial] = useState(outline.policy.require_official_assessments)
+  const { setDirty } = useOrganizationContext()
+  const detailsDirty = title !== course.title || summary !== course.summary
+  const policyDirty =
+    official !== outline.policy.require_official_assessments ||
+    !outline.policy.require_all_resources
+  const dirty = detailsDirty || policyDirty
+  const action = useAction(refresh)
   useEffect(() => {
-    onDirtyChange?.(dirty);
-    return () => onDirtyChange?.(false);
-  }, [dirty, onDirtyChange]);
-  useEffect(() => {
-    setDirty(
-      "course-settings",
-      title !== course.title ||
-        summary !== course.summary ||
-        resources !== outline.policy.require_all_resources ||
-        assessments !== outline.policy.require_official_assessments ||
-        mode !== outline.offer.accessMode ||
-        price !== String(outline.offer.priceVnd) ||
-        certPrice !== String(outline.offer.certificationPriceVnd),
-    );
-    return () => setDirty("course-settings", false);
-  }, [
-    title,
-    summary,
-    resources,
-    assessments,
-    mode,
-    price,
-    certPrice,
-    course,
-    outline,
-    setDirty,
-  ]);
+    setDirty("course-settings", dirty)
+    onDirtyChange?.(dirty)
+    return () => {
+      setDirty("course-settings", false)
+      onDirtyChange?.(false)
+    }
+  }, [dirty, onDirtyChange, setDirty])
+  function canSave(otherDirty: boolean) {
+    return (
+      !otherDirty ||
+      window.confirm(
+        "Saving reloads the saved course. Discard unsaved changes in the other settings form?",
+      )
+    )
+  }
   return (
     <>
       <ActionNotice {...action} />
@@ -77,19 +53,21 @@ export function CourseSettings({
           <h2>Course details</h2>
           <form
             className="sporg-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void action.run(() =>
-                courseApi.edit(course.id, { title, summary }),
-              );
+            onSubmit={(event) => {
+              event.preventDefault()
+              if (editable && canSave(policyDirty))
+                void action.run(
+                  () => courseApi.edit(course.id, { title: title.trim(), summary: summary.trim() }),
+                  "Course details saved.",
+                )
             }}
           >
             <Input
               label="Title"
               required
               maxLength={180}
-              value={title}
               disabled={!editable || action.busy}
+              value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
             <label>
@@ -97,13 +75,13 @@ export function CourseSettings({
               <textarea
                 required
                 maxLength={1000}
-                value={summary}
                 disabled={!editable || action.busy}
+                value={summary}
                 onChange={(e) => setSummary(e.target.value)}
               />
             </label>
             {editable && (
-              <Button type="submit" disabled={action.busy}>
+              <Button type="submit" disabled={action.busy || !detailsDirty}>
                 Save details
               </Button>
             )}
@@ -113,120 +91,58 @@ export function CourseSettings({
           <h2>Completion rules</h2>
           <form
             className="sporg-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void action.run(() =>
-                courseApi.policy(outline.version.id, {
-                  requireAllResources: resources,
-                  requireOfficialAssessments: assessments,
-                }),
-              );
+            onSubmit={(event) => {
+              event.preventDefault()
+              if (editable && canSave(detailsDirty))
+                void action.run(
+                  () =>
+                    courseApi.policy(outline.version.id, {
+                      requireAllResources: true,
+                      requireOfficialAssessments: official,
+                    }),
+                  "Completion policy saved.",
+                )
             }}
           >
             <label className="sporg-checkbox">
-              <input
-                type="checkbox"
-                checked={resources}
-                disabled={!editable || action.busy}
-                onChange={(e) => setResources(e.target.checked)}
-              />{" "}
-              Require resource completion
+              <input type="checkbox" checked disabled readOnly /> Required resources must be
+              completed
             </label>
             <label className="sporg-checkbox">
               <input
                 type="checkbox"
-                checked={assessments}
                 disabled={!editable || action.busy}
-                onChange={(e) => setAssessments(e.target.checked)}
+                checked={official}
+                onChange={(e) => setOfficial(e.target.checked)}
               />{" "}
               Require official assessments
             </label>
             <p>
-              Required assignments and activities also contribute to completion.
-              Course completion does not automatically issue a certificate.
+              All lessons, required resources, required official assessments and required
+              assignments must be completed. Optional resources and practice/mock assessments do not
+              block completion. Course completion does not automatically issue a certificate.
             </p>
             {editable && (
-              <Button type="submit" disabled={action.busy}>
+              <Button type="submit" disabled={action.busy || !policyDirty}>
                 Save completion policy
               </Button>
             )}
           </form>
         </section>
         <section className="sporg-card sporg-full">
-          <h2>Access and pricing</h2>
+          <h2>Access & pricing</h2>
           <p>
-            Enter all fields explicitly to replace the offer. Existing offer
-            values are not available here; blank fields do not mean free access.
+            Initial and subsequent commercial prices are managed in the pricing workspace with
+            MANAGE_PRICING authority. Sales availability remains separate from content publication.
           </p>
-          {editable ? (
-            <form
-              className="sporg-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void action.run(async () => {
-                  await courseApi.offer(outline.version.id, {
-                    accessMode: mode,
-                    priceVnd: Number(price),
-                    certificationPriceVnd: Number(certPrice),
-                  });
-                  setMode("");
-                  setPrice("");
-                  setCertPrice("");
-                }, "Offer saved.");
-              }}
-            >
-              <div className="sporg-fields">
-                <label>
-                  Access mode
-                  <select
-                    required
-                    value={mode}
-                    disabled={action.busy}
-                    onChange={(e) => {
-                      setMode(e.target.value);
-                      setPrice("");
-                      setCertPrice("");
-                    }}
-                  >
-                    <option value="">Choose access mode</option>
-                    <option value="PUBLIC">Public: free or paid</option>
-                    <option value="RESTRICTED">
-                      Restricted: organization grants
-                    </option>
-                  </select>
-                </label>
-                <Input
-                  label="Learning price (VND)"
-                  type="number"
-                  required
-                  min={0}
-                  max={mode === "RESTRICTED" ? 0 : 1000000000}
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                />
-                <Input
-                  label="Certification price (VND)"
-                  type="number"
-                  required
-                  min={0}
-                  max={mode === "RESTRICTED" ? 0 : 1000000000}
-                  value={certPrice}
-                  onChange={(e) => setCertPrice(e.target.value)}
-                />
-              </div>
-              <p>
-                Public prices: 0 or 5,000–1,000,000,000 VND. Restricted offers
-                require both prices to be 0.
-              </p>
-              <Button type="submit" disabled={action.busy}>
-                Replace offer
-              </Button>
-            </form>
-          ) : (
-            <p>Pricing can only be configured in a draft.</p>
-          )}
+          <Link to={`/organizer/pricing?version=${encodeURIComponent(outline.version.id)}`}>
+            Open pricing for this course version
+          </Link>
+          <p>
+            Version ID for your pricing manager: <code>{outline.version.id}</code>
+          </p>
         </section>
       </div>
     </>
-  );
+  )
 }

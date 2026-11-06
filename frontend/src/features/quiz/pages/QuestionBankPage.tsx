@@ -1,164 +1,277 @@
-import { useCallback, useState } from "react";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { useAction, useRemote } from "@/shared/hooks/useRemote";
-import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog";
-import { quizApi } from "../api/quizApi";
-import { QuestionEditor } from "../components/QuestionEditor";
+import { useCallback, useState } from "react"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { useAction, useRemote } from "@/shared/hooks/useRemote"
+import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
+import Pagination from "@/shared/ui/Pagination"
+import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog"
+import { quizApi } from "../api/quizApi"
+import { questionBankApi } from "../api/questionBankApi"
+import { QuestionEditor } from "../components/QuestionEditor"
+import { QuestionHistory } from "../components/QuestionHistory"
+import type { Bank } from "../types/quiz.types"
 export default function QuestionBankPage() {
-  const [editorBusy, setEditorBusy] = useState(false);
-  const { organization } = useOrganizationContext();
-  const org = organization?.id ?? "";
-  const banks = useRemote(useCallback(() => quizApi.banks(org), [org]));
-  const [chosen, setChosen] = useState("");
-  const bank =
-    banks.data?.find((b) => b.id === chosen)?.id ?? banks.data?.[0]?.id ?? "";
+  const { organization, confirmDiscard } = useOrganizationContext()
+  const org = organization?.id ?? ""
+  const [bankQuery, setBankQuery] = useState("")
+  const [questionQuery, setQuestionQuery] = useState("")
+  const [includeArchived, setIncludeArchived] = useState(false)
+  const [bankPage, setBankPage] = useState(0)
+  const [questionPage, setQuestionPage] = useState(0)
+  const banks = useRemote(
+    useCallback(
+      () => questionBankApi.banks(org, bankQuery, includeArchived, bankPage),
+      [org, bankQuery, includeArchived, bankPage],
+    ),
+  )
+  const [chosen, setChosen] = useState<Bank | null>(null)
+  const bank = banks.data?.content.find((b) => b.id === chosen?.id) ?? chosen
   const questions = useRemote(
     useCallback(
-      () => (bank ? quizApi.questions(bank) : Promise.resolve([])),
-      [bank],
+      () =>
+        bank
+          ? questionBankApi.questions(bank.id, questionQuery, includeArchived, questionPage)
+          : Promise.resolve(null),
+      [bank, questionQuery, includeArchived, questionPage],
     ),
-  );
-  const [creating, setCreating] = useState(false),
-    [bankName, setBankName] = useState(""),
-    [editor, setEditor] = useState<{ id?: string } | null>(null);
-  const [search, setSearch] = useState("");
-  const action = useAction(banks.reload);
+  )
+  const [editor, setEditor] = useState<{ id?: string } | null>(null)
+  const [editorBusy, setEditorBusy] = useState(false)
+  const [history, setHistory] = useState("")
+  const [dialog, setDialog] = useState<"create" | "rename" | null>(null)
+  const [title, setTitle] = useState("")
+  const action = useAction(() => {
+    banks.reload()
+    questions.reload()
+  })
   return (
     <OrganizerSurface
       title="Question banks"
-      description="Build reusable questions with clear ownership and immutable revisions."
+      description="Reusable questions with immutable revisions and archive history."
       authority="MANAGE_CONTENT"
     >
+      <ActionNotice {...action} />
       <div className="sporg-toolbar">
-        <input
-          aria-label="Search questions"
-          placeholder="Search questions…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+        <Input
+          label="Search all banks"
+          value={bankQuery}
+          onChange={(e) => {
+            setBankQuery(e.target.value)
+            setBankPage(0)
+          }}
         />
-        <Button onClick={() => setCreating(true)}>Create bank</Button>
+        <label className="sporg-checkbox">
+          <input
+            type="checkbox"
+            checked={includeArchived}
+            onChange={(e) => {
+              setIncludeArchived(e.target.checked)
+              setBankPage(0)
+              setQuestionPage(0)
+            }}
+          />
+          Include archived
+        </label>
+        <Button
+          onClick={() => {
+            setDialog("create")
+            setTitle("")
+          }}
+        >
+          Create bank
+        </Button>
       </div>
       <RemoteState {...banks} retry={banks.reload} />
       <div className="sporg-bank-workspace">
         <aside className="sporg-card">
           <h2>Banks</h2>
-          {banks.data?.length === 0 && (
-            <p>No banks yet. Create one to organize questions.</p>
-          )}
-          {banks.data?.map((b) => (
+          {banks.data?.content.length === 0 && <p>No matching banks.</p>}
+          {banks.data?.content.map((b) => (
             <button
-              className="sporg-bank-button"
               key={b.id}
-              aria-pressed={bank === b.id}
+              className="sporg-bank-button"
+              aria-pressed={bank?.id === b.id}
               onClick={() => {
-                setChosen(b.id);
-                setSearch("");
+                if (confirmDiscard()) {
+                  setChosen(b)
+                  setQuestionPage(0)
+                  setQuestionQuery("")
+                }
               }}
             >
               {b.title}
+              {b.archived && " · Archived"}
             </button>
           ))}
+          {banks.data && (
+            <Pagination
+              {...banks.data}
+              page={bankPage}
+              busy={banks.loading}
+              onChange={setBankPage}
+            />
+          )}
         </aside>
         <section className="sporg-card">
-          <div className="sporg-toolbar">
-            <h2>
-              {banks.data?.find((b) => b.id === bank)?.title ?? "Questions"}
-            </h2>
-            <Button
-              variant="outline"
-              disabled={!bank}
-              onClick={() => setEditor({})}
-            >
-              Add question
-            </Button>
-          </div>
-          <RemoteState
-            loading={Boolean(bank) && questions.loading}
-            error={questions.error}
-            retry={questions.reload}
-          />
-          {bank && questions.data?.length === 0 && (
-            <div className="sporg-empty">
-              <h3>Add your first question</h3>
+          <h2>{bank?.title ?? "Select a bank"}</h2>
+          {bank && (
+            <>
               <p>
-                Each question needs at least two options and one correct answer.
+                {bank.archived
+                  ? "Archived bank: history remains readable; authoring is disabled."
+                  : "Active bank"}
               </p>
-            </div>
-          )}
-          {questions.data
-            ?.filter((q) => q.stem.toLowerCase().includes(search.toLowerCase()))
-            .map((q) => (
-              <div className="sporg-row" key={q.id}>
-                <div>
-                  <strong>{q.stem}</strong>
-                  <small>Revision {q.version_no}</small>
+              {!bank.archived && (
+                <div className="sporg-actions">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setTitle(bank.title)
+                      setDialog("rename")
+                    }}
+                  >
+                    Rename bank
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={action.busy}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Archive this bank? Its questions become read-only and existing snapshots are retained.",
+                        )
+                      )
+                        void action.run(async () => {
+                          await questionBankApi.archiveBank(bank.id)
+                          setChosen({ ...bank, archived: true })
+                        }, "Bank archived.")
+                    }}
+                  >
+                    Archive bank
+                  </Button>
+                  <Button onClick={() => setEditor({})}>Add question</Button>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setEditor({ id: q.id })}
-                >
-                  Create revision
-                </Button>
-              </div>
-            ))}
+              )}
+              <Input
+                label="Search all questions in this bank"
+                value={questionQuery}
+                onChange={(e) => {
+                  setQuestionQuery(e.target.value)
+                  setQuestionPage(0)
+                }}
+              />
+              <RemoteState {...questions} retry={questions.reload} />
+              {questions.data?.content.length === 0 && <p>No matching questions.</p>}
+              {questions.data?.content.map((q) => (
+                <div className="sporg-row" key={q.id}>
+                  <div>
+                    <strong>{q.stem}</strong>
+                    <small>
+                      Revision {q.version_no}
+                      {q.archived && " · Archived"}
+                    </small>
+                  </div>
+                  <div className="sporg-actions">
+                    <Button variant="outline" onClick={() => setHistory(q.id)}>
+                      Revision history
+                    </Button>
+                    {!bank.archived && !q.archived && (
+                      <>
+                        <Button variant="outline" onClick={() => setEditor({ id: q.id })}>
+                          Create revision
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          disabled={action.busy}
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Archive this question? Existing assessment snapshots remain intact.",
+                              )
+                            )
+                              void action.run(
+                                () => questionBankApi.archiveQuestion(q.id),
+                                "Question archived.",
+                              )
+                          }}
+                        >
+                          Archive question
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {questions.data && (
+                <Pagination
+                  {...questions.data}
+                  page={questionPage}
+                  busy={questions.loading}
+                  onChange={setQuestionPage}
+                />
+              )}
+            </>
+          )}
         </section>
       </div>
-      {creating && (
+      {dialog && (
         <WorkspaceDialog
-          title="Create question bank"
+          title={dialog === "create" ? "Create question bank" : "Rename question bank"}
           busy={action.busy}
-          close={() => setCreating(false)}
+          close={() => setDialog(null)}
         >
           <form
             className="sporg-form"
             onSubmit={(e) => {
-              e.preventDefault();
+              e.preventDefault()
               void action.run(async () => {
-                const b = await quizApi.createBank(org, bankName.trim());
-                setChosen(b.id);
-                setBankName("");
-                setCreating(false);
-              }, "Question bank created.");
+                const b =
+                  dialog === "create"
+                    ? await quizApi.createBank(org, title.trim())
+                    : await questionBankApi.rename(bank!.id, title.trim())
+                setChosen(b)
+                setDialog(null)
+              }, "Question bank saved.")
             }}
           >
             <Input
-              label="Bank name"
+              label="Bank title"
               required
               maxLength={180}
-              value={bankName}
-              onChange={(e) => setBankName(e.target.value)}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
             <ActionNotice {...action} />
-            <Button type="submit" disabled={action.busy}>
-              Create bank
+            <Button type="submit" disabled={action.busy || !title.trim()}>
+              Save bank
             </Button>
           </form>
         </WorkspaceDialog>
       )}
-      {editor && (
+      {editor && bank && (
         <WorkspaceDialog
           busy={editorBusy}
           title={editor.id ? "Create question revision" : "Add question"}
-          close={() => {
-            if (window.confirm("Discard this question editor?"))
-              setEditor(null);
-          }}
+          close={() => setEditor(null)}
         >
           <QuestionEditor
-            onBusyChange={setEditorBusy}
-            bankId={bank}
+            bankId={bank.id}
             questionId={editor.id}
+            onBusyChange={setEditorBusy}
             saved={() => {
-              questions.reload();
-              setEditor(null);
+              questions.reload()
+              setEditor(null)
             }}
           />
         </WorkspaceDialog>
       )}
+      {history && (
+        <WorkspaceDialog title="Question revision history" close={() => setHistory("")}>
+          <QuestionHistory questionId={history} />
+        </WorkspaceDialog>
+      )}
     </OrganizerSurface>
-  );
+  )
 }

@@ -1,33 +1,33 @@
-import { useCallback, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import PublicHeader from "@/shared/components/layout/PublicHeader";
-import PublicFooter from "@/shared/components/layout/PublicFooter";
-import { apiClient } from "@/shared/api/apiClient";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import MediaPanel from "@/features/media/components/MediaPanel";
-import { FeedbackPanel } from "@/features/feedback/components/FeedbackPanel";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
-import type { LibraryResource } from "../types/library.types";
-import "@/features/organization/styles/organizer.css";
+import { useCallback, useState } from "react"
+import { Link, useParams } from "react-router-dom"
+import PublicHeader from "@/shared/components/layout/PublicHeader"
+import PublicFooter from "@/shared/components/layout/PublicFooter"
+import { apiClient } from "@/shared/api/apiClient"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import MediaPanel from "@/features/media/components/MediaPanel"
+import { FeedbackPanel } from "@/features/feedback/components/FeedbackPanel"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import type { LibraryResource } from "../types/library.types"
+import "@/features/organization/styles/organizer.css"
 export default function PublicResourcePage() {
-  const { id = "" } = useParams();
-  const { user } = useAuth();
-  const [content, setContent] = useState<LibraryResource | null>(null);
+  const { id = "" } = useParams()
+  const { user } = useAuth()
+  const [content, setContent] = useState<LibraryResource | null>(null)
   const remote = useRemote(
     useCallback(
       () =>
         apiClient.get<{
-          id: string;
-          title: string;
-          summary: string;
-          priceVnd: number;
+          id: string
+          title: string
+          summary: string
+          priceVnd: number
         }>(`/library/${id}`),
       [id],
     ),
-  );
-  const action = useAction();
+  )
+  const action = useAction()
   return (
     <>
       <PublicHeader />
@@ -53,11 +53,7 @@ export default function PublicResourcePage() {
                   onClick={() =>
                     void action.run(
                       async () =>
-                        setContent(
-                          await apiClient.get<LibraryResource>(
-                            `/library/${id}/content`,
-                          ),
-                        ),
+                        setContent(await apiClient.get<LibraryResource>(`/library/${id}/content`)),
                       "Resource opened.",
                     )
                   }
@@ -66,9 +62,7 @@ export default function PublicResourcePage() {
                 </Button>
                 {remote.data.priceVnd > 0 && (
                   <Button asChild variant="outline">
-                    <Link to={`/checkout?type=RESOURCE&productId=${id}`}>
-                      Purchase resource
-                    </Link>
+                    <Link to={`/checkout?type=RESOURCE&productId=${id}`}>Purchase resource</Link>
                   </Button>
                 )}
               </div>
@@ -89,5 +83,5 @@ export default function PublicResourcePage() {
       </main>
       <PublicFooter />
     </>
-  );
+  )
 }

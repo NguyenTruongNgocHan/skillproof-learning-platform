@@ -1,10 +1,10 @@
 export interface MediaItem {
-  sha256?: string;
-  id: string;
-  name: string;
-  mimeType: string;
-  size: number;
-  createdAt: string;
+  sha256?: string
+  id: string
+  name: string
+  mimeType: string
+  size: number
+  createdAt: string
 }
 
 export type MediaScope =
@@ -15,4 +15,4 @@ export type MediaScope =
   | "COURSE_COVER"
   | "RESOURCE"
   | "LIBRARY"
-  | "SUBMISSION";
+  | "SUBMISSION"

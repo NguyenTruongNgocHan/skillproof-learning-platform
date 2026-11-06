@@ -2,10 +2,11 @@ package com.skillproof.backend.course.infrastructure;
 
 import java.util.Optional;
 import java.util.UUID;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 
-interface CompletionEvaluationJpaRepository extends JpaRepository<CompletionEvaluationEntity, UUID> {
+interface CompletionEvaluationJpaRepository
+    extends JpaRepository<CompletionEvaluationEntity, UUID> {
 
-    Optional<CompletionEvaluationEntity> findFirstByEnrollmentIdOrderByEvaluatedAtDesc(UUID enrollmentId);
+  Optional<CompletionEvaluationEntity> findFirstByEnrollmentIdOrderByEvaluatedAtDesc(
+      UUID enrollmentId);
 }

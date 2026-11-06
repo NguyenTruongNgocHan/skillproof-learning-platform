@@ -5,11 +5,9 @@ import java.util.UUID;
 
 public interface CoursePlanQuery {
 
-    record CourseItem(UUID courseId, UUID versionId, String title, boolean completed) {
+  record CourseItem(UUID courseId, UUID versionId, String title, boolean completed) {}
 
-    }
+  CourseItem item(UUID learner, UUID versionId);
 
-    CourseItem item(UUID learner, UUID versionId);
-
-    Optional<UUID> enrolledVersion(UUID learner, UUID courseId);
+  Optional<UUID> enrolledVersion(UUID learner, UUID courseId);
 }

@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface LibraryMediaQuery {
 
-    boolean hasLibraryFiles(UUID resourceId);
+  boolean hasLibraryFiles(UUID resourceId);
 }

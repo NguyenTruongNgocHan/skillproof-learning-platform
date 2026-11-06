@@ -1,7 +1,8 @@
+import { useDialogFocus } from "@/shared/hooks/useDialogFocus"
 import type { NavItem } from "@/app/config/navigation"
 import AppSidebar from "@/shared/components/layout/AppSidebar"
 import { X } from "lucide-react"
-import { useEffect } from "react"
+import { useRef } from "react"
 
 interface MobileDrawerProps {
   open: boolean
@@ -10,14 +11,8 @@ interface MobileDrawerProps {
 }
 
 export default function MobileDrawer({ open, onClose, items }: MobileDrawerProps) {
-  useEffect(() => {
-    if (!open) return
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose()
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [open, onClose])
+  const drawer = useRef<HTMLElement>(null)
+  useDialogFocus(drawer, open, onClose)
   if (!open) return null
 
   return (
@@ -32,6 +27,11 @@ export default function MobileDrawer({ open, onClose, items }: MobileDrawerProps
         onClick={onClose}
       />
       <aside
+        ref={drawer}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Workspace navigation"
+        tabIndex={-1}
         style={{
           position: "fixed",
           top: 0,

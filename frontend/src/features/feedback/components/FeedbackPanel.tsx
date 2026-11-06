@@ -1,26 +1,23 @@
-import { useCallback, useState } from "react";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import { feedbackApi } from "../api/feedbackApi";
-import { FeedbackForm } from "./FeedbackForm";
-import Button from "@/shared/ui/Button";
+import { useCallback, useState } from "react"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import { feedbackApi } from "../api/feedbackApi"
+import { FeedbackForm } from "./FeedbackForm"
+import Button from "@/shared/ui/Button"
 export function FeedbackPanel({
   type,
   target,
 }: {
-  type: "COURSE" | "RESOURCE" | "CERTIFICATE";
-  target: string;
+  type: "COURSE" | "RESOURCE" | "CERTIFICATE"
+  target: string
 }) {
-  const { user } = useAuth();
-  const [page, setPage] = useState(0);
+  const { user } = useAuth()
+  const [page, setPage] = useState(0)
   const remote = useRemote(
-    useCallback(
-      () => feedbackApi.publicList(type, target, page),
-      [type, target, page],
-    ),
-  );
-  const action = useAction();
+    useCallback(() => feedbackApi.publicList(type, target, page), [type, target, page]),
+  )
+  const action = useAction()
   return (
     <section className="sporg-card">
       <h2>Verified learner feedback</h2>
@@ -38,9 +35,7 @@ export function FeedbackPanel({
             <article className="sporg-evidence-row" key={r.id}>
               <strong>{r.rating}/5 · Verified experience</strong>
               <p>{r.body}</p>
-              {r.reply && (
-                <blockquote>Organization response: {r.reply}</blockquote>
-              )}
+              {r.reply && <blockquote>Organization response: {r.reply}</blockquote>}
               <small>{new Date(r.createdAt).toLocaleDateString()}</small>
               {user && (
                 <Button
@@ -48,12 +43,12 @@ export function FeedbackPanel({
                   onClick={() => {
                     const reason = window.prompt(
                       "Explain the policy violation (negative feedback alone is not a violation)",
-                    );
+                    )
                     if (reason?.trim())
                       void action.run(
                         () => feedbackApi.report(r.id, reason),
                         "Report sent for moderation.",
-                      );
+                      )
                   }}
                 >
                   Report
@@ -62,11 +57,7 @@ export function FeedbackPanel({
             </article>
           ))}
           <div className="sporg-actions">
-            <Button
-              variant="outline"
-              disabled={page === 0}
-              onClick={() => setPage(page - 1)}
-            >
+            <Button variant="outline" disabled={page === 0} onClick={() => setPage(page - 1)}>
               Previous
             </Button>
             <Button
@@ -88,5 +79,5 @@ export function FeedbackPanel({
         <p>Sign in as a learner to share verified feedback.</p>
       )}
     </section>
-  );
+  )
 }

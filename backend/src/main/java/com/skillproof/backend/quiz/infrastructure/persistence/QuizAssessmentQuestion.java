@@ -11,56 +11,58 @@ import jakarta.persistence.Table;
 @Table(name = "assessment_question")
 public class QuizAssessmentQuestion {
 
-    @EmbeddedId
-    private QuizAssessmentQuestionId id;
-    @ManyToOne
-    @MapsId("assessmentId")
-    @JoinColumn(name = "assessment_id")
-    private QuizAssessment assessment;
-    @ManyToOne
-    @MapsId("questionVersionId")
-    @JoinColumn(name = "question_version_id")
-    private QuizQuestionVersion questionVersion;
-    private int position;
-    private int points;
+  @EmbeddedId private QuizAssessmentQuestionId id;
 
-    public QuizAssessmentQuestionId getId() {
-        return id;
-    }
+  @ManyToOne
+  @MapsId("assessmentId")
+  @JoinColumn(name = "assessment_id")
+  private QuizAssessment assessment;
 
-    public void setId(QuizAssessmentQuestionId value) {
-        id = value;
-    }
+  @ManyToOne
+  @MapsId("questionVersionId")
+  @JoinColumn(name = "question_version_id")
+  private QuizQuestionVersion questionVersion;
 
-    public QuizAssessment getAssessment() {
-        return assessment;
-    }
+  private int position;
+  private int points;
 
-    public void setAssessment(QuizAssessment value) {
-        assessment = value;
-    }
+  public QuizAssessmentQuestionId getId() {
+    return id;
+  }
 
-    public QuizQuestionVersion getQuestionVersion() {
-        return questionVersion;
-    }
+  public void setId(QuizAssessmentQuestionId value) {
+    id = value;
+  }
 
-    public void setQuestionVersion(QuizQuestionVersion value) {
-        questionVersion = value;
-    }
+  public QuizAssessment getAssessment() {
+    return assessment;
+  }
 
-    public int getPosition() {
-        return position;
-    }
+  public void setAssessment(QuizAssessment value) {
+    assessment = value;
+  }
 
-    public void setPosition(int value) {
-        position = value;
-    }
+  public QuizQuestionVersion getQuestionVersion() {
+    return questionVersion;
+  }
 
-    public int getPoints() {
-        return points;
-    }
+  public void setQuestionVersion(QuizQuestionVersion value) {
+    questionVersion = value;
+  }
 
-    public void setPoints(int value) {
-        points = value;
-    }
+  public int getPosition() {
+    return position;
+  }
+
+  public void setPosition(int value) {
+    position = value;
+  }
+
+  public int getPoints() {
+    return points;
+  }
+
+  public void setPoints(int value) {
+    points = value;
+  }
 }

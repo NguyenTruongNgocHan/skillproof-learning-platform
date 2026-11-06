@@ -1,11 +1,11 @@
-import { useCallback, useState, useEffect } from "react";
-import MediaPanel from "@/features/media/components/MediaPanel";
-import { mediaApi } from "@/features/media/api/mediaApi";
-import { governanceApi } from "../api/governanceApi";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
+import { useCallback, useState, useEffect } from "react"
+import MediaPanel from "@/features/media/components/MediaPanel"
+import { mediaApi } from "@/features/media/api/mediaApi"
+import { governanceApi } from "../api/governanceApi"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
 export function EvidenceManager({
   organizationId,
   purpose = "VERIFICATION",
@@ -14,52 +14,44 @@ export function EvidenceManager({
   onBusyChange,
   onChanged,
 }: {
-  organizationId: string;
-  purpose?: "VERIFICATION" | "ISSUER";
-  editable?: boolean;
-  admin?: boolean;
-  onBusyChange?: (busy: boolean) => void;
-  onChanged?: () => void;
+  organizationId: string
+  purpose?: "VERIFICATION" | "ISSUER"
+  editable?: boolean
+  admin?: boolean
+  onBusyChange?: (busy: boolean) => void
+  onChanged?: () => void
 }) {
   const remote = useRemote(
     useCallback(() => governanceApi.evidence(organizationId), [organizationId]),
-  );
+  )
   const files = useRemote(
     useCallback(
-      () =>
-        mediaApi.list(
-          purpose === "ISSUER" ? "ISSUER" : "ORGANIZATION",
-          organizationId,
-        ),
+      () => mediaApi.list(purpose === "ISSUER" ? "ISSUER" : "ORGANIZATION", organizationId),
       [organizationId, purpose],
     ),
-  );
+  )
   const action = useAction(() => {
-    remote.reload();
-    files.reload();
-    onChanged?.();
-  });
-  const [uploading, setUploading] = useState(false);
+    remote.reload()
+    files.reload()
+    onChanged?.()
+  })
+  const [uploading, setUploading] = useState(false)
   useEffect(() => {
-    onBusyChange?.(uploading || action.busy);
-    return () => onBusyChange?.(false);
-  }, [uploading, action.busy, onBusyChange]);
+    onBusyChange?.(uploading || action.busy)
+    return () => onBusyChange?.(false)
+  }, [uploading, action.busy, onBusyChange])
   const [form, setForm] = useState({
     mediaId: "",
     kind: purpose === "ISSUER" ? "TRAINING_CAPABILITY" : "LEGAL_IDENTITY",
     title: "",
     expiresAt: "",
-  });
-  const [reason, setReason] = useState("");
-  const docs = remote.data?.filter((d) => d.purpose === purpose) ?? [];
-  const active = files.data ?? [];
+  })
+  const [reason, setReason] = useState("")
+  const docs = remote.data?.filter((d) => d.purpose === purpose) ?? []
+  const active = files.data ?? []
   return (
     <section className="sporg-card">
-      <h2>
-        {purpose === "ISSUER"
-          ? "Issuer capability evidence"
-          : "Verification evidence"}
-      </h2>
+      <h2>{purpose === "ISSUER" ? "Issuer capability evidence" : "Verification evidence"}</h2>
       <p>
         {purpose === "ISSUER"
           ? "Provide training credentials, expertise and authority to issue certificates."
@@ -71,7 +63,11 @@ export function EvidenceManager({
         writable={editable}
         removable={editable && purpose === "VERIFICATION"}
         onBusyChange={setUploading}
-        onChanged={() => { files.reload(); remote.reload(); onChanged?.(); }}
+        onChanged={() => {
+          files.reload()
+          remote.reload()
+          onChanged?.()
+        }}
       />
       <RemoteState {...remote} retry={remote.reload} />
       <ActionNotice {...action} />
@@ -79,17 +75,15 @@ export function EvidenceManager({
         <form
           className="sporg-form"
           onSubmit={(e) => {
-            e.preventDefault();
+            e.preventDefault()
             void action.run(async () => {
               await governanceApi.classify(organizationId, {
                 ...form,
                 purpose,
-                expiresAt: form.expiresAt
-                  ? new Date(form.expiresAt).toISOString()
-                  : null,
-              });
-              setForm({ ...form, mediaId: "", title: "" });
-            }, "Document classified.");
+                expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
+              })
+              setForm({ ...form, mediaId: "", title: "" })
+            }, "Document classified.")
           }}
         >
           <label>
@@ -111,10 +105,7 @@ export function EvidenceManager({
           </label>
           <label>
             Evidence category
-            <select
-              value={form.kind}
-              onChange={(e) => setForm({ ...form, kind: e.target.value })}
-            >
+            <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
               {(purpose === "ISSUER"
                 ? ["TRAINING_CAPABILITY", "REPRESENTATIVE", "SUPPORTING"]
                 : ["LEGAL_IDENTITY", "REPRESENTATIVE", "COMPANY_IMAGE", "SUPPORTING"]
@@ -136,10 +127,7 @@ export function EvidenceManager({
             value={form.expiresAt}
             onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
           />
-          <Button
-            type="submit"
-            disabled={action.busy || uploading || !form.mediaId}
-          >
+          <Button type="submit" disabled={action.busy || uploading || !form.mediaId}>
             Classify uploaded document
           </Button>
         </form>
@@ -151,14 +139,11 @@ export function EvidenceManager({
             <strong>{d.title}</strong>
             <small>
               {d.kind} · {d.status.toLowerCase()}{" "}
-              {d.expiresAt
-                ? `· expires ${new Date(d.expiresAt).toLocaleDateString()}`
-                : ""}
+              {d.expiresAt ? `· expires ${new Date(d.expiresAt).toLocaleDateString()}` : ""}
             </small>
-            {!active.some((f) => f.id === d.mediaId) &&
-              purpose === "VERIFICATION" && (
-                <small>Historical attachment — not in the current draft</small>
-              )}
+            {!active.some((f) => f.id === d.mediaId) && purpose === "VERIFICATION" && (
+              <small>Historical attachment — not in the current draft</small>
+            )}
             {d.reason && <p>{d.reason}</p>}
           </div>
           <Button
@@ -214,5 +199,5 @@ export function EvidenceManager({
         />
       )}
     </section>
-  );
+  )
 }

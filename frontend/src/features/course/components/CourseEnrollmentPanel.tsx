@@ -1,52 +1,42 @@
-import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog";
-import { useCallback, useState } from "react";
-import { workspaceCourseApi } from "../api/workspaceCourseApi";
-import { useRemote } from "@/shared/hooks/useRemote";
-import { RemoteState } from "@/shared/ui/RemoteState";
-import { exportPagedCsv } from "@/shared/utils/exportPagedCsv";
-import { useAction } from "@/shared/hooks/useRemote";
-import { ActionNotice } from "@/shared/ui/RemoteState";
-import { exportCsv } from "@/shared/utils/exportCsv";
-import Input from "@/shared/ui/Input";
-import Button from "@/shared/ui/Button";
+import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog"
+import { useCallback, useState } from "react"
+import { workspaceCourseApi } from "../api/workspaceCourseApi"
+import { useRemote } from "@/shared/hooks/useRemote"
+import { RemoteState } from "@/shared/ui/RemoteState"
+import { exportPagedCsv } from "@/shared/utils/exportPagedCsv"
+import { useAction } from "@/shared/hooks/useRemote"
+import { ActionNotice } from "@/shared/ui/RemoteState"
+import { exportCsv } from "@/shared/utils/exportCsv"
+import Input from "@/shared/ui/Input"
+import Button from "@/shared/ui/Button"
 export function CourseEnrollmentPanel({ versionId }: { versionId: string }) {
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null)
   const [query, setQuery] = useState(""),
     [search, setSearch] = useState(""),
     [page, setPage] = useState(0),
     [status, setStatus] = useState(""),
     [start, setStart] = useState(""),
-    [end, setEnd] = useState("");
-  const action = useAction();
-  const rangeStart = start
-    ? new Date(start + "T00:00:00Z").toISOString()
-    : "1970-01-01T00:00:00Z";
+    [end, setEnd] = useState("")
+  const action = useAction()
+  const rangeStart = start ? new Date(start + "T00:00:00Z").toISOString() : "1970-01-01T00:00:00Z"
   const rangeEnd = end
     ? new Date(new Date(end + "T00:00:00Z").getTime() + 86400000).toISOString()
-    : "9999-12-31T00:00:00Z";
+    : "9999-12-31T00:00:00Z"
   const remote = useRemote(
     useCallback(
-      () =>
-        workspaceCourseApi.enrollments(
-          versionId,
-          search,
-          page,
-          status,
-          rangeStart,
-          rangeEnd,
-        ),
+      () => workspaceCourseApi.enrollments(versionId, search, page, status, rangeStart, rangeEnd),
       [versionId, search, page, status, rangeStart, rangeEnd],
     ),
-  );
+  )
   return (
     <section className="sporg-card">
       <h2>Enrolled learners</h2>
       <form
         className="sporg-toolbar"
         onSubmit={(e) => {
-          e.preventDefault();
-          setSearch(query);
-          setPage(0);
+          e.preventDefault()
+          setSearch(query)
+          setPage(0)
         }}
       >
         <Input
@@ -59,8 +49,8 @@ export function CourseEnrollmentPanel({ versionId }: { versionId: string }) {
           <select
             value={status}
             onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(0);
+              setStatus(e.target.value)
+              setPage(0)
             }}
           >
             <option value="">All</option>
@@ -73,8 +63,8 @@ export function CourseEnrollmentPanel({ versionId }: { versionId: string }) {
           type="date"
           value={start}
           onChange={(e) => {
-            setStart(e.target.value);
-            setPage(0);
+            setStart(e.target.value)
+            setPage(0)
           }}
         />
         <Input
@@ -83,8 +73,8 @@ export function CourseEnrollmentPanel({ versionId }: { versionId: string }) {
           min={start}
           value={end}
           onChange={(e) => {
-            setEnd(e.target.value);
-            setPage(0);
+            setEnd(e.target.value)
+            setPage(0)
           }}
         />
         <Button type="submit">Search</Button>
@@ -175,30 +165,18 @@ export function CourseEnrollmentPanel({ versionId }: { versionId: string }) {
         </Button>
       </div>
       {selected && (
-        <WorkspaceDialog
-          title="Learner progress"
-          close={() => setSelected(null)}
-        >
+        <WorkspaceDialog title="Learner progress" close={() => setSelected(null)}>
           <EnrollmentDetailView version={versionId} id={selected} />
         </WorkspaceDialog>
       )}
     </section>
-  );
+  )
 }
 
-function EnrollmentDetailView({
-  version,
-  id,
-}: {
-  version: string;
-  id: string;
-}) {
+function EnrollmentDetailView({ version, id }: { version: string; id: string }) {
   const remote = useRemote(
-    useCallback(
-      () => workspaceCourseApi.enrollment(version, id),
-      [version, id],
-    ),
-  );
+    useCallback(() => workspaceCourseApi.enrollment(version, id), [version, id]),
+  )
   return (
     <>
       <RemoteState {...remote} retry={remote.reload} />
@@ -206,12 +184,10 @@ function EnrollmentDetailView({
         <>
           <h3>{remote.data.email}</h3>
           <p>
-            {remote.data.status} · Registered{" "}
-            {new Date(remote.data.enrolledAt).toLocaleString()}
+            {remote.data.status} · Registered {new Date(remote.data.enrolledAt).toLocaleString()}
           </p>
           <p>
-            Official assessments passed:{" "}
-            {remote.data.assessments.passedOfficialAssessments}/
+            Official assessments passed: {remote.data.assessments.passedOfficialAssessments}/
             {remote.data.assessments.requiredOfficialAssessments}
           </p>
           <p>
@@ -220,44 +196,30 @@ function EnrollmentDetailView({
           </p>
           <section className="sporg-card">
             <h3>Assessment attempts</h3>
-            {remote.data.assessmentHistory.length === 0 && (
-              <p>No attempts recorded.</p>
-            )}
+            {remote.data.assessmentHistory.length === 0 && <p>No attempts recorded.</p>}
             {remote.data.assessmentHistory.map((t) => (
               <div className="sporg-evidence-row" key={t.id}>
                 <strong>
                   {t.title} · {t.kind} · {t.required ? "Required" : "Optional"}
                 </strong>
                 <p>
-                  {t.status} ·{" "}
-                  {t.scorePercent === null
-                    ? "Not scored"
-                    : `${t.scorePercent}%`}{" "}
-                  ·
-                  {t.passed === null
-                    ? "Pending"
-                    : t.passed
-                      ? "Passed"
-                      : "Not passed"}
+                  {t.status} · {t.scorePercent === null ? "Not scored" : `${t.scorePercent}%`} ·
+                  {t.passed === null ? "Pending" : t.passed ? "Passed" : "Not passed"}
                 </p>
                 <small>
                   Started {new Date(t.startedAt).toLocaleString()}
-                  {t.submittedAt &&
-                    ` · Finalized ${new Date(t.submittedAt).toLocaleString()}`}
+                  {t.submittedAt && ` · Finalized ${new Date(t.submittedAt).toLocaleString()}`}
                 </small>
               </div>
             ))}
           </section>
           <section className="sporg-card">
             <h3>Assignment outcomes</h3>
-            {remote.data.assignmentHistory.length === 0 && (
-              <p>No assignments in this version.</p>
-            )}
+            {remote.data.assignmentHistory.length === 0 && <p>No assignments in this version.</p>}
             {remote.data.assignmentHistory.map((a) => (
               <div className="sporg-evidence-row" key={a.id}>
                 <strong>
-                  {a.title} · {a.required ? "Required" : "Optional"} · Pass{" "}
-                  {a.passPercent}%
+                  {a.title} · {a.required ? "Required" : "Optional"} · Pass {a.passPercent}%
                 </strong>
                 {a.submissions.length === 0 && (
                   <p>No submitted work yet. Learner drafts are private.</p>
@@ -266,20 +228,11 @@ function EnrollmentDetailView({
                   <div key={s.id}>
                     <p>
                       {s.status} ·{" "}
-                      {s.scorePercent === null
-                        ? "Awaiting grading"
-                        : `${s.scorePercent}%`}{" "}
-                      ·
-                      {s.passed === null
-                        ? "Pending"
-                        : s.passed
-                          ? "Passed"
-                          : "Not passed"}
+                      {s.scorePercent === null ? "Awaiting grading" : `${s.scorePercent}%`} ·
+                      {s.passed === null ? "Pending" : s.passed ? "Passed" : "Not passed"}
                     </p>
                     {s.submittedAt && (
-                      <small>
-                        Submitted {new Date(s.submittedAt).toLocaleString()}
-                      </small>
+                      <small>Submitted {new Date(s.submittedAt).toLocaleString()}</small>
                     )}
                     {s.feedback && <p>{s.feedback}</p>}
                     {s.criterionGrades.map((g) => (
@@ -294,16 +247,13 @@ function EnrollmentDetailView({
           </section>
           <section className="sporg-card">
             <h3>Access provenance</h3>
-            {remote.data.retainedFreeAccess && (
-              <p>Free learning access retained at enrollment.</p>
+            {remote.data.retainedFreeAccess && <p>Free learning access retained at enrollment.</p>}
+            {remote.data.accessHistory.length === 0 && !remote.data.retainedFreeAccess && (
+              <p>
+                No historical grant found. Current free-access eligibility follows the effective
+                offer.
+              </p>
             )}
-            {remote.data.accessHistory.length === 0 &&
-              !remote.data.retainedFreeAccess && (
-                <p>
-                  No historical grant found. Current free-access eligibility
-                  follows the effective offer.
-                </p>
-              )}
             {remote.data.accessHistory.map((g) => (
               <p key={g.id}>
                 {g.type} · {g.source}
@@ -328,8 +278,7 @@ function EnrollmentDetailView({
             ) : (
               remote.data.certificates.map((c) => (
                 <p key={c.id}>
-                  {c.program} · {c.serial} · {c.status} ·{" "}
-                  {new Date(c.issuedAt).toLocaleString()}
+                  {c.program} · {c.serial} · {c.status} · {new Date(c.issuedAt).toLocaleString()}
                   {c.reason && ` · ${c.reason}`}
                 </p>
               ))
@@ -338,11 +287,7 @@ function EnrollmentDetailView({
               <details>
                 <summary>Latest evaluated evidence</summary>
                 <pre className="sporg-evidence-json">
-                  {JSON.stringify(
-                    JSON.parse(remote.data.completionEvidenceJson),
-                    null,
-                    2,
-                  )}
+                  {JSON.stringify(JSON.parse(remote.data.completionEvidenceJson), null, 2)}
                 </pre>
               </details>
             )}
@@ -357,10 +302,8 @@ function EnrollmentDetailView({
               ))}
               {m.resources.map((r) => (
                 <p key={r.id}>
-                  {r.completedAt ? "✓" : "○"} {r.title} ·{" "}
-                  {r.required ? "Required" : "Optional"}
-                  {r.completedAt &&
-                    ` · ${new Date(r.completedAt).toLocaleString()}`}
+                  {r.completedAt ? "✓" : "○"} {r.title} · {r.required ? "Required" : "Optional"}
+                  {r.completedAt && ` · ${new Date(r.completedAt).toLocaleString()}`}
                 </p>
               ))}
             </section>
@@ -368,5 +311,5 @@ function EnrollmentDetailView({
         </>
       )}
     </>
-  );
+  )
 }

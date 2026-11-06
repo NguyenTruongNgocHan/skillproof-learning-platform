@@ -1,5 +1,6 @@
+import { useDialogFocus } from "@/shared/hooks/useDialogFocus"
 import { X } from "lucide-react"
-import { ReactNode, useEffect } from "react"
+import { ReactNode, useRef, useId } from "react"
 
 interface ModalProps {
   open: boolean
@@ -10,18 +11,9 @@ interface ModalProps {
 }
 
 export default function Modal({ open, onClose, title, children, maxWidth = "480px" }: ModalProps) {
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
-    document.addEventListener("keydown", handler)
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.removeEventListener("keydown", handler)
-      document.body.style.overflow = ""
-    }
-  }, [open, onClose])
+  const dialog = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  useDialogFocus(dialog, open, onClose)
 
   if (!open) return null
 
@@ -40,13 +32,15 @@ export default function Modal({ open, onClose, title, children, maxWidth = "480p
           background: "var(--surface)",
           boxShadow: "var(--shadow-lg)",
         }}
+        ref={dialog}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={title ? "modal-title" : undefined}
+        aria-labelledby={title ? titleId : undefined}
       >
         {title && (
           <div className="flex items-center justify-between mb-4">
-            <h2 id="modal-title" className="text-lg font-semibold" style={{ color: "var(--fg)" }}>
+            <h2 id={titleId} className="text-lg font-semibold" style={{ color: "var(--fg)" }}>
               {title}
             </h2>
             <button

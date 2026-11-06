@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -14,30 +13,30 @@ import java.util.UUID;
 @IdClass(ResourceProgressId.class)
 public class ResourceProgressEntity {
 
-    @Id
-    @Column(name = "enrollment_id")
-    private UUID enrollmentId;
+  @Id
+  @Column(name = "enrollment_id")
+  private UUID enrollmentId;
 
-    @Id
-    @Column(name = "resource_id")
-    private UUID resourceId;
+  @Id
+  @Column(name = "resource_id")
+  private UUID resourceId;
 
-    @Column(name = "completed_at", nullable = false)
-    private Instant completedAt;
+  @Column(name = "completed_at", nullable = false)
+  private Instant completedAt;
 
-    public UUID getResourceId() {
-        return resourceId;
-    }
+  public UUID getResourceId() {
+    return resourceId;
+  }
 
-    public Instant getCompletedAt() {
-        return completedAt;
-    }
+  public Instant getCompletedAt() {
+    return completedAt;
+  }
 
-    protected ResourceProgressEntity() {}
+  protected ResourceProgressEntity() {}
 
-    public ResourceProgressEntity(UUID enrollmentId, UUID resourceId, Instant completedAt) {
-        this.enrollmentId = enrollmentId;
-        this.resourceId = resourceId;
-        this.completedAt = completedAt;
-    }
+  public ResourceProgressEntity(UUID enrollmentId, UUID resourceId, Instant completedAt) {
+    this.enrollmentId = enrollmentId;
+    this.resourceId = resourceId;
+    this.completedAt = completedAt;
+  }
 }

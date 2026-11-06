@@ -75,8 +75,9 @@ public class OrganizationAccessImportService {
         try {
           result.put(
               "grant",
-              grants.grantImported(
-                  actor, org, row.learnerId(), type, product, expiry, cohort.trim()));
+              GrantView.from(
+                  grants.grantImported(
+                      actor, org, row.learnerId(), type, product, expiry, cohort.trim())));
           result.put("success", true);
         } catch (com.skillproof.backend.common.exception.BadRequestException
             | org.springframework.security.access.AccessDeniedException
@@ -92,5 +93,30 @@ public class OrganizationAccessImportService {
       results.add(result);
     }
     return results;
+  }
+
+  public record GrantView(
+      UUID id,
+      UUID learnerId,
+      String productType,
+      UUID productId,
+      String source,
+      String cohort,
+      Instant createdAt,
+      Instant expiresAt,
+      Instant revokedAt) {
+    static GrantView from(
+        com.skillproof.backend.access.infrastructure.persistence.AccessGrantEntity g) {
+      return new GrantView(
+          g.getId(),
+          g.getLearnerId(),
+          g.getProductType(),
+          g.getProductId(),
+          g.getSource(),
+          g.getCohort(),
+          g.getCreatedAt(),
+          g.getExpiresAt(),
+          g.getRevokedAt());
+    }
   }
 }

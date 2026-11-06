@@ -5,7 +5,9 @@ import java.util.UUID;
 
 public interface AssignmentVersionBridge {
 
-    void cloneVersion(UUID source, UUID target, Map<UUID, UUID> modules, Map<UUID, UUID> lessons);
+  void cloneVersion(UUID source, UUID target, Map<UUID, UUID> modules, Map<UUID, UUID> lessons);
 
-    boolean hasOwner(String scope, UUID ownerId);
+  boolean hasOwner(String scope, UUID ownerId);
+
+  boolean hasExpiredDeadline(UUID versionId);
 }

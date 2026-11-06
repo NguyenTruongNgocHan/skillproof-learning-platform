@@ -6,28 +6,29 @@ import java.util.UUID;
 
 public interface CompletionEvidenceStore {
 
-    record Enrollment(UUID id, UUID learnerId, UUID versionId) {
+  record Enrollment(UUID id, UUID learnerId, UUID versionId) {}
 
-    }
+  record Policy(UUID id, boolean requireAllResources, boolean requireOfficialAssessments) {}
 
-    record Policy(UUID id, boolean requireAllResources, boolean requireOfficialAssessments) {
+  Enrollment lockEnrollment(UUID enrollmentId);
 
-    }
+  boolean belongsToLearner(UUID enrollmentId, UUID learnerId);
 
-    Enrollment lockEnrollment(UUID enrollmentId);
+  long resourceCount(UUID versionId);
 
-    boolean belongsToLearner(UUID enrollmentId, UUID learnerId);
+  long completedResourceCount(UUID enrollmentId);
 
-    long resourceCount(UUID versionId);
+  Policy policy(UUID versionId);
 
-    long completedResourceCount(UUID enrollmentId);
+  void markCompleted(UUID enrollmentId, Instant now);
 
-    Policy policy(UUID versionId);
+  void record(
+      UUID evaluationId,
+      UUID enrollmentId,
+      UUID versionId,
+      String status,
+      String evidenceJson,
+      Instant evaluatedAt);
 
-    void markCompleted(UUID enrollmentId, Instant now);
-
-    void record(UUID evaluationId, UUID enrollmentId, UUID versionId,
-            String status, String evidenceJson, Instant evaluatedAt);
-
-    Optional<String> latestEvidenceJson(UUID enrollmentId);
+  Optional<String> latestEvidenceJson(UUID enrollmentId);
 }

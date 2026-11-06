@@ -54,7 +54,7 @@ export default function EligibilityPage() {
 
   return (
     <LearnerShell>
-      <main className="learner-page learner-page--achievements">
+      <section className="learner-page learner-page--achievements">
         <header className="achievement-hero">
           <div>
             <span>
@@ -189,7 +189,7 @@ export default function EligibilityPage() {
             </p>
           </div>
         </section>
-      </main>
+      </section>
     </LearnerShell>
   )
 }

@@ -1,9 +1,5 @@
-import { apiClient } from "@/shared/api/apiClient";
-import type {
-  AccessImportInput,
-  ImportRow,
-  ImportResult,
-} from "../types/accessImport.types";
+import { apiClient } from "@/shared/api/apiClient"
+import type { AccessImportInput, ImportRow, ImportResult } from "../types/accessImport.types"
 export const accessImportApi = {
   preview: (org: string, input: AccessImportInput) =>
     apiClient.post<ImportRow[]>(
@@ -17,4 +13,4 @@ export const accessImportApi = {
       undefined,
       300000,
     ),
-};
+}

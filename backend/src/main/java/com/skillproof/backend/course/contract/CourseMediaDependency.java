@@ -7,11 +7,11 @@ import java.util.UUID;
 /** Narrow collaboration contract for Media-owned asset lifecycle operations. */
 public interface CourseMediaDependency {
 
-    void deleteForResources(Collection<UUID> resourceIds);
+  void deleteForResources(Collection<UUID> resourceIds);
 
-    void cloneResourceAssets(Map<UUID, UUID> resourceIdMapping);
+  void cloneResourceAssets(Map<UUID, UUID> resourceIdMapping);
 
-    boolean hasAssetsForAll(Collection<UUID> resourceIds);
+  boolean hasAssetsForAll(Collection<UUID> resourceIds);
 
-    boolean hasMatchingAsset(java.util.UUID resourceId, String kind);
+  boolean hasMatchingAsset(java.util.UUID resourceId, String kind);
 }

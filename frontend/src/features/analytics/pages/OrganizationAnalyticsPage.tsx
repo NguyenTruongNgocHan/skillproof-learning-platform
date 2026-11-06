@@ -1,41 +1,37 @@
-import { workspaceCourseApi } from "@/features/course/api/workspaceCourseApi";
-import { useCallback, useState } from "react";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { analyticsApi } from "../api/analyticsApi";
-import { useRemote } from "@/shared/hooks/useRemote";
-import { RemoteState } from "@/shared/ui/RemoteState";
-import { exportCsv } from "@/shared/utils/exportCsv";
-import Input from "@/shared/ui/Input";
-import Button from "@/shared/ui/Button";
+import { workspaceCourseApi } from "@/features/course/api/workspaceCourseApi"
+import { useCallback, useState } from "react"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { analyticsApi } from "../api/analyticsApi"
+import { useRemote } from "@/shared/hooks/useRemote"
+import { RemoteState } from "@/shared/ui/RemoteState"
+import { exportCsv } from "@/shared/utils/exportCsv"
+import Input from "@/shared/ui/Input"
+import Button from "@/shared/ui/Button"
 export default function OrganizationAnalyticsPage() {
-  const { organization } = useOrganizationContext();
-  const org = organization?.id ?? "";
-  const directory = useRemote(
-    useCallback(() => workspaceCourseApi.directory(org), [org]),
-  );
+  const { organization } = useOrganizationContext()
+  const org = organization?.id ?? ""
+  const directory = useRemote(useCallback(() => workspaceCourseApi.directory(org), [org]))
   const [dates, setDates] = useState({
     version: "",
     campaign: "",
     start: new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10),
     end: new Date().toISOString().slice(0, 10),
-  });
-  const [range, setRange] = useState(dates);
+  })
+  const [range, setRange] = useState(dates)
   const remote = useRemote(
     useCallback(
       () =>
         analyticsApi.dashboard(
           org,
           new Date(range.start + "T00:00:00Z").toISOString(),
-          new Date(
-            new Date(range.end + "T00:00:00Z").getTime() + 86400000,
-          ).toISOString(),
+          new Date(new Date(range.end + "T00:00:00Z").getTime() + 86400000).toISOString(),
           range.version,
           range.campaign,
         ),
       [org, range],
     ),
-  );
+  )
   return (
     <OrganizerSurface
       title="Reach & learning analytics"
@@ -45,8 +41,8 @@ export default function OrganizationAnalyticsPage() {
       <form
         className="sporg-toolbar"
         onSubmit={(e) => {
-          e.preventDefault();
-          setRange({ ...dates });
+          e.preventDefault()
+          setRange({ ...dates })
         }}
       >
         <Input
@@ -126,9 +122,9 @@ export default function OrganizationAnalyticsPage() {
               ))}
             </div>
             <p>
-              {remote.data.funnel.checkouts} cohorts reached checkout.
-              Free/granted enrollment can bypass checkout. Counts group each
-              account and course version, using events in chronological order.
+              {remote.data.funnel.checkouts} cohorts reached checkout. Free/granted enrollment can
+              bypass checkout. Counts group each account and course version, using events in
+              chronological order.
             </p>
           </section>
           <section className="sporg-card">
@@ -138,9 +134,9 @@ export default function OrganizationAnalyticsPage() {
               {remote.data.revenue.paidOrders} paid orders
             </p>
             <small>
-              Organization-wide verified paid amounts in this period;
-              course/campaign filters apply to traffic and funnel only. Platform
-              fees, refunds, payouts and settlement are outside this report.
+              Organization-wide verified paid amounts in this period; course/campaign filters apply
+              to traffic and funnel only. Platform fees, refunds, payouts and settlement are outside
+              this report.
             </small>
           </section>
           <div className="sporg-metrics">
@@ -149,8 +145,8 @@ export default function OrganizationAnalyticsPage() {
                 <small>{m.kind.toLowerCase().replaceAll("_", " ")}</small>
                 <strong>{m.events.toLocaleString()}</strong>
                 <p>
-                  {m.visitors} distinct visitor identifiers ·{" "}
-                  {m.authenticatedAccounts} authenticated accounts
+                  {m.visitors} distinct visitor identifiers · {m.authenticatedAccounts}{" "}
+                  authenticated accounts
                 </p>
               </section>
             ))}
@@ -158,10 +154,7 @@ export default function OrganizationAnalyticsPage() {
           {remote.data.metrics.length === 0 && (
             <section className="sporg-empty">
               <h2>No events in this period</h2>
-              <p>
-                No historical traffic is invented. Telemetry starts when
-                tracking is deployed.
-              </p>
+              <p>No historical traffic is invented. Telemetry starts when tracking is deployed.</p>
             </section>
           )}
           <section className="sporg-card">
@@ -220,12 +213,11 @@ export default function OrganizationAnalyticsPage() {
             ))}
           </section>
           <p>
-            Anonymous visitor counts are approximate. Client views are not
-            evidence of learning; enrollment/payment/completion events are
-            recorded by backend transactions.
+            Anonymous visitor counts are approximate. Client views are not evidence of learning;
+            enrollment/payment/completion events are recorded by backend transactions.
           </p>
         </>
       )}
     </OrganizerSurface>
-  );
+  )
 }

@@ -1,6 +1,6 @@
 /**
  * Identity module.
  *
- * Owns user identity, authentication, authorization, and roles.
+ * <p>Owns user identity, authentication, authorization, and roles.
  */
 package com.skillproof.backend.identity;

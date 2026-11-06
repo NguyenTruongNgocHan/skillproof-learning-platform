@@ -1,33 +1,32 @@
 package com.skillproof.backend.certification.infrastructure;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.stereotype.Repository;
-
 import com.skillproof.backend.certification.application.CertificateEligibilityRepository;
 import com.skillproof.backend.certification.domain.CertificateEligibility;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaCertificateEligibilityRepository implements CertificateEligibilityRepository {
 
-    private final CertificateEligibilityJpaRepository repository;
+  private final CertificateEligibilityJpaRepository repository;
 
-    public JpaCertificateEligibilityRepository(CertificateEligibilityJpaRepository repository) {
-        this.repository = repository;
-    }
+  public JpaCertificateEligibilityRepository(CertificateEligibilityJpaRepository repository) {
+    this.repository = repository;
+  }
 
-    public CertificateEligibility save(CertificateEligibility e) {
-        return repository.save(new CertificateEligibilityEntity(e)).domain();
-    }
+  public CertificateEligibility save(CertificateEligibility e) {
+    return repository.save(new CertificateEligibilityEntity(e)).domain();
+  }
 
-    public Optional<CertificateEligibility> findLatest(UUID p, UUID l) {
-        return repository.findFirstByCertificationProgramIdAndLearnerUserIdOrderByEvaluatedAtDesc(p, l)
-                .map(CertificateEligibilityEntity::domain);
-    }
+  public Optional<CertificateEligibility> findLatest(UUID p, UUID l) {
+    return repository
+        .findFirstByCertificationProgramIdAndLearnerUserIdOrderByEvaluatedAtDesc(p, l)
+        .map(CertificateEligibilityEntity::domain);
+  }
 
-    @Override
-    public Optional<CertificateEligibility> findById(UUID id) {
-        return repository.findById(id).map(CertificateEligibilityEntity::domain);
-    }
+  @Override
+  public Optional<CertificateEligibility> findById(UUID id) {
+    return repository.findById(id).map(CertificateEligibilityEntity::domain);
+  }
 }

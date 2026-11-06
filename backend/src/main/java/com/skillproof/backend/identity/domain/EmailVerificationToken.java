@@ -1,129 +1,96 @@
 package com.skillproof.backend.identity.domain;
 
-import java.time.Instant;
-import java.util.Objects;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "email_verification_token")
 public class EmailVerificationToken {
 
-    @Id
-    private UUID id;
+  @Id private UUID id;
 
-    @Column(
-            name = "user_account_id",
-            nullable = false
-    )
-    private UUID userAccountId;
+  @Column(name = "user_account_id", nullable = false)
+  private UUID userAccountId;
 
-    @Column(
-            name = "token_hash",
-            nullable = false,
-            unique = true,
-            length = 64
-    )
-    private String tokenHash;
+  @Column(name = "token_hash", nullable = false, unique = true, length = 64)
+  private String tokenHash;
 
-    @Column(
-            name = "expires_at",
-            nullable = false
-    )
-    private Instant expiresAt;
+  @Column(name = "expires_at", nullable = false)
+  private Instant expiresAt;
 
-    @Column(name = "consumed_at")
-    private Instant consumedAt;
+  @Column(name = "consumed_at")
+  private Instant consumedAt;
 
-    @Column(name = "invalidated_at")
-    private Instant invalidatedAt;
+  @Column(name = "invalidated_at")
+  private Instant invalidatedAt;
 
-    @Column(
-            name = "created_at",
-            nullable = false,
-            updatable = false
-    )
-    private Instant createdAt;
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
 
-    protected EmailVerificationToken() {
+  protected EmailVerificationToken() {}
+
+  private EmailVerificationToken(
+      UUID id, UUID userAccountId, String tokenHash, Instant expiresAt, Instant createdAt) {
+    this.id = Objects.requireNonNull(id);
+    this.userAccountId = Objects.requireNonNull(userAccountId);
+    this.tokenHash = Objects.requireNonNull(tokenHash);
+    this.expiresAt = Objects.requireNonNull(expiresAt);
+    this.createdAt = Objects.requireNonNull(createdAt);
+
+    if (!expiresAt.isAfter(createdAt)) {
+      throw new IllegalArgumentException(
+          "Verification token expiration must be after creation time.");
     }
+  }
 
-    private EmailVerificationToken(
-            UUID id,
-            UUID userAccountId,
-            String tokenHash,
-            Instant expiresAt,
-            Instant createdAt
-    ) {
-        this.id = Objects.requireNonNull(id);
-        this.userAccountId = Objects.requireNonNull(userAccountId);
-        this.tokenHash = Objects.requireNonNull(tokenHash);
-        this.expiresAt = Objects.requireNonNull(expiresAt);
-        this.createdAt = Objects.requireNonNull(createdAt);
+  public static EmailVerificationToken issue(
+      UUID userAccountId, String tokenHash, Instant createdAt, Instant expiresAt) {
+    return new EmailVerificationToken(
+        UUID.randomUUID(), userAccountId, tokenHash, expiresAt, createdAt);
+  }
 
-        if (!expiresAt.isAfter(createdAt)) {
-            throw new IllegalArgumentException(
-                    "Verification token expiration must be after creation time."
-            );
-        }
-    }
+  public boolean isExpired(Instant now) {
+    return !expiresAt.isAfter(now);
+  }
 
-    public static EmailVerificationToken issue(
-            UUID userAccountId,
-            String tokenHash,
-            Instant createdAt,
-            Instant expiresAt
-    ) {
-        return new EmailVerificationToken(
-                UUID.randomUUID(),
-                userAccountId,
-                tokenHash,
-                expiresAt,
-                createdAt
-        );
-    }
+  public boolean isConsumed() {
+    return consumedAt != null;
+  }
 
-    public boolean isExpired(Instant now) {
-        return !expiresAt.isAfter(now);
-    }
+  public boolean isInvalidated() {
+    return invalidatedAt != null;
+  }
 
-    public boolean isConsumed() {
-        return consumedAt != null;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public boolean isInvalidated() {
-        return invalidatedAt != null;
-    }
+  public UUID getUserAccountId() {
+    return userAccountId;
+  }
 
-    public UUID getId() {
-        return id;
-    }
+  public String getTokenHash() {
+    return tokenHash;
+  }
 
-    public UUID getUserAccountId() {
-        return userAccountId;
-    }
+  public Instant getExpiresAt() {
+    return expiresAt;
+  }
 
-    public String getTokenHash() {
-        return tokenHash;
-    }
+  public Instant getConsumedAt() {
+    return consumedAt;
+  }
 
-    public Instant getExpiresAt() {
-        return expiresAt;
-    }
+  public Instant getInvalidatedAt() {
+    return invalidatedAt;
+  }
 
-    public Instant getConsumedAt() {
-        return consumedAt;
-    }
-
-    public Instant getInvalidatedAt() {
-        return invalidatedAt;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
 }

@@ -196,8 +196,7 @@ public class CertificateService {
                     new NotFoundException(
                         "CERTIFICATION_PROGRAM_NOT_FOUND", "Certification program not found"));
     existing = certificateRepository.findById(certificateId).orElseThrow();
-    if (!learnerQuery.isActiveAdmin(actorId))
-      requireCertificateAuthority(program.organizationId(), actorId);
+    requireCertificateAuthority(program.organizationId(), actorId);
     if (existing.status() == Certificate.Status.REVOKED) {
       return existing;
     }

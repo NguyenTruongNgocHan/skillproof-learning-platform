@@ -7,7 +7,7 @@ import { apiClient } from "@/shared/api/apiClient"
 export const eligibilityApi = {
   evaluateCompletion: (enrollmentId: string) =>
     apiClient.post<CompletionEvidence>(
-      `/learning/me/enrollments/${enrollmentId}/completion/evaluate`,
+      `/courses/me/enrollments/${encodeURIComponent(enrollmentId)}/completion/evaluate`,
     ),
 
   evaluateEligibility: (programId: string, enrollmentId: string) =>

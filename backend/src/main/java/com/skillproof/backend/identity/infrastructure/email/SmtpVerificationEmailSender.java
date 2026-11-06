@@ -1,88 +1,62 @@
 package com.skillproof.backend.identity.infrastructure.email;
 
+import com.skillproof.backend.identity.application.EmailVerificationProperties;
+import com.skillproof.backend.identity.application.port.VerificationEmailSender;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
-import com.skillproof.backend.identity.application.EmailVerificationProperties;
-import com.skillproof.backend.identity.application.port.VerificationEmailSender;
-
 @Component
-public class SmtpVerificationEmailSender
-        implements VerificationEmailSender {
+public class SmtpVerificationEmailSender implements VerificationEmailSender {
 
-    private final JavaMailSender mailSender;
-    private final EmailVerificationProperties properties;
+  private final JavaMailSender mailSender;
+  private final EmailVerificationProperties properties;
 
-    public SmtpVerificationEmailSender(
-            JavaMailSender mailSender,
-            EmailVerificationProperties properties
-    ) {
-        this.mailSender = mailSender;
-        this.properties = properties;
-    }
+  public SmtpVerificationEmailSender(
+      JavaMailSender mailSender, EmailVerificationProperties properties) {
+    this.mailSender = mailSender;
+    this.properties = properties;
+  }
 
-    @Override
-    public void sendVerificationEmail(
-            String email,
-            String displayName,
-            String rawToken,
-            Instant expiresAt
-    ) {
+  @Override
+  public void sendVerificationEmail(
+      String email, String displayName, String rawToken, Instant expiresAt) {
 
-        String encodedToken
-                = URLEncoder.encode(
-                        rawToken,
-                        StandardCharsets.UTF_8
-                );
+    String encodedToken = URLEncoder.encode(rawToken, StandardCharsets.UTF_8);
 
-        String verificationUrl
-                = properties.getFrontendVerificationUrl()
-                + "?token="
-                + encodedToken;
+    String verificationUrl = properties.getFrontendVerificationUrl() + "?token=" + encodedToken;
 
-        SimpleMailMessage message
-                = new SimpleMailMessage();
+    SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom(
-                properties.getFromAddress()
-        );
+    message.setFrom(properties.getFromAddress());
 
-        message.setTo(email);
+    message.setTo(email);
 
-        message.setSubject(
-                "Verify your SkillProof email"
-        );
+    message.setSubject("Verify your SkillProof email");
 
-        message.setText(
-                """
-                Hi %s,
+    message.setText(
+        """
+        Hi %s,
 
-                Welcome to SkillProof.
+        Welcome to SkillProof.
 
-                Please verify your email address by opening the link below:
+        Please verify your email address by opening the link below:
 
-                %s
+        %s
 
-                This verification link expires at:
-                %s
+        This verification link expires at:
+        %s
 
-                If you did not create this account, you can ignore this email.
+        If you did not create this account, you can ignore this email.
 
-                SkillProof
-                Learn. Play. Get Certified.
-                """
-                        .formatted(
-                                displayName,
-                                verificationUrl,
-                                expiresAt
-                        )
-        );
+        SkillProof
+        Learn. Play. Get Certified.
+        """
+            .formatted(displayName, verificationUrl, expiresAt));
 
-        mailSender.send(message);
-    }
+    mailSender.send(message);
+  }
 }

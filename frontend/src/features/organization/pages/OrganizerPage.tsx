@@ -1,12 +1,12 @@
-import { Link } from "react-router-dom";
-import { BookOpen, Users, ArrowUpRight, FileCheck2 } from "lucide-react";
-import { OrganizerSurface } from "../components/OrganizerSurface";
-import { OrganizationIdentity } from "../components/OrganizationIdentity";
-import { OrganizerDashboardFrame } from "../components/OrganizerDashboardFrame";
-import { useOrganizationContext } from "../providers/OrganizationProvider";
-import Button from "@/shared/ui/Button";
+import { Link } from "react-router-dom"
+import { BookOpen, Users, ArrowUpRight, FileCheck2 } from "lucide-react"
+import { OrganizerSurface } from "../components/OrganizerSurface"
+import { OrganizationIdentity } from "../components/OrganizationIdentity"
+import { OrganizerDashboardFrame } from "../components/OrganizerDashboardFrame"
+import { useOrganizationContext } from "../providers/OrganizationProvider"
+import Button from "@/shared/ui/Button"
 export default function OrganizerPage() {
-  const { organization, grants, owned, select } = useOrganizationContext();
+  const { organization, grants, owned, select } = useOrganizationContext()
   const links = [
     {
       label: "Organization & team",
@@ -34,12 +34,9 @@ export default function OrganizerPage() {
           },
         ]
       : []),
-  ];
+  ]
   return (
-    <OrganizerSurface
-      title="Overview"
-      description="Your organization, your team, your next steps."
-    >
+    <OrganizerSurface title="Overview" description="Your organization, your team, your next steps.">
       {organization && <OrganizationIdentity organization={organization} />}
       <section className="sporg-quick-actions" aria-label="Workspace shortcuts">
         {links.map(({ label, text, to, icon: Icon }) => (
@@ -75,10 +72,7 @@ export default function OrganizerPage() {
                 </span>
               ))
             ) : (
-              <p>
-                You have read access. Ask your organization manager to assign
-                responsibilities.
-              </p>
+              <p>You have read access. Ask your organization manager to assign responsibilities.</p>
             )}
           </div>
         </section>
@@ -88,16 +82,14 @@ export default function OrganizerPage() {
             <>
               <p>
                 {owned.displayName}{" "}
-                <span
-                  className={`sporg-badge sporg-badge-${owned.status.toLowerCase()}`}
-                >
+                <span className={`sporg-badge sporg-badge-${owned.status.toLowerCase()}`}>
                   {owned.status.toLowerCase()}
                 </span>
               </p>
               <Button asChild variant="outline">
                 <Link
                   onClick={() => {
-                    if (owned.status === "APPROVED") select(owned.id);
+                    if (owned.status === "APPROVED") select(owned.id)
                   }}
                   to={
                     owned.status === "APPROVED"
@@ -113,9 +105,7 @@ export default function OrganizerPage() {
             </>
           ) : (
             <>
-              <p>
-                Apply for your own organization while keeping your memberships.
-              </p>
+              <p>Apply for your own organization while keeping your memberships.</p>
               <Button asChild variant="outline">
                 <Link to="/onboarding/organizer">Start application</Link>
               </Button>
@@ -125,5 +115,5 @@ export default function OrganizerPage() {
       </div>
       <OrganizerDashboardFrame />
     </OrganizerSurface>
-  );
+  )
 }

@@ -1,31 +1,33 @@
-import { useCallback, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, Plus, Search } from "lucide-react";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { useAction, useRemote } from "@/shared/hooks/useRemote";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog";
-import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState";
-import { courseApi } from "../api/courseApi";
+import Pagination from "@/shared/ui/Pagination"
+import { useCallback, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { BookOpen, Plus, Search } from "lucide-react"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { useAction, useRemote } from "@/shared/hooks/useRemote"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
+import WorkspaceDialog from "@/features/organization/components/WorkspaceDialog"
+import { ActionNotice, RemoteState } from "@/shared/ui/RemoteState"
+import { courseApi } from "../api/courseApi"
 export default function OrganizerCoursesPage() {
-  const { organization, grants } = useOrganizationContext();
-  const org = organization?.id ?? "";
+  const { organization, grants } = useOrganizationContext()
+  const org = organization?.id ?? ""
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(0)
   const remote = useRemote(
     useCallback(
       () =>
         grants.includes("MANAGE_CONTENT")
-          ? courseApi.list(org)
-          : Promise.resolve([]),
-      [org, grants],
+          ? courseApi.search(org, search, page)
+          : Promise.resolve(null),
+      [org, grants, search, page],
     ),
-  );
-  const action = useAction(remote.reload);
-  const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ slug: "", title: "", summary: "" });
+  )
+  const action = useAction(remote.reload)
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [form, setForm] = useState({ slug: "", title: "", summary: "" })
   return (
     <OrganizerSurface
       title="Courses"
@@ -39,85 +41,60 @@ export default function OrganizerCoursesPage() {
             aria-label="Search courses"
             placeholder="Search your courses…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(0)
+            }}
           />
         </label>
         <Button
           onClick={() => {
-            setForm({ slug: "", title: "", summary: "" });
-            setOpen(true);
+            setForm({ slug: "", title: "", summary: "" })
+            setOpen(true)
           }}
         >
           <Plus size={16} /> Create course
         </Button>
       </div>
-      <RemoteState
-        loading={remote.loading}
-        error={remote.error}
-        retry={remote.reload}
-      />
+      <RemoteState loading={remote.loading} error={remote.error} retry={remote.reload} />
       {!remote.loading && remote.data && (
         <div className="sporg-course-grid">
-          {remote.data
-            .filter((c) =>
-              (c.title + " " + c.summary)
-                .toLowerCase()
-                .includes(search.toLowerCase()),
-            )
-            .map((c) => (
-              <Link
-                className="sporg-course-card"
-                to={`/organizer/courses/${c.id}`}
-                key={c.id}
-              >
-                <div
-                  className="sporg-cover-placeholder"
-                  aria-label="Course thumbnail not provided"
-                >
-                  <BookOpen size={30} />
-                </div>
-                <div>
-                  <h2>{c.title}</h2>
-                  <p>{c.summary}</p>
-                  <span className="sporg-tag">Open studio →</span>
-                </div>
-              </Link>
-            ))}
+          {remote.data.content.map((c) => (
+            <Link className="sporg-course-card" to={`/organizer/courses/${c.id}`} key={c.id}>
+              <div className="sporg-cover-placeholder" aria-label="Course thumbnail not provided">
+                <BookOpen size={30} />
+              </div>
+              <div>
+                <h2>{c.title}</h2>
+                <p>{c.summary}</p>
+                <span className="sporg-tag">Open studio →</span>
+              </div>
+            </Link>
+          ))}
         </div>
       )}
-      {remote.data?.length === 0 && (
+      {remote.data?.totalElements === 0 && (
         <section className="sporg-empty">
           <BookOpen size={36} />
           <h2>Your first course starts here</h2>
-          <p>
-            Create a draft, add lessons and resources, then publish when it is
-            ready.
-          </p>
+          <p>Create a draft, add lessons and resources, then publish when it is ready.</p>
           <Button onClick={() => setOpen(true)}>Create course</Button>
         </section>
       )}
-      {remote.data &&
-        remote.data.length > 0 &&
-        !remote.data.some((c) =>
-          (c.title + " " + c.summary)
-            .toLowerCase()
-            .includes(search.toLowerCase()),
-        ) && <p>No courses match your search.</p>}
+      {remote.data && (
+        <Pagination {...remote.data} page={page} busy={remote.loading} onChange={setPage} />
+      )}
       {open && (
-        <WorkspaceDialog
-          title="Create course"
-          busy={action.busy}
-          close={() => setOpen(false)}
-        >
+        <WorkspaceDialog title="Create course" busy={action.busy} close={() => setOpen(false)}>
           <form
             className="sporg-form"
             onSubmit={(e) => {
-              e.preventDefault();
+              e.preventDefault()
               void action.run(async () => {
-                const c = await courseApi.create(org, form);
-                setOpen(false);
-                navigate(`/organizer/courses/${c.id}`);
-              }, "Course created.");
+                const c = await courseApi.create(org, form)
+                setOpen(false)
+                navigate(`/organizer/courses/${c.id}`)
+              }, "Course created.")
             }}
           >
             <Input
@@ -152,5 +129,5 @@ export default function OrganizerCoursesPage() {
         </WorkspaceDialog>
       )}
     </OrganizerSurface>
-  );
+  )
 }

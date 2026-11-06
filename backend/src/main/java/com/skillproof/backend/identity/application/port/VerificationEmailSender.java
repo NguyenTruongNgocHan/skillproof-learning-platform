@@ -4,10 +4,5 @@ import java.time.Instant;
 
 public interface VerificationEmailSender {
 
-    void sendVerificationEmail(
-            String email,
-            String displayName,
-            String rawToken,
-            Instant expiresAt
-    );
+  void sendVerificationEmail(String email, String displayName, String rawToken, Instant expiresAt);
 }

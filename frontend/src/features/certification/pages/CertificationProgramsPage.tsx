@@ -1,111 +1,105 @@
-import { certificationApi } from "@/features/certification/api/certificationApi";
-import { EligibilityPanel } from "@/features/certification/components/EligibilityPanel";
-import type {
-  Certificate,
-  Page,
-  Program,
-} from "@/features/certification/types/certification.types";
-import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface";
-import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider";
-import { organizerError } from "@/features/organization/utils/errorMessage";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import { useToast } from "@/shared/ui/Toast";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { certificationApi } from "@/features/certification/api/certificationApi"
+import { EligibilityPanel } from "@/features/certification/components/EligibilityPanel"
+import type { Certificate, Page, Program } from "@/features/certification/types/certification.types"
+import { OrganizerSurface } from "@/features/organization/components/OrganizerSurface"
+import { useOrganizationContext } from "@/features/organization/providers/OrganizationProvider"
+import { organizerError } from "@/features/organization/utils/errorMessage"
+import Button from "@/shared/ui/Button"
+import Input from "@/shared/ui/Input"
+import { useToast } from "@/shared/ui/Toast"
+import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 export default function CertificationProgramsPage() {
-  const { organization, grants, setDirty } = useOrganizationContext();
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [selected, setSelected] = useState<Program | null>(null);
+  const { organization, grants, setDirty } = useOrganizationContext()
+  const [programs, setPrograms] = useState<Program[]>([])
+  const [selected, setSelected] = useState<Program | null>(null)
   const [versions, setVersions] = useState<
     {
-      id: string;
-      label: string;
+      id: string
+      label: string
     }[]
-  >([]);
-  const [certificates, setCertificates] = useState<Page<Certificate> | null>(
-    null,
-  );
-  const [tab, setTab] = useState("programs");
-  const [name, setName] = useState("");
-  const [versionId, setVersionId] = useState("");
-  const [status, setStatus] = useState("");
-  const [learner, setLearner] = useState("");
-  const [learnerDraft, setLearnerDraft] = useState("");
-  const [page, setPage] = useState(0);
-  const [refresh, setRefresh] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const { toast } = useToast();
+  >([])
+  const [certificates, setCertificates] = useState<Page<Certificate> | null>(null)
+  const [tab, setTab] = useState("programs")
+  const [name, setName] = useState("")
+  const [versionId, setVersionId] = useState("")
+  const [status, setStatus] = useState("")
+  const [learner, setLearner] = useState("")
+  const [learnerDraft, setLearnerDraft] = useState("")
+  const [page, setPage] = useState(0)
+  const [refresh, setRefresh] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState("")
+  const { toast } = useToast()
   useEffect(() => {
-    setDirty("program", Boolean(name || versionId));
-    return () => setDirty("program", false);
-  }, [name, versionId, setDirty]);
+    setDirty("program", Boolean(name || versionId))
+    return () => setDirty("program", false)
+  }, [name, versionId, setDirty])
   useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError("");
-    (async () => {
-      if (!organization || !grants.includes("ISSUE_CERTIFICATES")) return;
-      const rows = await certificationApi.programs(organization.id);
+    let active = true
+    setLoading(true)
+    setError("")
+    ;(async () => {
+      if (!organization || !grants.includes("ISSUE_CERTIFICATES")) return
+      const rows = await certificationApi.programs(organization.id)
       if (active) {
-        setPrograms(rows);
-        setSelected((p) => rows.find((r) => r.id === p?.id) ?? rows[0] ?? null);
+        setPrograms(rows)
+        setSelected((p) => rows.find((r) => r.id === p?.id) ?? rows[0] ?? null)
       }
-      const available = await certificationApi.sources(organization.id);
+      const available = await certificationApi.sources(organization.id)
       if (active)
         setVersions(
           available.map((v) => ({
             id: v.id,
             label: `${v.title} · version ${v.versionNo}`,
           })),
-        );
+        )
     })()
       .catch((e) => {
-        if (active) setError(e.message);
+        if (active) setError(e.message)
       })
       .finally(() => {
-        if (active) setLoading(false);
-      });
+        if (active) setLoading(false)
+      })
     return () => {
-      active = false;
-    };
-  }, [organization, grants, refresh]);
+      active = false
+    }
+  }, [organization, grants, refresh])
   useEffect(() => {
-    let active = true;
-    setCertificates(null);
+    let active = true
+    setCertificates(null)
     if (organization && grants.includes("ISSUE_CERTIFICATES"))
       certificationApi
         .search(organization.id, status, "", page, learner)
         .then((r) => {
-          if (active) setCertificates(r);
+          if (active) setCertificates(r)
         })
         .catch((e) => {
-          if (active) setError(e.message);
-        });
+          if (active) setError(e.message)
+        })
     return () => {
-      active = false;
-    };
-  }, [organization, grants, status, learner, page, refresh]);
+      active = false
+    }
+  }, [organization, grants, status, learner, page, refresh])
   async function create() {
-    if (!organization || busy || !name.trim() || !versionId) return;
-    setBusy(true);
-    setError("");
+    if (!organization || busy || !name.trim() || !versionId) return
+    setBusy(true)
+    setError("")
     try {
       const result = await certificationApi.create(organization.id, {
         name: name.trim(),
         courseVersionId: versionId,
-      });
-      setName("");
-      setVersionId("");
-      setSelected(result);
-      setRefresh((r) => r + 1);
-      toast("success", "Certification program created.");
+      })
+      setName("")
+      setVersionId("")
+      setSelected(result)
+      setRefresh((r) => r + 1)
+      toast("success", "Certification program created.")
     } catch (e) {
-      setError(organizerError(e, "Create failed"));
+      setError(organizerError(e, "Create failed"))
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
   async function retire() {
@@ -116,17 +110,17 @@ export default function CertificationProgramsPage() {
         `Retire ${selected.name}? New issuance will stop. Existing certificates remain verifiable.`,
       )
     )
-      return;
-    setBusy(true);
-    setError("");
+      return
+    setBusy(true)
+    setError("")
     try {
-      await certificationApi.retire(selected.id);
-      setRefresh((x) => x + 1);
-      toast("success", "Program retired.");
+      await certificationApi.retire(selected.id)
+      setRefresh((x) => x + 1)
+      toast("success", "Program retired.")
     } catch (e) {
-      setError(organizerError(e, "Unable to retire program"));
+      setError(organizerError(e, "Unable to retire program"))
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
   return (
@@ -163,9 +157,7 @@ export default function CertificationProgramsPage() {
         <div className="sporg-grid">
           <section className="sporg-card">
             <h2>Programs</h2>
-            {!programs.length && (
-              <p>No programs yet. Publish a course to begin.</p>
-            )}
+            {!programs.length && <p>No programs yet. Publish a course to begin.</p>}
             {programs.map((p) => (
               <div className="sporg-row" key={p.id}>
                 <div>
@@ -186,8 +178,8 @@ export default function CertificationProgramsPage() {
               <form
                 className="sporg-form"
                 onSubmit={(e) => {
-                  e.preventDefault();
-                  void create();
+                  e.preventDefault()
+                  void create()
                 }}
               >
                 <Input
@@ -199,11 +191,7 @@ export default function CertificationProgramsPage() {
                 />
                 <label>
                   Published course version
-                  <select
-                    required
-                    value={versionId}
-                    onChange={(e) => setVersionId(e.target.value)}
-                  >
+                  <select required value={versionId} onChange={(e) => setVersionId(e.target.value)}>
                     <option value="">Select a published version</option>
                     {versions.map((v) => (
                       <option key={v.id} value={v.id}>
@@ -227,11 +215,7 @@ export default function CertificationProgramsPage() {
                     program={selected}
                     onIssued={() => setRefresh((r) => r + 1)}
                   />
-                  <Button
-                    variant="destructive"
-                    disabled={busy}
-                    onClick={() => void retire()}
-                  >
+                  <Button variant="destructive" disabled={busy} onClick={() => void retire()}>
                     Retire program
                   </Button>
                 </>
@@ -239,10 +223,9 @@ export default function CertificationProgramsPage() {
                 <section className="sporg-card">
                   <h2>{selected.name}</h2>
                   <p>
-                    This program is {selected.status.toLowerCase()}. Issuance
-                    requires an active program. Existing certificates remain in
-                    the certificate register and can still be verified or
-                    revoked.
+                    This program is {selected.status.toLowerCase()}. Issuance requires an active
+                    program. Existing certificates remain in the certificate register and can still
+                    be verified or revoked.
                   </p>
                 </section>
               )}
@@ -250,9 +233,7 @@ export default function CertificationProgramsPage() {
           ) : (
             <section className="sporg-card">
               <h2>Ready to issue?</h2>
-              <p>
-                Select a program to find learners and evaluate their evidence.
-              </p>
+              <p>Select a program to find learners and evaluate their evidence.</p>
             </section>
           )}
         </div>
@@ -265,8 +246,8 @@ export default function CertificationProgramsPage() {
               <select
                 value={status}
                 onChange={(e) => {
-                  setStatus(e.target.value);
-                  setPage(0);
+                  setStatus(e.target.value)
+                  setPage(0)
                 }}
               >
                 <option value="">All statuses</option>
@@ -282,9 +263,9 @@ export default function CertificationProgramsPage() {
             <Button
               variant="outline"
               onClick={() => {
-                setError("");
-                setLearner(learnerDraft.trim());
-                setPage(0);
+                setError("")
+                setLearner(learnerDraft.trim())
+                setPage(0)
               }}
             >
               Search certificates
@@ -300,20 +281,15 @@ export default function CertificationProgramsPage() {
                   <div>
                     <strong>{c.learnerEmail ?? "Legacy learner record"}</strong>
                     <small>
-                      {c.programName ?? "Program"} · {c.serialNumber} ·{" "}
-                      {c.status}
+                      {c.programName ?? "Program"} · {c.serialNumber} · {c.status}
                     </small>
                   </div>
                   <Button asChild variant="outline">
-                    <Link to={`/organizer/certificates/${c.id}`}>
-                      View detail
-                    </Link>
+                    <Link to={`/organizer/certificates/${c.id}`}>View detail</Link>
                   </Button>
                 </div>
               ))}
-              {!certificates.content.length && (
-                <p>No certificates match these filters.</p>
-              )}
+              {!certificates.content.length && <p>No certificates match these filters.</p>}
               <div className="sporg-actions">
                 <Button
                   variant="outline"
@@ -338,5 +314,5 @@ export default function CertificationProgramsPage() {
         </section>
       )}
     </OrganizerSurface>
-  );
+  )
 }

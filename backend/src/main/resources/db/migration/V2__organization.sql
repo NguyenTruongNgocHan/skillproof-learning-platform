@@ -94,3 +94,24 @@ CREATE UNIQUE INDEX uq_organization_invitation_pending ON organization_invitatio
 CREATE INDEX ix_organization_invitation_email ON organization_invitation (email, status);
 
 CREATE INDEX ix_organization_revision ON organization_application_revision (organization_id, revision_no DESC);
+
+-- Organization application reviewer progress. DEV baseline schema; tied to immutable revisions.
+CREATE TABLE organization_revision_review_check (
+  revision_id uuid NOT NULL REFERENCES organization_application_revision(id) ON DELETE CASCADE,
+  reviewer_user_id uuid NOT NULL REFERENCES user_account(id),
+  criterion_key varchar(80) NOT NULL,
+  checked boolean NOT NULL DEFAULT false,
+  note varchar(1000),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (revision_id, reviewer_user_id, criterion_key)
+);
+CREATE TABLE organization_revision_review_check_event (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  revision_id uuid NOT NULL REFERENCES organization_application_revision(id) ON DELETE CASCADE,
+  reviewer_user_id uuid NOT NULL REFERENCES user_account(id),
+  criterion_key varchar(80) NOT NULL,
+  checked boolean NOT NULL,
+  note varchar(1000),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_org_review_check_event_revision ON organization_revision_review_check_event (revision_id, created_at);

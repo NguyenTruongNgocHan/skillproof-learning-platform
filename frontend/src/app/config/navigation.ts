@@ -1,22 +1,16 @@
-import type { UserRole } from "@/features/auth/types/auth.types";
-import type { LucideIcon } from "lucide-react";
-import {
-  Award,
-  BookOpen,
-  LayoutDashboard,
-  LibraryBig,
-  ListChecks,
-  UserRound,
-} from "lucide-react";
+import type { UserRole } from "@/features/auth/types/auth.types"
+import type { LucideIcon } from "lucide-react"
+import { Award, BookOpen, LayoutDashboard, LibraryBig, ListChecks, UserRound } from "lucide-react"
 
 export interface NavItem {
-  label: string;
-  path: string;
-  icon: LucideIcon;
-  badge?: number;
+  label: string
+  path: string
+  icon: LucideIcon
+  badge?: number
 }
 
 export const LEARNER_NAV: NavItem[] = [
+  { label: "Payment orders", path: "/app/orders", icon: ListChecks },
   { label: "Resources", path: "/resources", icon: LibraryBig },
   {
     label: "Certificate feedback",
@@ -28,7 +22,7 @@ export const LEARNER_NAV: NavItem[] = [
   { label: "Course catalog", path: "/catalog", icon: LibraryBig },
   { label: "Explore paths", path: "/learning-paths", icon: LibraryBig },
   { label: "Identity & profile", path: "/profile", icon: UserRound },
-];
+]
 
 export const ORGANIZER_NAV: NavItem[] = [
   { label: "Overview", path: "/organizer", icon: LayoutDashboard },
@@ -65,10 +59,13 @@ export const ORGANIZER_NAV: NavItem[] = [
   { label: "Question banks", path: "/organizer/questions", icon: ListChecks },
   { label: "Certifications", path: "/organizer/certifications", icon: Award },
   { label: "Identity & profile", path: "/profile", icon: UserRound },
-];
+]
 
 export const ADMIN_NAV: NavItem[] = [
+  { label: "Course moderation", path: "/admin/courses", icon: BookOpen },
   { label: "Overview", path: "/admin", icon: LayoutDashboard },
+  { label: "Course review", path: "/admin/course-review", icon: BookOpen },
+  { label: "Accounts", path: "/admin/accounts", icon: UserRound },
   { label: "Certificate governance", path: "/admin/certificates", icon: Award },
   { label: "Resource review", path: "/admin/library", icon: LibraryBig },
   {
@@ -84,15 +81,15 @@ export const ADMIN_NAV: NavItem[] = [
     icon: ListChecks,
   },
   { label: "Identity & profile", path: "/profile", icon: UserRound },
-];
+]
 
 export function getNavForRole(role: UserRole): NavItem[] {
   switch (role) {
     case "LEARNER":
-      return LEARNER_NAV;
+      return LEARNER_NAV
     case "ORGANIZER":
-      return ORGANIZER_NAV;
+      return ORGANIZER_NAV
     case "ADMIN":
-      return ADMIN_NAV;
+      return ADMIN_NAV
   }
 }

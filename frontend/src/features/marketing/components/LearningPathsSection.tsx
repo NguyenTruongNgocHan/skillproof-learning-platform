@@ -42,9 +42,7 @@ export default function LearningPathsSection() {
           subtitle="Illustrative learning paths. Each future path connects curated resources, practice assessments, and certification milestones into a coherent progression — not a random collection of videos."
         />
 
-        <p className="eyebrow mb-5">
-          CONCEPT EXAMPLES — NOT OPEN FOR ENROLLMENT
-        </p>
+        <p className="eyebrow mb-5">CONCEPT EXAMPLES — NOT OPEN FOR ENROLLMENT</p>
         <div className="grid md:grid-cols-3 gap-6 mb-10">
           {landingLearningPaths.map((path) => (
             <PathCard key={path.id} path={path} />

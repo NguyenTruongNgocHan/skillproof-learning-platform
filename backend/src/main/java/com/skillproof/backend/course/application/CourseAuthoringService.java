@@ -37,6 +37,7 @@ public class CourseAuthoringService {
   private final CourseResourceJpaRepository resources;
   private final CourseContextRepository versions;
   private final CompletionPolicyJpaRepository policies;
+  @org.springframework.beans.factory.annotation.Autowired private CourseReadinessService readiness;
   private final CourseAccess access;
   private final CourseMediaDependency media;
   private final CourseAssessmentDependency assessments;
@@ -192,6 +193,11 @@ public class CourseAuthoringService {
     policies.save(draftPolicy);
     draft.configureOffer(
         source.getAccessMode(), source.getPriceVnd(), source.getCertificationPriceVnd());
+    draft.configureMetadata(
+        source.getDomainTag(),
+        source.getDifficulty(),
+        source.getSkills(),
+        source.getPrerequisiteText());
     var resourceMapping = new HashMap<UUID, UUID>();
     var moduleMapping = new HashMap<UUID, UUID>();
     var lessonMapping = new HashMap<UUID, UUID>();
@@ -255,12 +261,11 @@ public class CourseAuthoringService {
   @Transactional
   public Map<String, Object> policy(UUID a, UUID i, boolean r, boolean q) {
     var v = draftVersion(i);
-    if (!access.canReview(a)) {
-      access.manage(a, path(v.getCourseId()));
-    }
-    if (!r && !q) {
+    access.manage(a, path(v.getCourseId()));
+    if (!r) {
       throw new BadRequestException(
-          "COMPLETION_POLICY_EMPTY", "Select at least one completion requirement");
+          "RESOURCE_POLICY_REQUIRED",
+          "Required resources always participate in completion; use per-resource required flags");
     }
     var p = policies.findById(i).orElseThrow();
     p.configure(r, q);
@@ -289,45 +294,10 @@ public class CourseAuthoringService {
       throw new com.skillproof.backend.common.exception.ConflictException(
           "COURSE_REVIEW_REQUIRED", "Community courses require administrator approval");
     }
-    var resourceRows =
-        modules.findByVersionIdOrderByPosition(i).stream()
-            .flatMap(module -> resources.findByModuleIdOrderByPosition(module.getId()).stream())
-            .toList();
-    if (resourceRows.stream().anyMatch(r -> r.getLessonId() == null)) {
-      throw new BadRequestException("LESSON_REQUIRED", "Every resource must belong to a lesson");
-    }
-    if (lessons.countByVersionId(i) == 0) {
-      throw new BadRequestException("COURSE_EMPTY", "Add at least one lesson before publishing");
-    }
-    for (var module : modules.findByVersionIdOrderByPosition(i))
-      for (var lesson : lessons.findByModuleIdOrderByPosition(module.getId()))
-        if (lesson.getBody().isBlank()
-            && resourceRows.stream().noneMatch(r -> lesson.getId().equals(r.getLessonId())))
-          throw new BadRequestException("LESSON_EMPTY", "Every lesson requires text or a resource");
-    if (resourceRows.stream()
-        .anyMatch(
-            resource ->
-                (java.util.Set.of("FILE", "AUDIO", "IMAGE").contains(resource.getKind())
-                        || ("VIDEO".equals(resource.getKind()) && resource.getUrl() == null))
-                    && !media.hasMatchingAsset(resource.getId(), resource.getKind()))) {
-      throw new BadRequestException(
-          "COURSE_MEDIA_NOT_READY",
-          "Every file-backed resource must have a matching ready media asset before"
-              + " publishing");
-    }
-    if (v.getStatus().equals("PUBLISHED")) {
-      throw new com.skillproof.backend.common.exception.ConflictException(
-          "COURSE_VERSION_IMMUTABLE", "Published course versions cannot be edited");
-    }
-    if (assessments.hasDraftAssessments(i)) {
-      throw new BadRequestException(
-          "COURSE_ASSESSMENT_DRAFT",
-          "Publish or remove all draft assessments before publishing the course version");
-    }
-    if (policies.findById(i).orElseThrow().isRequireOfficialAssessments()
-        && !assessments.hasPublishedOfficialAssessment(i)) {
-      throw new BadRequestException(
-          "COURSE_ASSESSMENT_NOT_READY", "An official assessment is required before publishing");
+    var issues = readiness.issues(i);
+    if (!issues.isEmpty()) {
+      var issue = issues.getFirst();
+      throw new BadRequestException(issue.get("code").toString(), issue.get("message").toString());
     }
     versions
         .findFirstByCourseIdAndStatusOrderByVersionNoDesc(v.getCourseId(), "PUBLISHED")
@@ -372,7 +342,21 @@ public class CourseAuthoringService {
                         "title",
                         module.getTitle(),
                         "lessons",
-                        lessons.findByModuleIdOrderByPosition(module.getId()),
+                        lessons.findByModuleIdOrderByPosition(module.getId()).stream()
+                            .map(
+                                l ->
+                                    Map.of(
+                                        "id",
+                                        l.getId(),
+                                        "moduleId",
+                                        l.getModuleId(),
+                                        "position",
+                                        l.getPosition(),
+                                        "title",
+                                        l.getTitle(),
+                                        "body",
+                                        l.getBody()))
+                            .toList(),
                         "resources",
                         resources.findByModuleIdOrderByPosition(module.getId()).stream()
                             .map(
@@ -463,7 +447,7 @@ public class CourseAuthoringService {
       UUID actor, UUID versionId, String mode, long price, long certificationPrice) {
     var version = draftVersion(versionId);
     var course = path(version.getCourseId());
-    access.manage(actor, course);
+    access.managePricing(actor, course);
     if (!List.of("PUBLIC", "RESTRICTED").contains(mode)
         || price < 0
         || certificationPrice < 0

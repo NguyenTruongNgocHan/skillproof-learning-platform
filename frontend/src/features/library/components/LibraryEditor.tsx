@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import MediaPanel from "@/features/media/components/MediaPanel";
-import { useAction } from "@/shared/hooks/useRemote";
-import { ActionNotice } from "@/shared/ui/RemoteState";
-import Input from "@/shared/ui/Input";
-import Button from "@/shared/ui/Button";
-import type { LibraryInput, LibraryResource } from "../types/library.types";
-import { libraryApi } from "../api/libraryApi";
+import { useState, useEffect } from "react"
+import MediaPanel from "@/features/media/components/MediaPanel"
+import { useAction } from "@/shared/hooks/useRemote"
+import { ActionNotice } from "@/shared/ui/RemoteState"
+import Input from "@/shared/ui/Input"
+import Button from "@/shared/ui/Button"
+import type { LibraryInput, LibraryResource } from "../types/library.types"
+import { libraryApi } from "../api/libraryApi"
 export function LibraryEditor({
   onBusyChange,
   org,
@@ -13,42 +13,42 @@ export function LibraryEditor({
   created,
   refresh,
 }: {
-  onBusyChange?: (busy: boolean) => void;
-  org: string;
-  value: LibraryResource | null;
-  created: (r: LibraryResource) => void;
-  refresh: () => void;
+  onBusyChange?: (busy: boolean) => void
+  org: string
+  value: LibraryResource | null
+  created: (r: LibraryResource) => void
+  refresh: () => void
 }) {
-  const [current, setCurrent] = useState(value);
+  const [current, setCurrent] = useState(value)
   const [form, setForm] = useState<LibraryInput>({
     title: value?.title ?? "",
     summary: value?.summary ?? "",
     body: value?.body ?? "",
     priceVnd: value?.priceVnd ?? 0,
     accessMode: value?.accessMode ?? "PUBLIC",
-  });
-  const action = useAction(refresh);
+  })
+  const action = useAction(refresh)
 
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(false)
   useEffect(() => {
-    onBusyChange?.(action.busy || uploading);
-    return () => onBusyChange?.(false);
-  }, [action.busy, uploading, onBusyChange]);
-  const editable = !current || ["DRAFT", "REJECTED"].includes(current.status);
+    onBusyChange?.(action.busy || uploading)
+    return () => onBusyChange?.(false)
+  }, [action.busy, uploading, onBusyChange])
+  const editable = !current || ["DRAFT", "REJECTED"].includes(current.status)
   return (
     <>
       <ActionNotice {...action} />
       <form
         className="sporg-form"
         onSubmit={(e) => {
-          e.preventDefault();
+          e.preventDefault()
           void action.run(async () => {
             const result = current
               ? await libraryApi.edit(current.id, form)
-              : await libraryApi.create(org, form);
-            setCurrent(result);
-            created(result);
-          }, "Resource saved.");
+              : await libraryApi.create(org, form)
+            setCurrent(result)
+            created(result)
+          }, "Resource saved.")
         }}
       >
         <fieldset disabled={!editable || action.busy || uploading}>
@@ -86,8 +86,7 @@ export function LibraryEditor({
                   setForm({
                     ...form,
                     accessMode: e.target.value as LibraryInput["accessMode"],
-                    priceVnd:
-                      e.target.value === "RESTRICTED" ? 0 : form.priceVnd,
+                    priceVnd: e.target.value === "RESTRICTED" ? 0 : form.priceVnd,
                   })
                 }
               >
@@ -102,9 +101,7 @@ export function LibraryEditor({
               min={0}
               max={form.accessMode === "RESTRICTED" ? 0 : 1000000000}
               value={form.priceVnd}
-              onChange={(e) =>
-                setForm({ ...form, priceVnd: Number(e.target.value) })
-              }
+              onChange={(e) => setForm({ ...form, priceVnd: Number(e.target.value) })}
             />
           </div>
           {current && <p>Access mode is fixed by the current update API.</p>}
@@ -125,5 +122,5 @@ export function LibraryEditor({
         />
       )}
     </>
-  );
+  )
 }

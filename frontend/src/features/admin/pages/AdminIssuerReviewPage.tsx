@@ -1,124 +1,148 @@
-import { useCallback, useState } from "react";
-import AppShell from "@/shared/components/layout/AppShell";
-import { governanceApi } from "@/features/organization/api/governanceApi";
-import { EvidenceManager } from "@/features/organization/components/EvidenceManager";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import Input from "@/shared/ui/Input";
-import Button from "@/shared/ui/Button";
+import AdminPageHeader from "../components/AdminPageHeader"
+import AdminStatusBadge from "../components/AdminStatusBadge"
+import { useCallback, useState } from "react"
+import AppShell from "@/shared/components/layout/AppShell"
+import { governanceApi } from "@/features/organization/api/governanceApi"
+import { EvidenceManager } from "@/features/organization/components/EvidenceManager"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import AdminTable, { type Column } from "../components/AdminTable"
+import AdminDialog from "../components/AdminDialog"
+import "../styles/admin-console.css"
+type Issuer = Awaited<ReturnType<typeof governanceApi.pending>>[number]
+const columns: Column<Issuer>[] = [
+  {
+    key: "organization",
+    label: "Organization",
+    render: (r) => <span className="adm-primary-cell">{r.organizationId}</span>,
+    sortValue: (r) => r.organizationId,
+  },
+  { key: "scope", label: "Requested scope", render: (r) => r.scope, sortValue: (r) => r.scope },
+  { key: "mode", label: "Scope mode", render: (r) => r.scopeMode, sortValue: (r) => r.scopeMode },
+  {
+    key: "status",
+    label: "Status",
+    render: (r) => <AdminStatusBadge value={r.status} />,
+    sortValue: (r) => r.status,
+  },
+]
 export default function AdminIssuerReviewPage() {
-  const pending = useRemote(useCallback(() => governanceApi.pending(), []));
-  const [org, setOrg] = useState("");
-  const [searchOrg, setSearchOrg] = useState("");
-  const history = useRemote(
-    useCallback(
-      () => (org ? governanceApi.issuers(org) : Promise.resolve([])),
-      [org],
-    ),
-  );
-  const [reason, setReason] = useState(""),
-    [expiry, setExpiry] = useState("");
-  const action = useAction(() => {
-    pending.reload();
-    history.reload();
-  });
-  const rows = org ? history.data : pending.data;
+  const pending = useRemote(useCallback(() => governanceApi.pending(), []))
+  const [selected, setSelected] = useState<Issuer | null>(null)
+  const [reason, setReason] = useState("")
+  const [expiry, setExpiry] = useState("")
+  const action = useAction(pending.reload)
+  async function decide(status: string) {
+    if (
+      !selected ||
+      !reason.trim() ||
+      (status === "AUTHORIZED" && !expiry) ||
+      !window.confirm(`Confirm ${status.toLowerCase()}?`)
+    )
+      return
+    await action.run(
+      () =>
+        governanceApi.decide(selected.id, {
+          status,
+          reason,
+          validUntil: status === "AUTHORIZED" ? new Date(expiry).toISOString() : null,
+        }),
+      "Issuer decision recorded.",
+    )
+    setSelected(null)
+  }
   return (
     <AppShell>
-      <main className="sporg">
-        <header className="sporg-heading">
-          <h1>Issuer authorization</h1>
-          <p>
-            Review evidence before authorizing certificate issuance. Suspending
-            an issuer does not silently revoke previously issued certificates.
-          </p>
-        </header>
-        <form
-          className="sporg-toolbar"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setOrg(searchOrg.trim());
-          }}
-        >
-          <Input
-            label="Organization UUID (optional history lookup)"
-            value={searchOrg}
-            onChange={(e) => setSearchOrg(e.target.value)}
-          />
-          <Button type="submit">Load history</Button>
-          <Button variant="outline" onClick={() => setOrg("")}>
-            Pending queue
-          </Button>
-        </form>
-        <RemoteState
-          {...(org ? history : pending)}
-          retry={org ? history.reload : pending.reload}
+      <section className="adm-page">
+        <AdminPageHeader
+          eyebrow="Certificate governance"
+          title="Issuer authorization"
+          description="Verify organization evidence, requested scope and issuance authority."
         />
+        <RemoteState {...pending} retry={pending.reload} />
         <ActionNotice {...action} />
-        {rows?.map((a) => (
-          <section className="sporg-card" key={a.id}>
-            <h2>
-              {a.organizationId} · {a.status}
-            </h2>
-            <p>{a.scope}</p>
-            <p>
-              Scope: {a.scopeMode} · {a.courseVersionIds || "All courses"}
-            </p>
-            <EvidenceManager
-              organizationId={a.organizationId}
-              purpose="ISSUER"
-              admin
-            />
-            <Input
-              label="Decision reason"
-              required
-              maxLength={1000}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
-            <Input
-              label="Authorization expiry"
-              type="datetime-local"
-              value={expiry}
-              onChange={(e) => setExpiry(e.target.value)}
-            />
-            <div className="sporg-actions">
-              {(a.status === "PENDING"
-                ? ["AUTHORIZED", "REJECTED"]
-                : a.status === "AUTHORIZED"
-                  ? ["SUSPENDED", "REVOKED"]
-                  : []
-              ).map((status) => (
-                <Button
-                  key={status}
-                  disabled={
-                    action.busy ||
-                    !reason.trim() ||
-                    (status === "AUTHORIZED" && !expiry)
-                  }
-                  onClick={() => {
-                    if (window.confirm(`Confirm ${status.toLowerCase()}?`))
-                      void action.run(
-                        () =>
-                          governanceApi.decide(a.id, {
-                            status,
-                            reason,
-                            validUntil:
-                              status === "AUTHORIZED"
-                                ? new Date(expiry).toISOString()
-                                : null,
-                          }),
-                        "Issuer decision recorded.",
-                      );
-                  }}
-                >
-                  {status.toLowerCase()}
-                </Button>
-              ))}
+        <AdminTable
+          rows={pending.data || []}
+          columns={columns}
+          searchText={(r) => `${r.organizationId} ${r.scope} ${r.status}`}
+          filters={[
+            { key: "status", label: "Status", value: (r) => r.status },
+            { key: "mode", label: "Scope mode", value: (r) => r.scopeMode },
+          ]}
+          onOpen={(r) => {
+            setSelected(r)
+            setReason("")
+            setExpiry("")
+          }}
+          empty="No issuer applications awaiting review."
+        />
+        {selected && (
+          <AdminDialog
+            title="Issuer authorization"
+            subtitle={`${selected.organizationId} · ${selected.status}`}
+            onClose={() => setSelected(null)}
+            footer={
+              <>
+                <button className="adm-btn" onClick={() => setSelected(null)}>
+                  Close
+                </button>
+                {(selected.status === "PENDING"
+                  ? ["REJECTED", "AUTHORIZED"]
+                  : selected.status === "AUTHORIZED"
+                    ? ["SUSPENDED", "REVOKED"]
+                    : []
+                ).map((status) => (
+                  <button
+                    key={status}
+                    className={status === "AUTHORIZED" ? "adm-btn adm-btn-primary" : "adm-btn"}
+                    disabled={action.busy || !reason.trim() || (status === "AUTHORIZED" && !expiry)}
+                    onClick={() => void decide(status)}
+                  >
+                    {status.toLowerCase()}
+                  </button>
+                ))}
+              </>
+            }
+          >
+            <dl className="adm-detail-list">
+              <dt>Scope</dt>
+              <dd>{selected.scope}</dd>
+              <dt>Scope mode</dt>
+              <dd>{selected.scopeMode}</dd>
+              <dt>Course versions</dt>
+              <dd>{String(selected.courseVersionIds || "All courses")}</dd>
+            </dl>
+            <div className="adm-dialog-grid" style={{ marginTop: 20 }}>
+              <section className="adm-panel">
+                <h3>Issuer evidence</h3>
+                <EvidenceManager organizationId={selected.organizationId} purpose="ISSUER" admin />
+              </section>
+              <section className="adm-panel">
+                <h3>Decision</h3>
+                <label className="adm-muted">
+                  Decision reason
+                  <textarea
+                    className="adm-review-note"
+                    maxLength={1000}
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                  />
+                </label>
+                <label className="adm-muted">
+                  Authorization expiry
+                  <input
+                    className="adm-field"
+                    style={{ display: "block", marginTop: 8 }}
+                    type="datetime-local"
+                    value={expiry}
+                    onChange={(e) => setExpiry(e.target.value)}
+                  />
+                </label>
+              </section>
             </div>
-          </section>
-        ))}
-      </main>
+          </AdminDialog>
+        )}
+      </section>
     </AppShell>
-  );
+  )
 }

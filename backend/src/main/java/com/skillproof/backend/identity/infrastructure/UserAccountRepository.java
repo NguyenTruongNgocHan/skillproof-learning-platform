@@ -1,43 +1,38 @@
 package com.skillproof.backend.identity.infrastructure;
 
+import com.skillproof.backend.identity.domain.UserAccount;
+import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.skillproof.backend.identity.domain.UserAccount;
+public interface UserAccountRepository extends JpaRepository<UserAccount, UUID> {
 
-import jakarta.persistence.LockModeType;
+  boolean existsByEmail(String email);
 
-public interface UserAccountRepository
-        extends JpaRepository<UserAccount, UUID> {
+  Optional<UserAccount> findByEmail(String email);
 
-    boolean existsByEmail(String email);
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      """
+      select u
+      from UserAccount u
+      where u.email = :email
+      """)
+  Optional<UserAccount> findByEmailForUpdate(@Param("email") String email);
 
-    Optional<UserAccount> findByEmail(String email);
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      """
+      select u
+      from UserAccount u
+      where u.id = :id
+      """)
+  Optional<UserAccount> findByIdForUpdate(@Param("id") UUID id);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("""
-            select u
-            from UserAccount u
-            where u.email = :email
-            """)
-    Optional<UserAccount> findByEmailForUpdate(
-            @Param("email") String email
-    );
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("""
-            select u
-            from UserAccount u
-            where u.id = :id
-            """)
-    Optional<UserAccount> findByIdForUpdate(
-            @Param("id") UUID id
-    );
-    @Query("select a.id from UserAccount a where lower(a.email) like lower(concat('%', :query, '%'))")
-    java.util.List<UUID> findAccountIdsByEmailFragment(String query);
+  @Query("select a.id from UserAccount a where lower(a.email) like lower(concat('%', :query, '%'))")
+  java.util.List<UUID> findAccountIdsByEmailFragment(String query);
 }

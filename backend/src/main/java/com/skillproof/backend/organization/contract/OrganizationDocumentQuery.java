@@ -5,5 +5,5 @@ import java.util.UUID;
 
 public interface OrganizationDocumentQuery {
 
-    List<UUID> documentIds(UUID organizationId);
+  List<UUID> documentIds(UUID organizationId);
 }

@@ -1,27 +1,24 @@
-import { useCallback } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
-import PublicHeader from "@/shared/components/layout/PublicHeader";
-import PublicFooter from "@/shared/components/layout/PublicFooter";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import { useMarketingEvent } from "@/features/analytics/hooks/useMarketingEvent";
-import { FeedbackPanel } from "@/features/feedback/components/FeedbackPanel";
-import Button from "@/shared/ui/Button";
-import { catalogApi } from "../api/catalogApi";
-import "@/features/organization/styles/organizer.css";
+import { PublicCoursePreview } from "../components/PublicCoursePreview"
+import { useCallback } from "react"
+import { Link, useParams, useNavigate } from "react-router-dom"
+import PublicHeader from "@/shared/components/layout/PublicHeader"
+import PublicFooter from "@/shared/components/layout/PublicFooter"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import { useMarketingEvent } from "@/features/analytics/hooks/useMarketingEvent"
+import { FeedbackPanel } from "@/features/feedback/components/FeedbackPanel"
+import Button from "@/shared/ui/Button"
+import { catalogApi } from "../api/catalogApi"
+import "@/features/organization/styles/organizer.css"
 export default function PublicCourseDetailPage() {
-  const { id = "" } = useParams();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const detail = useRemote(useCallback(() => catalogApi.detail(id), [id]));
-  const syllabus = useRemote(useCallback(() => catalogApi.syllabus(id), [id]));
-  const action = useAction();
-  useMarketingEvent(
-    detail.data?.organizationId ?? undefined,
-    detail.data?.versionId,
-    "DETAIL_VIEW",
-  );
+  const { id = "" } = useParams()
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const detail = useRemote(useCallback(() => catalogApi.detail(id), [id]))
+  const syllabus = useRemote(useCallback(() => catalogApi.syllabus(id), [id]))
+  const action = useAction()
+  useMarketingEvent(detail.data?.organizationId ?? undefined, detail.data?.versionId, "DETAIL_VIEW")
   return (
     <>
       <PublicHeader />
@@ -66,8 +63,8 @@ export default function PublicCourseDetailPage() {
                 </details>
               ))}
               <p>
-                Enrollment is pinned to a course version. Finishing a course
-                does not automatically grant a certificate.
+                Enrollment is pinned to a course version. Finishing a course does not automatically
+                grant a certificate.
               </p>
               {!user ? (
                 <Button asChild>
@@ -78,8 +75,8 @@ export default function PublicCourseDetailPage() {
                   disabled={action.busy}
                   onClick={() =>
                     void action.run(async () => {
-                      const enrollment = await catalogApi.enroll(id);
-                      navigate(`/app/learning/${enrollment.id}`);
+                      const enrollment = await catalogApi.enroll(id)
+                      navigate(`/app/learning/${enrollment.id}`)
                     }, "Enrollment ready.")
                   }
                 >
@@ -90,19 +87,18 @@ export default function PublicCourseDetailPage() {
               )}
               {detail.data.priceVnd > 0 && user?.role === "LEARNER" && (
                 <Button asChild variant="outline">
-                  <Link
-                    to={`/checkout?type=COURSE&productId=${detail.data.versionId}`}
-                  >
+                  <Link to={`/checkout?type=COURSE&productId=${detail.data.versionId}`}>
                     Purchase learning access
                   </Link>
                 </Button>
               )}
             </section>
+            <PublicCoursePreview courseId={id} />
             <FeedbackPanel type="COURSE" target={detail.data.versionId} />
           </>
         )}
       </main>
       <PublicFooter />
     </>
-  );
+  )
 }

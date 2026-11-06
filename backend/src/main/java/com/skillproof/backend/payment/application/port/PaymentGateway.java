@@ -6,9 +6,10 @@ import java.util.UUID;
 
 public interface PaymentGateway {
 
-    String checkout(UUID orderId, long amountVnd, Instant createdAt, Instant expiresAt, String ipAddress);
+  String checkout(
+      UUID orderId, long amountVnd, Instant createdAt, Instant expiresAt, String ipAddress);
 
-    boolean authentic(Map<String, String> parameters);
+  boolean authentic(Map<String, String> parameters);
 
-    String merchantCode();
+  String merchantCode();
 }

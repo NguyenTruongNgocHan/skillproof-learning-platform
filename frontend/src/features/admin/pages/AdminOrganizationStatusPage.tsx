@@ -1,43 +1,40 @@
-import { useState, useCallback } from "react";
-import type { Organization } from "@/features/organization/types/organization.types";
-import { apiClient } from "@/shared/api/apiClient";
-import AppShell from "@/shared/components/layout/AppShell";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import Input from "@/shared/ui/Input";
-import Button from "@/shared/ui/Button";
+import { useState, useCallback } from "react"
+import type { Organization } from "@/features/organization/types/organization.types"
+import { apiClient } from "@/shared/api/apiClient"
+import AppShell from "@/shared/components/layout/AppShell"
+import AdminPageHeader from "../components/AdminPageHeader"
+import "../styles/admin-console.css"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import Input from "@/shared/ui/Input"
+import Button from "@/shared/ui/Button"
 export default function AdminOrganizationStatusPage() {
   const [lookup, setLookup] = useState(""),
     [id, setId] = useState(""),
-    [reason, setReason] = useState("");
+    [reason, setReason] = useState("")
   const remote = useRemote(
     useCallback(
       () =>
         id
-          ? apiClient.get<Organization>(
-              `/admin/organization-status/${encodeURIComponent(id)}`,
-            )
+          ? apiClient.get<Organization>(`/admin/organization-status/${encodeURIComponent(id)}`)
           : Promise.resolve(null),
       [id],
     ),
-  );
-  const action = useAction(remote.reload);
+  )
+  const action = useAction(remote.reload)
   return (
     <AppShell>
-      <main className="sporg">
-        <header className="sporg-heading">
-          <h1>Organization governance</h1>
-          <p>
-            Suspension blocks new enrollment, invitations and issuance.
-            Historical records are retained. Restoration does not reactivate a
-            revoked issuer authorization.
-          </p>
-        </header>
+      <section className="adm-page adm-governance">
+        <AdminPageHeader
+          eyebrow="Organization governance"
+          title="Organization governance"
+          description="Look up an organization to inspect status and apply controlled governance actions."
+        />
         <form
-          className="sporg-toolbar"
+          className="adm-lookup"
           onSubmit={(e) => {
-            e.preventDefault();
-            setId(lookup.trim());
+            e.preventDefault()
+            setId(lookup.trim())
           }}
         >
           <Input
@@ -51,7 +48,7 @@ export default function AdminOrganizationStatusPage() {
         <RemoteState {...remote} retry={remote.reload} />
         <ActionNotice {...action} />
         {remote.data && (
-          <section className="sporg-card">
+          <section className="adm-panel adm-governance-detail">
             <h2>{remote.data.displayName}</h2>
             <p>
               {remote.data.legalName} · {remote.data.status}
@@ -64,7 +61,7 @@ export default function AdminOrganizationStatusPage() {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
-            <div className="sporg-actions">
+            <div className="adm-governance-actions">
               {[true, false].map((suspended) => (
                 <Button
                   key={String(suspended)}
@@ -72,25 +69,22 @@ export default function AdminOrganizationStatusPage() {
                   disabled={
                     action.busy ||
                     !reason.trim() ||
-                    remote.data?.status !==
-                      (suspended ? "APPROVED" : "SUSPENDED")
+                    remote.data?.status !== (suspended ? "APPROVED" : "SUSPENDED")
                   }
                   onClick={() => {
                     if (
                       window.confirm(
-                        suspended
-                          ? "Suspend this organization?"
-                          : "Restore organization access?",
+                        suspended ? "Suspend this organization?" : "Restore organization access?",
                       )
                     )
                       void action.run(
                         () =>
-                          apiClient.put(
-                            `/admin/organization-status/${encodeURIComponent(id)}`,
-                            { suspended, reason },
-                          ),
+                          apiClient.put(`/admin/organization-status/${encodeURIComponent(id)}`, {
+                            suspended,
+                            reason,
+                          }),
                         "Organization status updated.",
-                      );
+                      )
                   }}
                 >
                   {suspended ? "Suspend organization" : "Restore organization"}
@@ -99,7 +93,7 @@ export default function AdminOrganizationStatusPage() {
             </div>
           </section>
         )}
-      </main>
+      </section>
     </AppShell>
-  );
+  )
 }

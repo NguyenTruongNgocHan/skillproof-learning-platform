@@ -1,92 +1,104 @@
 package com.skillproof.backend.organization.infrastructure;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "organization_invitation")
 public class OrganizationInvitationEntity {
 
-    @Id
-    UUID id;
-    @Column(name = "organization_id", nullable = false)
-    UUID organizationId;
-    @Column(nullable = false, length = 320)
-    String email;
-    @Column(name = "token_hash", nullable = false, unique = true, length = 64)
-    String tokenHash;
-    @Column(nullable = false, length = 16)
-    String status;
-    @Column(name = "invited_by", nullable = false)
-    UUID invitedBy;
-    @Column(name = "accepted_by")
-    UUID acceptedBy;
-    @Column(name = "expires_at", nullable = false)
-    Instant expiresAt;
-    @Column(name = "created_at", nullable = false)
-    Instant createdAt;
-    @Column(name = "accepted_at")
-    Instant acceptedAt;
+  @Id UUID id;
 
-    protected OrganizationInvitationEntity() {
-    }
+  @Column(name = "organization_id", nullable = false)
+  UUID organizationId;
 
-    public OrganizationInvitationEntity(UUID id, UUID organizationId, String email, String tokenHash,
-            UUID invitedBy, Instant expiresAt, Instant createdAt) {
-        this.id = id;
-        this.organizationId = organizationId;
-        this.email = email;
-        this.tokenHash = tokenHash;
-        this.status = "PENDING";
-        this.invitedBy = invitedBy;
-        this.expiresAt = expiresAt;
-        this.createdAt = createdAt;
-    }
+  @Column(nullable = false, length = 320)
+  String email;
 
-    public UUID getId() {
-        return id;
-    }
+  @Column(name = "token_hash", nullable = false, unique = true, length = 64)
+  String tokenHash;
 
-    public UUID getOrganizationId() {
-        return organizationId;
-    }
+  @Column(nullable = false, length = 16)
+  String status;
 
-    public String getEmail() {
-        return email;
-    }
+  @Column(name = "invited_by", nullable = false)
+  UUID invitedBy;
 
-    public String getTokenHash() {
-        return tokenHash;
-    }
+  @Column(name = "accepted_by")
+  UUID acceptedBy;
 
-    public String getStatus() {
-        return status;
-    }
+  @Column(name = "expires_at", nullable = false)
+  Instant expiresAt;
 
-    public Instant getExpiresAt() {
-        return expiresAt;
-    }
+  @Column(name = "created_at", nullable = false)
+  Instant createdAt;
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+  @Column(name = "accepted_at")
+  Instant acceptedAt;
 
-    public void accept(UUID userId, Instant at) {
-        status = "ACCEPTED";
-        acceptedBy = userId;
-        acceptedAt = at;
-    }
+  protected OrganizationInvitationEntity() {}
 
-    public void expire() {
-        status = "EXPIRED";
-    }
+  public OrganizationInvitationEntity(
+      UUID id,
+      UUID organizationId,
+      String email,
+      String tokenHash,
+      UUID invitedBy,
+      Instant expiresAt,
+      Instant createdAt) {
+    this.id = id;
+    this.organizationId = organizationId;
+    this.email = email;
+    this.tokenHash = tokenHash;
+    this.status = "PENDING";
+    this.invitedBy = invitedBy;
+    this.expiresAt = expiresAt;
+    this.createdAt = createdAt;
+  }
 
-    public void revoke() {
-        status = "REVOKED";
-    }
+  public UUID getId() {
+    return id;
+  }
+
+  public UUID getOrganizationId() {
+    return organizationId;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public String getTokenHash() {
+    return tokenHash;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public Instant getExpiresAt() {
+    return expiresAt;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public void accept(UUID userId, Instant at) {
+    status = "ACCEPTED";
+    acceptedBy = userId;
+    acceptedAt = at;
+  }
+
+  public void expire() {
+    status = "EXPIRED";
+  }
+
+  public void revoke() {
+    status = "REVOKED";
+  }
 }

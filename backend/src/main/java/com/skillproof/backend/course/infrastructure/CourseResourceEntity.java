@@ -1,109 +1,108 @@
 package com.skillproof.backend.course.infrastructure;
 
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.UUID;
 
 @Entity
 @Table(name = "course_resource")
 public class CourseResourceEntity {
 
-    @Id
-    private UUID id;
+  @Id private UUID id;
 
-    @Column(name = "module_id", nullable = false)
-    private UUID moduleId;
+  @Column(name = "module_id", nullable = false)
+  private UUID moduleId;
 
-    @Column(nullable = false)
-    private int position;
+  @Column(nullable = false)
+  private int position;
 
-    @Column(nullable = false, length = 12)
-    private String kind;
+  @Column(nullable = false, length = 12)
+  private String kind;
 
-    @Column(nullable = false, length = 180)
-    private String title;
+  @Column(nullable = false, length = 180)
+  private String title;
 
-    @Column(columnDefinition = "text")
-    private String body;
+  @Column(columnDefinition = "text")
+  private String body;
 
-    @Column(length = 1000)
-    private String url;
+  @Column(length = 1000)
+  private String url;
 
-    @Column(name = "lesson_id")
-    private UUID lessonId;
-    @Column(name = "required_for_completion", nullable = false)
-    private boolean requiredForCompletion = true;
-    @Column(name = "preview", nullable = false)
-    private boolean preview;
+  @Column(name = "lesson_id")
+  private UUID lessonId;
 
-    public UUID getLessonId() {
-        return lessonId;
-    }
+  @Column(name = "required_for_completion", nullable = false)
+  private boolean requiredForCompletion = true;
 
-    public boolean isRequiredForCompletion() {
-        return requiredForCompletion;
-    }
+  @Column(name = "preview", nullable = false)
+  private boolean preview;
 
-    public boolean isPreview() {
-        return preview;
-    }
+  public UUID getLessonId() {
+    return lessonId;
+  }
 
-    public void attachLesson(UUID lessonId, boolean required, boolean preview) {
-        this.lessonId = lessonId;
-        this.requiredForCompletion = required;
-        this.preview = preview;
-    }
+  public boolean isRequiredForCompletion() {
+    return requiredForCompletion;
+  }
 
-    protected CourseResourceEntity() {
-    }
+  public boolean isPreview() {
+    return preview;
+  }
 
-    public CourseResourceEntity(UUID id, UUID moduleId, int position, String kind, String title, String body, String url) {
-        this.id = id;
-        this.moduleId = moduleId;
-        this.position = position;
-        this.kind = kind;
-        this.title = title;
-        this.body = body;
-        this.url = url;
-    }
+  public void attachLesson(UUID lessonId, boolean required, boolean preview) {
+    this.lessonId = lessonId;
+    this.requiredForCompletion = required;
+    this.preview = preview;
+  }
 
-    public UUID getId() {
-        return id;
-    }
+  protected CourseResourceEntity() {}
 
-    public UUID getModuleId() {
-        return moduleId;
-    }
+  public CourseResourceEntity(
+      UUID id, UUID moduleId, int position, String kind, String title, String body, String url) {
+    this.id = id;
+    this.moduleId = moduleId;
+    this.position = position;
+    this.kind = kind;
+    this.title = title;
+    this.body = body;
+    this.url = url;
+  }
 
-    public int getPosition() {
-        return position;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public String getKind() {
-        return kind;
-    }
+  public UUID getModuleId() {
+    return moduleId;
+  }
 
-    public String getTitle() {
-        return title;
-    }
+  public int getPosition() {
+    return position;
+  }
 
-    public String getBody() {
-        return body;
-    }
+  public String getKind() {
+    return kind;
+  }
 
-    public String getUrl() {
-        return url;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public void edit(int p, String k, String t, String b, String u) {
-        position = p;
-        kind = k;
-        title = t;
-        body = b;
-        url = u;
-    }
+  public String getBody() {
+    return body;
+  }
 
+  public String getUrl() {
+    return url;
+  }
+
+  public void edit(int p, String k, String t, String b, String u) {
+    position = p;
+    kind = k;
+    title = t;
+    body = b;
+    url = u;
+  }
 }

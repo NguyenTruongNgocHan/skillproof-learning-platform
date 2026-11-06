@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public interface AssignmentMediaAccess {
 
-    void requireWrite(UUID actor, UUID submissionId);
+  void requireWrite(UUID actor, UUID submissionId);
 
-    void requireRead(UUID actor, UUID submissionId);
+  void requireRead(UUID actor, UUID submissionId);
 }

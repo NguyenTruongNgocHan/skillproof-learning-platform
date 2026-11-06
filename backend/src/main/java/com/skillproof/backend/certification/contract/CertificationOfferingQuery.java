@@ -5,11 +5,9 @@ import java.util.UUID;
 
 public interface CertificationOfferingQuery {
 
-    record Offering(UUID programId, String name) {
+  record Offering(UUID programId, String name) {}
 
-    }
+  boolean activeForVersion(UUID versionId);
 
-    boolean activeForVersion(UUID versionId);
-
-    Optional<Offering> offeringForVersion(UUID versionId);
+  Optional<Offering> offeringForVersion(UUID versionId);
 }

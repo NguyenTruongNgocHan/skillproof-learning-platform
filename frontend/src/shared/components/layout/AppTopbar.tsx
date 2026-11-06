@@ -1,26 +1,21 @@
-import { NotificationButton } from "@/features/operations/components/NotificationButton";
-import { Link, useLocation } from "react-router-dom";
-import type { User } from "@/features/auth/types/auth.types";
-import OrganizationSwitcher from "@/features/organization/components/OrganizationSwitcher";
-import UserMenu from "@/shared/components/layout/UserMenu";
-import ThemeSwitcher from "@/shared/ui/ThemeSwitcher";
-import { Menu } from "lucide-react";
-import "@/shared/styles/app-shell.css";
+import { NotificationButton } from "@/features/operations/components/NotificationButton"
+import { Link, useLocation } from "react-router-dom"
+import type { User } from "@/features/auth/types/auth.types"
+import OrganizationSwitcher from "@/features/organization/components/OrganizationSwitcher"
+import UserMenu from "@/shared/components/layout/UserMenu"
+import ThemeSwitcher from "@/shared/ui/ThemeSwitcher"
+import { Menu } from "lucide-react"
+import "@/shared/styles/app-shell.css"
 
 interface AppTopbarProps {
-  onMenuToggle: () => void;
-  pageTitle: string;
-  user: User;
+  onMenuToggle: () => void
+  pageTitle: string
+  user: User
 }
-export default function AppTopbar({
-  onMenuToggle,
-  pageTitle,
-  user,
-}: AppTopbarProps) {
-  const location = useLocation();
+export default function AppTopbar({ onMenuToggle, pageTitle, user }: AppTopbarProps) {
+  const location = useLocation()
   const inCourse =
-    user.role === "ORGANIZER" &&
-    /^\/organizer\/courses\/[^/]+$/.test(location.pathname);
+    user.role === "ORGANIZER" && /^\/organizer\/courses\/[^/]+$/.test(location.pathname)
   return (
     <header className="app-topbar">
       <div className="app-topbar__left">
@@ -63,5 +58,5 @@ export default function AppTopbar({
         <UserMenu user={user} />
       </div>
     </header>
-  );
+  )
 }

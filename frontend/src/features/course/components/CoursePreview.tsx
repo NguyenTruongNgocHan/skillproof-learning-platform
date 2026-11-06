@@ -1,28 +1,22 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import type {
-  CourseOutline,
-  CourseRecord,
-  CourseResource,
-} from "../types/course.types";
-import { mediaApi } from "@/features/media/api/mediaApi";
-import { useRemote } from "@/shared/hooks/useRemote";
-import { RemoteState } from "@/shared/ui/RemoteState";
-import { quizApi } from "@/features/quiz/api/quizApi";
-import { assignmentApi } from "@/features/assignment/api/assignmentApi";
-import Button from "@/shared/ui/Button";
+import { useState, useCallback, useEffect, useRef } from "react"
+import type { CourseOutline, CourseRecord, CourseResource } from "../types/course.types"
+import { mediaApi } from "@/features/media/api/mediaApi"
+import { useRemote } from "@/shared/hooks/useRemote"
+import { RemoteState } from "@/shared/ui/RemoteState"
+import { quizApi } from "@/features/quiz/api/quizApi"
+import { assignmentApi } from "@/features/assignment/api/assignmentApi"
+import Button from "@/shared/ui/Button"
 function FilePreview({ resource }: { resource: CourseResource }) {
-  const remote = useRemote(
-    useCallback(() => mediaApi.list("RESOURCE", resource.id), [resource.id]),
-  );
+  const remote = useRemote(useCallback(() => mediaApi.list("RESOURCE", resource.id), [resource.id]))
   const [urls, setUrls] = useState<Record<string, string>>({}),
-    [error, setError] = useState("");
-  const retained = useRef<string[]>([]);
+    [error, setError] = useState("")
+  const retained = useRef<string[]>([])
   useEffect(
     () => () => {
-      retained.current.forEach((u) => URL.revokeObjectURL(u));
+      retained.current.forEach((u) => URL.revokeObjectURL(u))
     },
     [],
-  );
+  )
   return (
     <>
       <RemoteState {...remote} retry={remote.reload} />
@@ -38,18 +32,16 @@ function FilePreview({ resource }: { resource: CourseResource }) {
                 void mediaApi
                   .playback(f.id)
                   .then((link) => {
-                    setUrls((old) => ({ ...old, [f.id]: link.url }));
+                    setUrls((old) => ({ ...old, [f.id]: link.url }))
                   })
-                  .catch((e) => setError(e.message));
+                  .catch((e) => setError(e.message))
               }}
             >
               Load preview
             </Button>
             <Button
               variant="outline"
-              onClick={() =>
-                void mediaApi.save(f).catch((e) => setError(e.message))
-              }
+              onClick={() => void mediaApi.save(f).catch((e) => setError(e.message))}
             >
               Download
             </Button>
@@ -69,50 +61,41 @@ function FilePreview({ resource }: { resource: CourseResource }) {
         </div>
       ))}
     </>
-  );
+  )
 }
 export function CoursePreview({
   course,
   outline,
 }: {
-  course: CourseRecord;
-  outline: CourseOutline;
+  course: CourseRecord
+  outline: CourseOutline
 }) {
-  const lessons = outline.modules.flatMap((m) => m.lessons);
-  const [selected, setSelected] = useState(lessons[0]?.id ?? "");
-  const lesson = lessons.find((l) => l.id === selected) ?? lessons[0];
+  const lessons = outline.modules.flatMap((m) => m.lessons)
+  const [selected, setSelected] = useState(lessons[0]?.id ?? "")
+  const lesson = lessons.find((l) => l.id === selected) ?? lessons[0]
   const resources = outline.modules
     .flatMap((m) => m.resources)
     .filter(
       (r) =>
-        r.lesson_id === lesson?.id ||
-        (r.lesson_id === null && r.module_id === lesson?.moduleId),
-    );
+        r.lesson_id === lesson?.id || (r.lesson_id === null && r.module_id === lesson?.moduleId),
+    )
   const assessments = useRemote(
-    useCallback(
-      () => quizApi.assessments(outline.version.id),
-      [outline.version.id],
-    ),
-  );
+    useCallback(() => quizApi.assessments(outline.version.id), [outline.version.id]),
+  )
   const assignments = useRemote(
-    useCallback(
-      () => assignmentApi.list(outline.version.id),
-      [outline.version.id],
-    ),
-  );
+    useCallback(() => assignmentApi.list(outline.version.id), [outline.version.id]),
+  )
   return (
     <>
       <section className="sporg-card">
         <span className="sporg-badge">
-          AUTHOR PREVIEW · v{outline.version.version_no} ·{" "}
-          {outline.version.status}
+          AUTHOR PREVIEW · v{outline.version.version_no} · {outline.version.status}
         </span>
         <h2>{outline.version.title ?? course.title}</h2>
         <p>{outline.version.summary ?? course.summary}</p>
         <p>
-          This preview does not enroll you, record progress, submit attempts or
-          count marketing views. Course completion and certification are
-          separate.
+          This preview does not enroll you, record progress, submit attempts or count marketing
+          views. Course completion and certification are separate.
         </p>
       </section>
       <div className="sporg-studio-layout">
@@ -188,8 +171,8 @@ export function CoursePreview({
                 <h4>{a.title}</h4>
                 <p className="sporg-lesson-body">{a.instructions}</p>
                 <small>
-                  {a.required ? "Required" : "Optional"} · pass {a.passPercent}%
-                  · {a.maxSubmissions} submissions
+                  {a.required ? "Required" : "Optional"} · pass {a.passPercent}% ·{" "}
+                  {a.maxSubmissions} submissions
                 </small>
                 <AssignmentRubricPreview id={a.id} />
               </article>
@@ -197,12 +180,10 @@ export function CoursePreview({
         </section>
       </div>
     </>
-  );
+  )
 }
 function AssessmentPreview({ id }: { id: string }) {
-  const remote = useRemote(
-    useCallback(() => quizApi.assessmentQuestions(id), [id]),
-  );
+  const remote = useRemote(useCallback(() => quizApi.assessmentQuestions(id), [id]))
   return (
     <>
       <RemoteState {...remote} retry={remote.reload} />
@@ -218,11 +199,11 @@ function AssessmentPreview({ id }: { id: string }) {
         </div>
       ))}
       <p>
-        Author preview only. Open the assessment editor for answer keys; learner
-        answers are never submitted here.
+        Author preview only. Open the assessment editor for answer keys; learner answers are never
+        submitted here.
       </p>
     </>
-  );
+  )
 }
 
 function QuestionPreview({ id }: { id: string }) {
@@ -231,13 +212,13 @@ function QuestionPreview({ id }: { id: string }) {
       () =>
         import("@/shared/api/apiClient").then(({ apiClient }) =>
           apiClient.get<{
-            stem: string;
-            options: { id: string; body: string; correct: boolean }[];
+            stem: string
+            options: { id: string; body: string; correct: boolean }[]
           }>(`/quiz/question-versions/${id}/author-preview`),
         ),
       [id],
     ),
-  );
+  )
   return (
     <>
       <RemoteState {...remote} retry={remote.reload} />
@@ -248,11 +229,11 @@ function QuestionPreview({ id }: { id: string }) {
         </p>
       ))}
     </>
-  );
+  )
 }
 
 function AssignmentRubricPreview({ id }: { id: string }) {
-  const remote = useRemote(useCallback(() => assignmentApi.rubric(id), [id]));
+  const remote = useRemote(useCallback(() => assignmentApi.rubric(id), [id]))
   return (
     <>
       <RemoteState {...remote} retry={remote.reload} />
@@ -267,5 +248,5 @@ function AssignmentRubricPreview({ id }: { id: string }) {
         </ul>
       )}
     </>
-  );
+  )
 }

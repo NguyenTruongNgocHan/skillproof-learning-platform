@@ -5,19 +5,16 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record ResetPasswordRequest(
-        @NotBlank
-        @Size(max = 128)
-        String token,
-        @NotBlank
+    @NotBlank @Size(max = 128) String token,
+    @NotBlank
         @Size(min = 12, max = 72)
         @Pattern(
-                regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$",
-                message = "Password must contain uppercase, lowercase, digit, and special character."
-        )
-        String newPassword
-        ) {
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$",
+            message = "Password must contain uppercase, lowercase, digit, and special character.")
+        String newPassword) {
 
-    public com.skillproof.backend.identity.application.model.ResetPasswordCommand toCommand() {
-        return new com.skillproof.backend.identity.application.model.ResetPasswordCommand(token, newPassword);
-    }
+  public com.skillproof.backend.identity.application.model.ResetPasswordCommand toCommand() {
+    return new com.skillproof.backend.identity.application.model.ResetPasswordCommand(
+        token, newPassword);
+  }
 }

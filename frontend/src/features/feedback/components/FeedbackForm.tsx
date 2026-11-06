@@ -1,42 +1,34 @@
-import { useState } from "react";
-import { feedbackApi } from "../api/feedbackApi";
-import { useAction } from "@/shared/hooks/useRemote";
-import { ActionNotice } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
+import { useState } from "react"
+import { feedbackApi } from "../api/feedbackApi"
+import { useAction } from "@/shared/hooks/useRemote"
+import { ActionNotice } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
 export function FeedbackForm({
   type,
   target,
 }: {
-  type:
-    "COURSE" | "RESOURCE" | "CERTIFICATE" | "ASSESSMENT" | "QUESTION_VERSION";
-  target: string;
+  type: "COURSE" | "RESOURCE" | "CERTIFICATE" | "ASSESSMENT" | "QUESTION_VERSION"
+  target: string
 }) {
   const [rating, setRating] = useState(5),
-    [body, setBody] = useState("");
-  const action = useAction();
+    [body, setBody] = useState("")
+  const action = useAction()
   return (
     <form
       className="sporg-form"
       onSubmit={(e) => {
-        e.preventDefault();
-        void action.run(
-          () => feedbackApi.write(type, target, rating, body),
-          "Feedback saved.",
-        );
+        e.preventDefault()
+        void action.run(() => feedbackApi.write(type, target, rating, body), "Feedback saved.")
       }}
     >
       <h2>Share your experience</h2>
       <p>
-        Reviews require verified learning experience. Assessment feedback is
-        private; certificate ratings describe your experience and do not
-        establish credential validity.
+        Reviews require verified learning experience. Assessment feedback is private; certificate
+        ratings describe your experience and do not establish credential validity.
       </p>
       <label>
         Rating
-        <select
-          value={rating}
-          onChange={(e) => setRating(Number(e.target.value))}
-        >
+        <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
           {[5, 4, 3, 2, 1].map((n) => (
             <option key={n} value={n}>
               {n} / 5
@@ -58,5 +50,5 @@ export function FeedbackForm({
         Save review
       </Button>
     </form>
-  );
+  )
 }

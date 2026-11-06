@@ -1,42 +1,37 @@
-import { workspaceCourseApi } from "@/features/course/api/workspaceCourseApi";
+import { workspaceCourseApi } from "@/features/course/api/workspaceCourseApi"
 
-import { useCallback, useState, useEffect } from "react";
-import { useOrganizationContext } from "../providers/OrganizationProvider";
-import { OrganizerSurface } from "../components/OrganizerSurface";
-import { EvidenceManager } from "../components/EvidenceManager";
-import { governanceApi } from "../api/governanceApi";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import Button from "@/shared/ui/Button";
+import { useCallback, useState, useEffect } from "react"
+import { useOrganizationContext } from "../providers/OrganizationProvider"
+import { OrganizerSurface } from "../components/OrganizerSurface"
+import { EvidenceManager } from "../components/EvidenceManager"
+import { governanceApi } from "../api/governanceApi"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import Button from "@/shared/ui/Button"
 export default function OrganizationGovernancePage() {
-  const { organization, setDirty } = useOrganizationContext();
-  const org = organization?.id ?? "";
-  const applications = useRemote(
-    useCallback(() => governanceApi.issuers(org), [org]),
-  );
-  const evidence = useRemote(
-    useCallback(() => governanceApi.evidence(org), [org]),
-  );
-  const action = useAction(applications.reload);
+  const { organization, setDirty } = useOrganizationContext()
+  const org = organization?.id ?? ""
+  const applications = useRemote(useCallback(() => governanceApi.issuers(org), [org]))
+  const evidence = useRemote(useCallback(() => governanceApi.evidence(org), [org]))
+  const action = useAction(applications.reload)
   const courseChoices = useRemote(
     useCallback(async () => {
-      return (await workspaceCourseApi.directory(org)).map((v) => ({
-        id: v.id,
-        label: `${v.title} · ${v.id}`,
-      }));
+      return (await workspaceCourseApi.directory(org))
+        .filter((v) => v.status === "PUBLISHED")
+        .map((v) => ({
+          id: v.id,
+          label: `${v.title} · ${v.id}`,
+        }))
     }, [org]),
-  );
+  )
   const [scopeMode, setScopeMode] = useState("ALL_COURSES"),
-    [versionIds, setVersionIds] = useState<string[]>([]);
-  const [scope, setScope] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
+    [versionIds, setVersionIds] = useState<string[]>([])
+  const [scope, setScope] = useState("")
+  const [selected, setSelected] = useState<string[]>([])
   useEffect(() => {
-    setDirty(
-      "issuer-application",
-      Boolean(scope || selected.length || versionIds.length),
-    );
-    return () => setDirty("issuer-application", false);
-  }, [scope, selected, versionIds, setDirty]);
+    setDirty("issuer-application", Boolean(scope || selected.length || versionIds.length))
+    return () => setDirty("issuer-application", false)
+  }, [scope, selected, versionIds, setDirty])
   return (
     <OrganizerSurface
       title="Verification & issuer"
@@ -44,46 +39,41 @@ export default function OrganizationGovernancePage() {
       authority="MANAGE_PROFILE"
     >
       <EvidenceManager organizationId={org} purpose="VERIFICATION" />
-      <EvidenceManager organizationId={org} purpose="ISSUER" editable />
+      <EvidenceManager organizationId={org} purpose="ISSUER" editable onChanged={evidence.reload} />
       <section className="sporg-card">
         <h2>Apply for issuer authorization</h2>
         <p>
-          Describe the disciplines, qualifications and course programs you are
-          authorized to certify. Administrators assess this scope before
-          granting time-limited issuer authorization.
+          Describe the disciplines, qualifications and course programs you are authorized to
+          certify. Administrators assess this scope before granting time-limited issuer
+          authorization.
         </p>
         <RemoteState {...applications} retry={applications.reload} />
         <ActionNotice {...action} />
         <form
           className="sporg-form"
           onSubmit={(e) => {
-            e.preventDefault();
+            e.preventDefault()
             void action.run(async () => {
               await governanceApi.apply(org, {
                 scope,
                 evidenceIds: selected,
                 scopeMode,
                 courseVersionIds: scopeMode === "ALL_COURSES" ? [] : versionIds,
-              });
-              setScope("");
-              setSelected([]);
-              setVersionIds([]);
-              setScopeMode("ALL_COURSES");
-            }, "Issuer application submitted.");
+              })
+              setScope("")
+              setSelected([])
+              setVersionIds([])
+              setScopeMode("ALL_COURSES")
+            }, "Issuer application submitted.")
           }}
         >
           <label>
             Course scope
-            <select
-              value={scopeMode}
-              onChange={(e) => setScopeMode(e.target.value)}
-            >
+            <select value={scopeMode} onChange={(e) => setScopeMode(e.target.value)}>
               <option value="ALL_COURSES">
                 All organization courses (including future courses)
               </option>
-              <option value="SELECTED_VERSIONS">
-                Specific published course versions
-              </option>
+              <option value="SELECTED_VERSIONS">Specific published course versions</option>
             </select>
           </label>
           {scopeMode === "SELECTED_VERSIONS" && (
@@ -117,7 +107,12 @@ export default function OrganizationGovernancePage() {
             />
           </label>
           {evidence.data
-            ?.filter((d) => d.purpose === "ISSUER")
+            ?.filter(
+              (d) =>
+                d.purpose === "ISSUER" &&
+                d.status !== "REJECTED" &&
+                (!d.expiresAt || new Date(d.expiresAt).getTime() > Date.now()),
+            )
             .map((d) => (
               <label className="sporg-checkbox" key={d.id}>
                 <input
@@ -125,9 +120,7 @@ export default function OrganizationGovernancePage() {
                   checked={selected.includes(d.id)}
                   onChange={(e) =>
                     setSelected(
-                      e.target.checked
-                        ? [...selected, d.id]
-                        : selected.filter((id) => id !== d.id),
+                      e.target.checked ? [...selected, d.id] : selected.filter((id) => id !== d.id),
                     )
                   }
                 />
@@ -145,8 +138,7 @@ export default function OrganizationGovernancePage() {
                   a.status === "PENDING" ||
                   (a.status === "AUTHORIZED" &&
                     Boolean(a.validUntil) &&
-                    new Date(a.validUntil!).getTime() >
-                      Date.now() + 30 * 86400000),
+                    new Date(a.validUntil!).getTime() > Date.now() + 30 * 86400000),
               )
             }
           >
@@ -157,9 +149,8 @@ export default function OrganizationGovernancePage() {
       <section className="sporg-card">
         <h2>Authorization history</h2>
         <p>
-          You may submit renewal during the final 30 days. A pending renewal
-          does not interrupt an existing valid authorization; approval replaces
-          it atomically.
+          You may submit renewal during the final 30 days. A pending renewal does not interrupt an
+          existing valid authorization; approval replaces it atomically.
         </p>
         {applications.data?.map((a) => (
           <div className="sporg-evidence-row" key={a.id}>
@@ -178,5 +169,5 @@ export default function OrganizationGovernancePage() {
         ))}
       </section>
     </OrganizerSurface>
-  );
+  )
 }

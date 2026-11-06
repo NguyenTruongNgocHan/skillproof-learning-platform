@@ -1,28 +1,26 @@
-import { useCallback } from "react";
-import { workspaceCourseApi } from "../api/workspaceCourseApi";
-import { useRemote, useAction } from "@/shared/hooks/useRemote";
-import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState";
-import { courseApi } from "../api/courseApi";
-import Button from "@/shared/ui/Button";
+import { useCallback } from "react"
+import { workspaceCourseApi } from "../api/workspaceCourseApi"
+import { useRemote, useAction } from "@/shared/hooks/useRemote"
+import { RemoteState, ActionNotice } from "@/shared/ui/RemoteState"
+import { courseApi } from "../api/courseApi"
+import Button from "@/shared/ui/Button"
 export function CourseReadinessPanel({
   versionId,
   navigate,
   published,
 }: {
-  versionId: string;
-  navigate: (tab: string, targetId?: string) => void;
-  published: () => void;
+  versionId: string
+  navigate: (tab: string, targetId?: string) => void
+  published: () => void
 }) {
-  const remote = useRemote(
-    useCallback(() => workspaceCourseApi.readiness(versionId), [versionId]),
-  );
-  const action = useAction(published);
+  const remote = useRemote(useCallback(() => workspaceCourseApi.readiness(versionId), [versionId]))
+  const action = useAction(published)
   return (
     <section className="sporg-card">
       <h2>Publish checklist</h2>
       <p>
-        Review your learner preview, completion rules and offer before
-        publishing. Published content cannot be edited.
+        Review your learner preview, completion rules and offer before publishing. Published content
+        cannot be edited.
       </p>
       <RemoteState {...remote} retry={remote.reload} />
       <ActionNotice {...action} />
@@ -37,8 +35,7 @@ export function CourseReadinessPanel({
       ))}
       {remote.data?.ready && (
         <p className="sporg-success">
-          Content checks are ready. Backend will recheck under transaction locks
-          when publishing.
+          Content checks are ready. Backend will recheck under transaction locks when publishing.
         </p>
       )}
       <div className="sporg-actions">
@@ -49,20 +46,15 @@ export function CourseReadinessPanel({
           Recheck
         </Button>
         <Button
-          disabled={
-            !remote.data?.ready || remote.data.status !== "DRAFT" || action.busy
-          }
+          disabled={!remote.data?.ready || remote.data.status !== "DRAFT" || action.busy}
           onClick={() => {
             if (window.confirm("Publish this immutable version?"))
-              void action.run(
-                () => courseApi.publish(versionId),
-                "Version published.",
-              );
+              void action.run(() => courseApi.publish(versionId), "Version published.")
           }}
         >
           Publish version
         </Button>
       </div>
     </section>
-  );
+  )
 }
